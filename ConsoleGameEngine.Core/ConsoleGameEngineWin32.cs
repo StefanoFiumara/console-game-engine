@@ -61,8 +61,8 @@ namespace ConsoleGameEngine.Core
 
         private static void DisableResize()
         {
-            IntPtr handle = GetConsoleWindow();
-            IntPtr sysMenu = GetSystemMenu(handle, false);
+            var handle = GetConsoleWindow();
+            var sysMenu = GetSystemMenu(handle, false);
 
             if (handle != IntPtr.Zero)
             {
@@ -77,7 +77,7 @@ namespace ConsoleGameEngine.Core
         {
             var state = KeyStates.None;
 
-            short retVal = GetKeyState((int)key);
+            var retVal = GetKeyState((int)key);
 
             //If the high-order bit is 1, the key is down
             //otherwise, it is up.
@@ -119,7 +119,7 @@ namespace ConsoleGameEngine.Core
             ref SmallRect lpWriteRegion);
         
         [DllImport("user32.dll")]
-        public static extern int DeleteMenu(IntPtr hMenu, int nPosition, int wFlags);
+        private static extern int DeleteMenu(IntPtr hMenu, int nPosition, int wFlags);
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
