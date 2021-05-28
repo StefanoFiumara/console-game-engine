@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using ConsoleGameEngine.Core;
+using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Math;
 
 
 namespace ConsoleGameEngine.Example
@@ -19,37 +21,29 @@ namespace ConsoleGameEngine.Example
         private const ConsoleColor PLAYER_COLOR = ConsoleColor.White;
         private const ConsoleColor TRAIL_COLOR = ConsoleColor.Red;
         
-        // TODO: Vectors
-        private float _posX;
-        private float _posY;
-        
-        private float _velX;
-        private float _velY;
-   
-        private List<string> _player;
+        private Sprite _player;
 
-        private List<(float x, float y)> _trail;
+        private List<Vector> _trail;
         private float _trailCooldown;
 
         protected override bool Create()
         {
-            // TODO: Encapsulate in Sprite class
-            _player = new List<string>()
-            {
-                "-----",
-                "|   |",
-                "| * |",
-                "|   |",
-                "-----",
-            };
+            var spriteGfx = string.Empty;
 
-            _trail = new List<(float x, float y)>(MAX_TRAIL_COUNT);
+            spriteGfx += "-----\n";
+            spriteGfx += "|   |\n";
+            spriteGfx += "| * |\n";
+            spriteGfx += "|   |\n";
+            spriteGfx += "-----\n";
+
+            _player = new Sprite(spriteGfx, PLAYER_COLOR);
+            
+            _trail = new List<Vector>(MAX_TRAIL_COUNT);
 
             _trailCooldown = TRAIL_RESET_TIME;
 
-            _posX = ScreenWidth / 2f;
-            _posY = ScreenHeight / 2f;
-            
+            _player.Position = new Vector(ScreenWidth / 2f, ScreenHeight / 2f);
+
             return true;
         }
 
@@ -61,21 +55,21 @@ namespace ConsoleGameEngine.Example
             // Input
             if (IsKeyDown(Keys.Left))
             {
-                _velX -= MOVE_SPEED * elapsedTime;
+                _player.Velocity += Vector.Left * MOVE_SPEED * elapsedTime;
             }
             else if (IsKeyDown(Keys.Right))
             {
-                _velX += MOVE_SPEED * elapsedTime;
+                _player.Velocity += Vector.Right * MOVE_SPEED * elapsedTime;
             }
             else
             {
-                var friction = _velX < 0 ? MOVE_SPEED / 2 : -MOVE_SPEED / 2;
-                _velX += friction * elapsedTime;
+                var friction = _player.Velocity.X < 0 ? MOVE_SPEED / 2 : -MOVE_SPEED / 2;
+                _player.Velocity += Vector.Right * friction * elapsedTime;
             }
 
-            if (IsKeyDown(Keys.Up) && _velY > 0f)
+            if (IsKeyDown(Keys.Up) && _player.Velocity.Y > 0f)
             {
-                _velY = -JUMP_SPEED;
+                _player.Velocity += Vector.Up * JUMP_SPEED; // No elapsedTime here, instant force.
             }
             
             if(IsKeyDown(Keys.Space)) 
@@ -92,46 +86,52 @@ namespace ConsoleGameEngine.Example
                     _trail.RemoveAt(0);
                 }
                 
-                _trail.Add((_posX, _posY));
+                _trail.Add(_player.Position);
             }
             
             // Physics
-            _posX += _velX * elapsedTime;
-            _posY += _velY * elapsedTime;
-
-            _velY += GRAVITY * elapsedTime;
+            _player.Velocity += Vector.Down * GRAVITY * elapsedTime;
+            
+            _player.Position += _player.Velocity * elapsedTime;
 
             // Collision
-            if ((int)_posY + _player.Count >= ScreenHeight+1)
+            if ((int)_player.Position.Y + _player.Height >= ScreenHeight+1)
             {
-                _posY = ScreenHeight - _player.Count;
-                _velY *= -0.8f;
+                _player.Position = new Vector(_player.Position.X, ScreenHeight - _player.Height);
+                _player.Velocity = new Vector(_player.Velocity.X, -_player.Velocity.Y);
             }
 
-            if (_posX <= 0)
+            if (_player.Position.X <= 0)
             {
-                _posX = 0;
-                _velX *= -0.9f;
+                _player.Position = new Vector(0, _player.Position.Y);
+                _player.Velocity = new Vector(-_player.Velocity.X, _player.Velocity.Y);
             }
-            else if ((int)_posX + _player[0].Length >= ScreenWidth+1)
+            else if ((int)_player.Position.X + _player.Width >= ScreenWidth+1)
             {
-                _posX = ScreenWidth - _player[0].Length;
-                _velX *= -0.9f;
+                _player.Position = new Vector(ScreenWidth - _player.Width, _player.Position.Y);
+                _player.Velocity = new Vector(-_player.Velocity.X, _player.Velocity.Y);
             }
             
             ////////////////////////
             // Draw trail and player
             for (int i = 0; i < _trail.Count; i++)
             {
-                var (x, y) = _trail[i];
+                var (x, y) = (_trail[i].X, _trail[i].Y);
                 
-                Draw((int) x + _player[0].Length/2, (int) y+ _player.Count/2, '*', TRAIL_COLOR, BG_COLOR);
+                Draw((int) (x + _player.Width/2), (int) (y + _player.Height/2), '*', TRAIL_COLOR, BG_COLOR);
             }
             
-            DrawSprite((int)_posX, (int)_posY, _player, PLAYER_COLOR, bgColor: BG_COLOR);
+            DrawSprite(_player);
             
-            DrawString(2,2, $"Player Vel X: {_velX:F}");
-            DrawString(2,4, $"Player Vel Y: {_velY:F}");
+            // HUD
+            DrawString(2,2, $"Player X: {(int)_player.Position.X}");
+            DrawString(2,3, $"Player Y: {(int)_player.Position.Y}");
+            
+            DrawString(2,5, $"Player Vel X: {_player.Velocity.X:F2}");
+            DrawString(2,6, $"Player Vel Y: {_player.Velocity.Y:F2}");
+
+            
+
             return true;
         }
     }

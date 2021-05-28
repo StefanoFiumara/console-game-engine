@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ConsoleGameEngine.Core.GameObjects;
 
 namespace ConsoleGameEngine.Core
 {
@@ -154,22 +155,25 @@ namespace ConsoleGameEngine.Core
             }
         }
 
-        protected void DrawSprite(int x, int y, List<string> sprite, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        protected void DrawSprite(Sprite sprite)
         {
-            for (var i = 0; i < sprite.Count; i++)
+            for (var i = 0; i < sprite.Height; i++)
             {
-                var line = sprite[i];
-                for (int j = 0; j < line.Length; j++)
+                for (int j = 0; j < sprite.Width; j++)
                 {
-                    if (line[j] != ' ')
+                    if (sprite.GetGlyph(j, i) != ' ')
                     {
-                        Draw(j + x, i + y, line[j], fgColor, bgColor);
+                        Draw(
+                            (int)sprite.Position.X + j, 
+                            (int)sprite.Position.Y + i, 
+                            sprite.GetGlyph(j, i), 
+                            sprite.GetColor(j, i));
                     }
                 }
             }
         }
-
-        public void DrawString(int x, int y, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        
+        protected void DrawString(int x, int y, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
             for (int i = 0; i < msg.Length; i++)
             {
