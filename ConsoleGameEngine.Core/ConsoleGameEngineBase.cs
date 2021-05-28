@@ -169,6 +169,14 @@ namespace ConsoleGameEngine.Core
             }
         }
 
+        public void DrawString(int x, int y, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        {
+            for (int i = 0; i < msg.Length; i++)
+            {
+                Draw(x + i, y, msg[i], fgColor, bgColor);
+            }
+        }
+
         private void Clip(ref int x, ref int y)
         {
             if (x < 0) x = 0;
