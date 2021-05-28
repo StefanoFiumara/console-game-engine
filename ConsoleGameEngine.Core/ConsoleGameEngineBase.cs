@@ -1,11 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Math;
 using ConsoleGameEngine.Core.Win32;
 
 namespace ConsoleGameEngine.Core
@@ -17,8 +17,12 @@ namespace ConsoleGameEngine.Core
 
         private bool _gameRunning;
 
-        protected int ScreenWidth { get; private set; }
-        protected int ScreenHeight { get; private set; }
+        protected int ScreenWidth => (int)ScreenRect.Size.X;
+        protected int ScreenHeight => (int)ScreenRect.Size.Y;
+        
+        protected Rect ScreenRect { get; private set; }
+        
+        protected int TargetFps { get; set; }
         
         /// <summary>
         /// Enabling performance mode allows the game loop to run as fast as possible
@@ -33,7 +37,7 @@ namespace ConsoleGameEngine.Core
             PerformanceModeEnabled = false;
         }
         
-        public void InitConsole(int width, int height)
+        public void InitConsole(int width, int height, int targetFps = 60)
         {
             if (!_isInit)
             {
@@ -45,23 +49,25 @@ namespace ConsoleGameEngine.Core
                 
                 if (width  > maxWidth || height > maxHeight)
                 {
-                    var widthRatio = (double) maxWidth / width;
-                    var heightRatio = (double) maxHeight / height;
+                    var widthRatio = (float) maxWidth / width;
+                    var heightRatio = (float) maxHeight / height;
                     
                     // use whichever multiplier is smaller
-                    double ratio = widthRatio < heightRatio ? widthRatio : heightRatio;
+                    var ratio = widthRatio < heightRatio ? widthRatio : heightRatio;
 
-                    width = Convert.ToInt32(width * ratio);
-                    height = Convert.ToInt32(height * ratio);
+                    width = (int) (width * ratio);
+                    height = (int) (height * ratio);
                 }
-                                
-                ScreenWidth = width;
-                ScreenHeight = height;
+                
+                ScreenRect = new Rect(Vector.Zero, new Vector(width, height));
+                
                 _screenBuffer = new CharInfo[width * height];
                 
                 Console.SetWindowSize(width, height);
                 Console.SetBufferSize(width, height);
-                
+
+                TargetFps = targetFps;
+                if (TargetFps < 30) TargetFps = 30;
                 _isInit = true;
             }
             else
@@ -109,7 +115,9 @@ namespace ConsoleGameEngine.Core
             var previousTime = timer.Elapsed.TotalMilliseconds;
             var currentTime = timer.Elapsed.TotalMilliseconds;
             var elapsedTime = (currentTime - previousTime);
-            
+
+            long framesRendered = 0;
+
             while (_gameRunning)
             {
                 if (!Update((float) elapsedTime / 1000f))
@@ -118,7 +126,9 @@ namespace ConsoleGameEngine.Core
                 }
                 
                 DrawBuffer(_screenBuffer, ScreenWidth, ScreenHeight);
-                Console.Title = $"Fano's Console Game Engine ~ FPS: {1000f / elapsedTime:F}";
+
+                var averageFps = ++framesRendered / (timer.Elapsed.TotalMilliseconds / 1000f);
+                Console.Title = $"Fano's Console Game Engine ~ Average FPS: {averageFps:F}";
 
                 currentTime = timer.Elapsed.TotalMilliseconds;
                 elapsedTime = (currentTime - previousTime);
@@ -126,9 +136,9 @@ namespace ConsoleGameEngine.Core
 
                 if (!PerformanceModeEnabled)
                 {
-                    // NOTE: Give back some system resources by suspending the thread if update loop takes less than 8ms
-                    //       This caps the game at around ~70 FPS and saves over 90% of its CPU usage!
-                    var waitTime = 8 - elapsedTime;
+                    // NOTE: Give back some system resources by suspending the thread if update loop takes less time than necessary to hit our target FPS.
+                    //       This vastly reduces CPU usage!
+                    var waitTime = 1f / TargetFps * 1000f - elapsedTime;
                     if (waitTime > 0)
                     {
                         Thread.Sleep((int)waitTime);
@@ -142,6 +152,11 @@ namespace ConsoleGameEngine.Core
         protected abstract bool Create();
 
         protected abstract bool Update(float elapsedTime);
+
+        protected void Draw(Vector position, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        {
+            Draw((int)position.X, (int)position.Y, c, fgColor, bgColor);
+        }
         
         protected void Draw(int x, int y, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
@@ -157,6 +172,20 @@ namespace ConsoleGameEngine.Core
             
             _screenBuffer[index].Attributes = color;
             _screenBuffer[index].Char.UnicodeChar = c;
+        }
+
+        protected void Fill(Rect rect, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        {
+            Fill(rect.Position, rect.Size, c, fgColor, bgColor);
+        }
+        
+        protected void Fill(Vector position, Vector size, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        {
+            Fill((int)position.X, 
+                 (int)position.Y,
+                 (int)(size.X + position.X), 
+                 (int)(size.Y + position.Y),
+                 c, fgColor, bgColor);
         }
         
         protected void Fill(int x1, int y1, int x2, int y2, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
@@ -175,18 +204,18 @@ namespace ConsoleGameEngine.Core
 
         protected void DrawSprite(Sprite sprite)
         {
-            for (var i = 0; i < sprite.Height; i++)
+            for (var y = 0; y < sprite.Height; y++)
             {
-                for (int j = 0; j < sprite.Width; j++)
+                for (int x = 0; x < sprite.Width; x++)
                 {
-                    if (sprite.GetGlyph(j, i) != ' ')
+                    if (sprite.GetGlyph(x, y) != ' ')
                     {
                         Draw(
-                            (int)sprite.Position.X + j, 
-                            (int)sprite.Position.Y + i, 
-                            sprite.GetGlyph(j, i), 
-                            sprite.GetFgColor(j, i),
-                            sprite.GetBgColor(j, i));
+                            (int)sprite.Position.X + x, 
+                            (int)sprite.Position.Y + y, 
+                            sprite.GetGlyph(x, y), 
+                            sprite.GetFgColor(x, y),
+                            sprite.GetBgColor(x, y));
                     }
                 }
             }

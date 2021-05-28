@@ -6,7 +6,7 @@
         {
             var game = new CustomConsoleGameExample();
             
-            game.InitConsole(64,64);
+            game.InitConsole(128,64);
             game.Start();
         }
     }

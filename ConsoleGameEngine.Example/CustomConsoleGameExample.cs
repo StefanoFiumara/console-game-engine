@@ -47,21 +47,21 @@ namespace ConsoleGameEngine.Example
 
             _player.Position = new Vector(ScreenWidth / 2f, ScreenHeight / 2f);
 
-            // PerformanceModeEnabled = true;
+            PerformanceModeEnabled = true;
             return true;
         }
 
         protected override bool Update(float elapsedTime)
         {
             // Clear the screen each frame
-            Fill(0,0,ScreenWidth, ScreenHeight, ' ', bgColor: BG_COLOR);
+            Fill(ScreenRect, ' ', bgColor: BG_COLOR);
 
             if(IsKeyDown(Keys.Esc)) 
             {
                 // Close the game
                 return false;
             }
-            
+
             // Input
             if (IsKeyDown(Keys.Left))
             {
@@ -72,7 +72,7 @@ namespace ConsoleGameEngine.Example
                 _player.Velocity += Vector.Right * MOVE_ACCEL * elapsedTime;
             }
 
-            if (IsKeyDown(Keys.Space, Keys.Up) && _player.Velocity.Y > 0f)
+            if (IsKeyDown(Keys.Space) && _player.Velocity.Y > 0f)
             {
                 _player.Velocity += Vector.Up * JUMP_VEL; // No elapsedTime here, instant force.
             }
@@ -150,13 +150,13 @@ namespace ConsoleGameEngine.Example
             }
             
             DrawSprite(_player);
-            
+
             // HUD
             DrawString(1,1, "INSTRUCTIONS", bgColor: BG_COLOR);
             DrawString(1,2, "  LEFT/RIGHT: Move Player", bgColor: BG_COLOR);
-            DrawString(1,4, "  UP/SPACE: Jump", bgColor: BG_COLOR);
+            DrawString(1,4, "  SPACE: Jump", bgColor: BG_COLOR);
             DrawString(1,5, "  ESC: Exit Game", bgColor: BG_COLOR);
-            
+
             return true;
         }
     }

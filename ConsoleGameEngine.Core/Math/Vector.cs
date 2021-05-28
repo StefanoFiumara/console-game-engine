@@ -13,9 +13,17 @@ namespace ConsoleGameEngine.Core.Math
         public float Y { get; }
 
         public float Magnitude => (float)System.Math.Sqrt(X * X + Y * Y);
-        public Vector Normalized => this / Magnitude;
+        public Vector Normalized => Magnitude == 0f ? Zero : this / Magnitude;
+
+        public Vector Rounded => new((int) X, (int) Y);
         
         public Vector(float x, float y)
+        {
+            X = x;
+            Y = y;
+        }
+        
+        public Vector(int x, int y)
         {
             X = x;
             Y = y;

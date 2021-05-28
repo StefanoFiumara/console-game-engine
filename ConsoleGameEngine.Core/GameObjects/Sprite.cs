@@ -11,12 +11,15 @@ namespace ConsoleGameEngine.Core.GameObjects
         private readonly ConsoleColor[] _bgColors;
 
         public Vector Position { get; set; }
+        public Vector Size { get; }
         public Vector Velocity { get; set; }
 
-        public float Width { get; }
-        public float Height { get; }
+        public float Width => Size.X;
+        public float Height => Size.Y;
+        
+        public Rect Bounds => new(Position, Size);
 
-        public Vector Center => new Vector((int)Position.X, (int)Position.Y) + new Vector(Width, Height) * 0.5f;
+        public Vector Center => Position.Rounded + Size * 0.5f;
 
         public Sprite(string gfx, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
@@ -24,7 +27,7 @@ namespace ConsoleGameEngine.Core.GameObjects
             var width = splitGfx.Max(c => c.Length);
             var height = splitGfx.Length;
 
-            // ensure rectangular dimensions by padding width where applicable.
+            // Ensure rectangular dimensions by padding width where applicable.
             for (var i = 0; i < splitGfx.Length; i++)
             {
                 if (splitGfx[i].Length != width)
@@ -33,9 +36,8 @@ namespace ConsoleGameEngine.Core.GameObjects
                 }
             }
 
-            Width = width;
-            Height = height;
-            
+            Size = new Vector(width, height);
+                        
             _glyphs = new char[width * height];
             
             for (int i = 0; i < splitGfx.Length; i++)
