@@ -12,6 +12,9 @@ namespace ConsoleGameEngine.Core.Math
         public float X { get; }
         public float Y { get; }
 
+        public float Magnitude => (float)System.Math.Sqrt(X * X + Y * Y);
+        public Vector Normalized => this / Magnitude;
+        
         public Vector(float x, float y)
         {
             X = x;
@@ -22,10 +25,20 @@ namespace ConsoleGameEngine.Core.Math
         {
             return new(v.X * scalar, v.Y * scalar);
         }
+        
+        public static Vector operator /(Vector v, float scalar)
+        {
+            return new(v.X / scalar, v.Y / scalar);
+        }
 
         public static Vector operator +(Vector l, Vector r)
         {
             return new(l.X + r.X, l.Y + r.Y);
+        }
+        
+        public static Vector operator -(Vector l, Vector r)
+        {
+            return new(l.X - r.X, l.Y - r.Y);
         }
     }
 }

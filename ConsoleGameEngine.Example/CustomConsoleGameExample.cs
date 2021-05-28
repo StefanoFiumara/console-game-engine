@@ -10,6 +10,7 @@ namespace ConsoleGameEngine.Example
     public class CustomConsoleGameExample : ConsoleGameEngineBase
     {
         private const float GRAVITY = 15f;
+        private const float TERMINAL_VELOCITY = 35f;
 
         private const float MOVE_SPEED = 30f;
         private const float JUMP_SPEED = 40f;
@@ -61,11 +62,6 @@ namespace ConsoleGameEngine.Example
             {
                 _player.Velocity += Vector.Right * MOVE_SPEED * elapsedTime;
             }
-            else
-            {
-                var friction = _player.Velocity.X < 0 ? MOVE_SPEED / 2 : -MOVE_SPEED / 2;
-                _player.Velocity += Vector.Right * friction * elapsedTime;
-            }
 
             if (IsKeyDown(Keys.Up) && _player.Velocity.Y > 0f)
             {
@@ -74,6 +70,7 @@ namespace ConsoleGameEngine.Example
             
             if(IsKeyDown(Keys.Space)) 
             {
+                // Close the game
                 return false;
             }
 
@@ -86,14 +83,20 @@ namespace ConsoleGameEngine.Example
                     _trail.RemoveAt(0);
                 }
                 
-                _trail.Add(_player.Position);
+                _trail.Add(_player.Center);
             }
             
             // Physics
             _player.Velocity += Vector.Down * GRAVITY * elapsedTime;
             
-            _player.Position += _player.Velocity * elapsedTime;
+            // Clamp to terminal velocity
+            if (_player.Velocity.Y > TERMINAL_VELOCITY)
+            {
+                _player.Velocity = new Vector(_player.Velocity.X, TERMINAL_VELOCITY);
+            }
 
+            _player.Position += _player.Velocity * elapsedTime;
+            
             // Collision
             if ((int)_player.Position.Y + _player.Height >= ScreenHeight+1)
             {
@@ -116,9 +119,9 @@ namespace ConsoleGameEngine.Example
             // Draw trail and player
             for (int i = 0; i < _trail.Count; i++)
             {
-                var (x, y) = (_trail[i].X, _trail[i].Y);
+                var (x, y) = ((int)_trail[i].X, (int)_trail[i].Y);
                 
-                Draw((int) (x + _player.Width/2), (int) (y + _player.Height/2), '*', TRAIL_COLOR, BG_COLOR);
+                Draw(x, y, '*', TRAIL_COLOR, BG_COLOR);
             }
             
             DrawSprite(_player);
@@ -129,8 +132,6 @@ namespace ConsoleGameEngine.Example
             
             DrawString(2,5, $"Player Vel X: {_player.Velocity.X:F2}");
             DrawString(2,6, $"Player Vel Y: {_player.Velocity.Y:F2}");
-
-            
 
             return true;
         }
