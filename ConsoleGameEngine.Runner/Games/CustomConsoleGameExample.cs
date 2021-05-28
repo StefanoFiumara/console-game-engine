@@ -4,8 +4,7 @@ using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Math;
 
-
-namespace ConsoleGameEngine.Example
+namespace ConsoleGameEngine.Runner.Games
 {
     public class CustomConsoleGameExample : ConsoleGameEngineBase
     {
@@ -28,6 +27,8 @@ namespace ConsoleGameEngine.Example
 
         private List<Vector> _trail;
         private float _trailCooldown;
+
+        protected override string Name { get; set; } = "Console Game Engine Example";
 
         protected override bool Create()
         {

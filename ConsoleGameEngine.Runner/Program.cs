@@ -1,4 +1,6 @@
-﻿namespace ConsoleGameEngine.Example
+﻿using ConsoleGameEngine.Runner.Games;
+
+namespace ConsoleGameEngine.Runner
 {
     class Program
     {

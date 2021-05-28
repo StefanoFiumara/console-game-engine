@@ -19,6 +19,11 @@ namespace ConsoleGameEngine.Core
         private bool _gameRunning;
 
         /// <summary>
+        /// The name of the game
+        /// </summary>
+        protected abstract string Name { get; set; }
+        
+        /// <summary>
         /// Shortcut to grab the Screen Width
         /// </summary>
         protected int ScreenWidth => (int)ScreenRect.Size.X;
@@ -268,7 +273,7 @@ namespace ConsoleGameEngine.Core
                 DrawBuffer(_screenBuffer, ScreenWidth, ScreenHeight);
 
                 var averageFps = ++framesRendered / (timer.Elapsed.TotalMilliseconds / 1000f);
-                Console.Title = $"Fano's Console Game Engine ~ Average FPS: {averageFps:F}";
+                Console.Title = $"{Name} ~ Average FPS: {averageFps:F}";
 
                 
 
