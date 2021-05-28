@@ -13,10 +13,10 @@ namespace ConsoleGameEngine.Core
         private const int STD_OUTPUT_HANDLE = -11;
         
         private const int MF_BYCOMMAND = 0x00000000;
-        public const int SC_CLOSE = 0xF060;
-        public const int SC_MINIMIZE = 0xF020;
-        public const int SC_MAXIMIZE = 0xF030;
-        public const int SC_SIZE = 0xF000;
+        private const int SC_CLOSE = 0xF060;
+        private const int SC_MINIMIZE = 0xF020;
+        private const int SC_MAXIMIZE = 0xF030;
+        private const int SC_SIZE = 0xF000;
 
         private readonly SafeFileHandle _consoleHandle;
 
@@ -30,7 +30,6 @@ namespace ConsoleGameEngine.Core
             {
                 throw new Exception("Console handle is invalid!");
             }
-            
         }
         
         protected void DrawBuffer(CharInfo[] buffer, int width, int height)
@@ -92,16 +91,6 @@ namespace ConsoleGameEngine.Core
             return state;
         }
         
-        protected static bool IsKeyDown(Keys key)
-        {
-            return KeyStates.Down == (GetKeyState(key) & KeyStates.Down);
-        }
-
-        protected static bool IsKeyToggled(Keys key)
-        {
-            return KeyStates.Toggled == (GetKeyState(key) & KeyStates.Toggled);
-        }
-
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr GetStdHandle(int nStdHandle);
 

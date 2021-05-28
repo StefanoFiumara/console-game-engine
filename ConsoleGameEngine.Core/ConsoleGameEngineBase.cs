@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,20 +10,14 @@ namespace ConsoleGameEngine.Core
 {
     public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
     {
-        private int _screenWidth;
-        private int _screenHeight;
-
         private CharInfo[] _screenBuffer;
         private bool _isInit;
 
         private bool _gameRunning;
 
-        protected int ScreenWidth => _screenWidth;
-        protected int ScreenHeight => _screenHeight;
+        protected int ScreenWidth { get; private set; }
+        protected int ScreenHeight { get; private set; }
 
-
-        protected Dictionary<Keys, KeyStates> Keyboard;
-        
         protected ConsoleGameEngineBase()
         {
             _isInit = false;
@@ -32,11 +25,7 @@ namespace ConsoleGameEngine.Core
 
         public void InitConsole(int height, float aspectRatio)
         {
-            // ratio = w / h;
-            // ratio * h = w
-
             var width = (int) (aspectRatio * height);
-            
             InitConsole(width, height);
         }
         
@@ -46,24 +35,24 @@ namespace ConsoleGameEngine.Core
             {
                 Console.OutputEncoding = Encoding.UTF8;
                 
-                // Clamp width and height to maximum values
+                // Clamp width and height while maintaining aspect ratio
                 var maxWidth = Console.LargestWindowWidth - 1;
                 var maxHeight = Console.LargestWindowHeight - 1; 
                 
                 if (width  > maxWidth || height > maxHeight)
                 {
-                    var ratioW = (double) maxWidth / width;
-                    var ratioH = (double) maxHeight / (double) height;
+                    var widthRatio = (double) maxWidth / width;
+                    var heightRatio = (double) maxHeight / height;
                     
                     // use whichever multiplier is smaller
-                    double ratio = ratioW < ratioH ? ratioW : ratioH;
+                    double ratio = widthRatio < heightRatio ? widthRatio : heightRatio;
 
                     width = Convert.ToInt32(width * ratio);
                     height = Convert.ToInt32(height * ratio);
                 }
                                 
-                _screenWidth = width;
-                _screenHeight = height;
+                ScreenWidth = width;
+                ScreenHeight = height;
                 _screenBuffer = new CharInfo[width * height];
                 
                 Console.SetWindowSize(width, height);
@@ -83,6 +72,11 @@ namespace ConsoleGameEngine.Core
             var gameLoop = Task.Run(GameLoop);
             gameLoop.Wait();
         }
+        
+        protected bool IsKeyDown(Keys key)
+        {
+            return KeyStates.Down == (GetKeyState(key) & KeyStates.Down);
+        }
 
         private void GameLoop()
         {
@@ -91,8 +85,6 @@ namespace ConsoleGameEngine.Core
                 _gameRunning = false;
             }
 
-            Keyboard = Enum.GetValues<Keys>().ToDictionary(k => k, k => KeyStates.None);
-            
             using var consoleStream = new StreamWriter(Console.OpenStandardOutput(ScreenWidth * ScreenHeight));
             var timer = new Stopwatch();
             timer.Start();
@@ -108,14 +100,15 @@ namespace ConsoleGameEngine.Core
                     _gameRunning = false;
                 }
                 
-                // Draw Screen Buffer
-                
-                DrawBuffer(_screenBuffer, _screenWidth, _screenHeight);
-                Console.Title = $"Fano's Console Game Engine ~ FPS: {1000 / elapsedTime:F}";
+                DrawBuffer(_screenBuffer, ScreenWidth, ScreenHeight);
+                Console.Title = $"Fano's Console Game Engine ~ FPS: {1000f / elapsedTime:F}";
 
                 currentTime = timer.Elapsed.TotalMilliseconds;
                 elapsedTime = (currentTime - previousTime);
                 previousTime = currentTime;
+                
+                // NOTE: Give back some system resources by suspending the thread if update loop takes less than 8ms
+                //       This caps the game at around ~70 FPS and saves over 90% of its CPU usage!
                 var waitTime = 8 - elapsedTime;
                 if (waitTime > 0)
                 {
@@ -125,16 +118,16 @@ namespace ConsoleGameEngine.Core
         }
         
         private int GetScreenIndex(int x, int y) => y * ScreenWidth + x;
-        
+
         protected abstract bool Create();
 
         protected abstract bool Update(float elapsedTime);
         
         // TODO:
         //    * Circle, Line, triangles? 
-        //    * DrawString(x, y, string message) // size?
+        //    * DrawString(x, y, string message)
 
-        public void Draw(int x, int y, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        protected void Draw(int x, int y, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
             var index = GetScreenIndex(x, y);
             if (index >= _screenBuffer.Length || index < 0)
@@ -147,7 +140,7 @@ namespace ConsoleGameEngine.Core
             _screenBuffer[index].Char.UnicodeChar = c;
         }
         
-        public void Fill(int x1, int y1, int x2, int y2, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        protected void Fill(int x1, int y1, int x2, int y2, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
             Clip(ref x1, ref y1);
             Clip(ref x2, ref y2);
@@ -161,15 +154,7 @@ namespace ConsoleGameEngine.Core
             }
         }
 
-        private void Clip(ref int x, ref int y)
-        {
-            if (x < 0) x = 0;
-            if (x >= ScreenWidth) x = ScreenWidth;
-            if (y < 0) y = 0;
-            if (y >= ScreenHeight) y = ScreenHeight;
-        }
-
-        public void DrawSprite(int x, int y, List<string> sprite, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        protected void DrawSprite(int x, int y, List<string> sprite, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
             for (var i = 0; i < sprite.Count; i++)
             {
@@ -182,6 +167,14 @@ namespace ConsoleGameEngine.Core
                     }
                 }
             }
+        }
+
+        private void Clip(ref int x, ref int y)
+        {
+            if (x < 0) x = 0;
+            if (x >= ScreenWidth) x = ScreenWidth;
+            if (y < 0) y = 0;
+            if (y >= ScreenHeight) y = ScreenHeight;
         }
     }
 }

@@ -7,32 +7,34 @@ namespace ConsoleGameEngine.Example
 {
     public class CustomConsoleGameExample : ConsoleGameEngineBase
     {
-        private float _posX = 0f;
-        private float _posY = 0f;
-        
-        private float _velX = 0f;
-        private float _velY = 0f;
+        private const float GRAVITY = 15f;
 
-        private float _gravity = 15f;
+        private const float MOVE_SPEED = 30f;
+        private const float JUMP_SPEED = 40f;
 
-        private float _moveSpeed = 30f;
-        private float _jumpSpeed = 40f;
-        
-        private List<string> _sprite;
-
-        private List<(float x, float y)> _trail;
-        private float _trailCooldown;
         private const int MAX_TRAIL_COUNT = 50;
-
-        private float _trailReset = 0.5f;
+        private const float TRAIL_RESET_TIME = 0.5f;
 
         private const ConsoleColor BG_COLOR = ConsoleColor.Black;
         private const ConsoleColor PLAYER_COLOR = ConsoleColor.White;
         private const ConsoleColor TRAIL_COLOR = ConsoleColor.Red;
+        
+        // TODO: Vectors
+        private float _posX;
+        private float _posY;
+        
+        private float _velX;
+        private float _velY;
+   
+        private List<string> _player;
+
+        private List<(float x, float y)> _trail;
+        private float _trailCooldown;
 
         protected override bool Create()
         {
-            _sprite = new List<string>()
+            // TODO: Encapsulate in Sprite class
+            _player = new List<string>()
             {
                 "-----",
                 "|   |",
@@ -41,37 +43,35 @@ namespace ConsoleGameEngine.Example
                 "-----",
             };
 
-            _trail = new List<(float x, float y)>(MAX_TRAIL_COUNT)
-            {
-                (_posX, _posY)
-            };
+            _trail = new List<(float x, float y)>(MAX_TRAIL_COUNT);
 
-            _trailCooldown = _trailReset;
+            _trailCooldown = TRAIL_RESET_TIME;
 
             _posX = ScreenWidth / 2f;
             _posY = ScreenHeight / 2f;
             
-            DrawSprite((int)_posX, (int)_posY, _sprite, bgColor: BG_COLOR);
             return true;
         }
 
         protected override bool Update(float elapsedTime)
         {
+            // Clear the screen each frame
             Fill(0,0,ScreenWidth, ScreenHeight, ' ', bgColor: BG_COLOR);
 
+            // Input
             if (IsKeyDown(Keys.Left))
             {
-                _velX -= _moveSpeed * elapsedTime;
+                _velX -= MOVE_SPEED * elapsedTime;
             }
             
             if (IsKeyDown(Keys.Right))
             {
-                _velX += _moveSpeed * elapsedTime;
+                _velX += MOVE_SPEED * elapsedTime;
             }
 
             if (IsKeyDown(Keys.Up) && _velY > 0f)
             {
-                _velY = -_jumpSpeed;
+                _velY = -JUMP_SPEED;
             }
             
             if(IsKeyDown(Keys.Space)) 
@@ -79,6 +79,7 @@ namespace ConsoleGameEngine.Example
                 return false;
             }
 
+            // Trail
             _trailCooldown -= elapsedTime;
             if (_trailCooldown < 0f)
             {
@@ -90,14 +91,16 @@ namespace ConsoleGameEngine.Example
                 _trail.Add((_posX, _posY));
             }
             
+            // Physics
             _posX += _velX * elapsedTime;
             _posY += _velY * elapsedTime;
 
-            _velY += _gravity * elapsedTime;
+            _velY += GRAVITY * elapsedTime;
 
-            if ((int)_posY + _sprite.Count >= ScreenHeight)
+            // Collision
+            if ((int)_posY + _player.Count >= ScreenHeight)
             {
-                _posY = ScreenHeight - _sprite.Count;
+                _posY = ScreenHeight - _player.Count;
                 _velY *= -0.8f;
             }
 
@@ -106,21 +109,22 @@ namespace ConsoleGameEngine.Example
                 _posX = 0;
                 _velX *= -0.9f;
             }
-            else if ((int)_posX + _sprite[0].Length >= ScreenWidth)
+            else if ((int)_posX + _player[0].Length >= ScreenWidth)
             {
-                _posX = ScreenWidth - _sprite[0].Length;
+                _posX = ScreenWidth - _player[0].Length;
                 _velX *= -0.9f;
             }
             
-            // Render trail
+            ////////////////////////
+            // Draw trail and player
             for (int i = 0; i < _trail.Count; i++)
             {
                 var (x, y) = _trail[i];
                 
-                Draw((int) x + _sprite[0].Length/2, (int) y+ _sprite.Count/2, '*', TRAIL_COLOR, BG_COLOR);
+                Draw((int) x + _player[0].Length/2, (int) y+ _player.Count/2, '*', TRAIL_COLOR, BG_COLOR);
             }
             
-            DrawSprite((int)_posX, (int)_posY, _sprite, PLAYER_COLOR, bgColor: BG_COLOR);
+            DrawSprite((int)_posX, (int)_posY, _player, PLAYER_COLOR, bgColor: BG_COLOR);
             return true;
         }
     }
