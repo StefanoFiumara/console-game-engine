@@ -15,11 +15,11 @@ namespace ConsoleGameEngine.Core.GameObjects
         public float Width { get; }
         public float Height { get; }
 
-        public Vector Center => Position + new Vector(Width, Height) * 0.5f;
+        public Vector Center => new Vector((int)Position.X, (int)Position.Y) + new Vector(Width, Height) * 0.5f;
 
         public Sprite(string gfx, ConsoleColor color = ConsoleColor.White)
         {
-            var splitGfx = gfx.Split('\n');
+            var splitGfx = gfx.Split('\n', StringSplitOptions.RemoveEmptyEntries);
             var width = splitGfx.Max(c => c.Length);
             var height = splitGfx.Length;
 
