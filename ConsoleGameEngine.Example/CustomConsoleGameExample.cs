@@ -31,23 +31,24 @@ namespace ConsoleGameEngine.Example
 
         protected override bool Create()
         {
+            // PerformanceModeEnabled = true;
+
             var spriteGfx = string.Empty;
 
-            spriteGfx += " ---\n";
+            spriteGfx += " --- \n";
             spriteGfx += "|   |\n";
             spriteGfx += "| * |\n";
             spriteGfx += "|   |\n";
-            spriteGfx += " ---\n";
+            spriteGfx += " --- \n";
 
-            _player = new Sprite(spriteGfx, PLAYER_COLOR, BG_COLOR);
-            
             _trail = new List<Vector>(MAX_TRAIL_COUNT);
-
             _trailCooldown = TRAIL_RESET_TIME;
 
-            _player.Position = new Vector(ScreenWidth / 2f, ScreenHeight / 2f);
-
-            PerformanceModeEnabled = true;
+            _player = new Sprite(spriteGfx, PLAYER_COLOR, BG_COLOR)
+            {
+                Position = new Vector(ScreenWidth / 2f, ScreenHeight / 2f)
+            };
+            
             return true;
         }
 
@@ -155,9 +156,9 @@ namespace ConsoleGameEngine.Example
 
             // HUD
             DrawString(1,1, "INSTRUCTIONS", bgColor: BG_COLOR);
-            DrawString(1,2, "  LEFT/RIGHT: Move Player", bgColor: BG_COLOR);
-            DrawString(1,4, "  SPACE: Jump", bgColor: BG_COLOR);
-            DrawString(1,5, "  ESC: Exit Game", bgColor: BG_COLOR);
+            DrawString(1,3, "  LEFT/RIGHT: Move Player", bgColor: BG_COLOR);
+            DrawString(1,5, "  SPACE: Jump", bgColor: BG_COLOR);
+            DrawString(1,7, "  ESC: Exit Game", bgColor: BG_COLOR);
 
             return true;
         }
