@@ -19,16 +19,18 @@ namespace ConsoleGameEngine.Core
 
         protected int ScreenWidth { get; private set; }
         protected int ScreenHeight { get; private set; }
+        
+        /// <summary>
+        /// Enabling performance mode allows the game loop to run as fast as possible
+        /// instead of suspending the game loop thread to hit a target framerate.
+        /// This uses a lot more CPU.
+        /// </summary>
+        protected bool PerformanceModeEnabled { get; set; }
 
         protected ConsoleGameEngineBase()
         {
             _isInit = false;
-        }
-
-        public void InitConsole(int height, float aspectRatio)
-        {
-            var width = (int) (aspectRatio * height);
-            InitConsole(width, height);
+            PerformanceModeEnabled = false;
         }
         
         public void InitConsole(int width, int height)
@@ -121,13 +123,16 @@ namespace ConsoleGameEngine.Core
                 currentTime = timer.Elapsed.TotalMilliseconds;
                 elapsedTime = (currentTime - previousTime);
                 previousTime = currentTime;
-                
-                // NOTE: Give back some system resources by suspending the thread if update loop takes less than 8ms
-                //       This caps the game at around ~70 FPS and saves over 90% of its CPU usage!
-                var waitTime = 8 - elapsedTime;
-                if (waitTime > 0)
+
+                if (!PerformanceModeEnabled)
                 {
-                    Thread.Sleep((int)waitTime);
+                    // NOTE: Give back some system resources by suspending the thread if update loop takes less than 8ms
+                    //       This caps the game at around ~70 FPS and saves over 90% of its CPU usage!
+                    var waitTime = 8 - elapsedTime;
+                    if (waitTime > 0)
+                    {
+                        Thread.Sleep((int)waitTime);
+                    }
                 }
             }
         }
@@ -138,19 +143,18 @@ namespace ConsoleGameEngine.Core
 
         protected abstract bool Update(float elapsedTime);
         
-        // TODO:
-        //    * Circle, Line, triangles? 
-        //    * DrawString(x, y, string message)
-
         protected void Draw(int x, int y, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
-            var index = GetScreenIndex(x, y);
-            if (index >= _screenBuffer.Length || index < 0)
+            if (x >= ScreenWidth || x < 0 ||
+                y >= ScreenHeight || y < 0
+            )
             {
                 return;
             }
-            
+         
+            var index = GetScreenIndex(x, y);
             var color = (short)((int)fgColor + ((int)bgColor << 4));
+            
             _screenBuffer[index].Attributes = color;
             _screenBuffer[index].Char.UnicodeChar = c;
         }
@@ -181,7 +185,8 @@ namespace ConsoleGameEngine.Core
                             (int)sprite.Position.X + j, 
                             (int)sprite.Position.Y + i, 
                             sprite.GetGlyph(j, i), 
-                            sprite.GetColor(j, i));
+                            sprite.GetFgColor(j, i),
+                            sprite.GetBgColor(j, i));
                     }
                 }
             }

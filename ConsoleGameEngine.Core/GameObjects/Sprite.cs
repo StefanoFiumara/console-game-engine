@@ -7,7 +7,8 @@ namespace ConsoleGameEngine.Core.GameObjects
     public class Sprite
     {
         private readonly char[] _glyphs;
-        private readonly ConsoleColor[] _colors;
+        private readonly ConsoleColor[] _fgColors;
+        private readonly ConsoleColor[] _bgColors;
 
         public Vector Position { get; set; }
         public Vector Velocity { get; set; }
@@ -17,7 +18,7 @@ namespace ConsoleGameEngine.Core.GameObjects
 
         public Vector Center => new Vector((int)Position.X, (int)Position.Y) + new Vector(Width, Height) * 0.5f;
 
-        public Sprite(string gfx, ConsoleColor color = ConsoleColor.White)
+        public Sprite(string gfx, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
             var splitGfx = gfx.Split('\n', StringSplitOptions.RemoveEmptyEntries);
             var width = splitGfx.Max(c => c.Length);
@@ -45,16 +46,26 @@ namespace ConsoleGameEngine.Core.GameObjects
                 }
             }
             
-            _colors = new ConsoleColor[_glyphs.Length];
+            _fgColors = new ConsoleColor[_glyphs.Length];
+            _bgColors = new ConsoleColor[_glyphs.Length];
             
-            SetSpriteColor(color);
+            SetSpriteColor(fgColor);
+            SetSpriteBackground(bgColor);
         }
 
         public void SetSpriteColor(ConsoleColor color)
         {
-            for (int i = 0; i < _colors.Length; i++)
+            for (int i = 0; i < _fgColors.Length; i++)
             {
-                _colors[i] = color;
+                _fgColors[i] = color;
+            }
+        }
+        
+        public void SetSpriteBackground(ConsoleColor color)
+        {
+            for (int i = 0; i < _fgColors.Length; i++)
+            {
+                _bgColors[i] = color;
             }
         }
         
@@ -66,12 +77,20 @@ namespace ConsoleGameEngine.Core.GameObjects
             return _glyphs[y * (int)Width + x];
         }
 
-        public ConsoleColor GetColor(int x, int y)
+        public ConsoleColor GetFgColor(int x, int y)
         {
             if (x < 0 || x >= Width || y < 0 || y >= Height)
                 return ConsoleColor.Black;
             
-            return _colors[y * (int)Width + x];
+            return _fgColors[y * (int)Width + x];
+        }
+        
+        public ConsoleColor GetBgColor(int x, int y)
+        {
+            if (x < 0 || x >= Width || y < 0 || y >= Height)
+                return ConsoleColor.Black;
+            
+            return _bgColors[y * (int)Width + x];
         }
         
         public void SetGlyph(int x, int y, char c)
@@ -84,14 +103,24 @@ namespace ConsoleGameEngine.Core.GameObjects
             _glyphs[y * (int) Width + x] = c;
         }
         
-        public void SetColor(int x, int y, ConsoleColor c)
+        public void SetFgColor(int x, int y, ConsoleColor c)
         {
             if (x < 0 || x >= Width || y < 0 || y >= Height)
             {
                 return;
             }
 
-            _colors[y * (int) Width + x] = c;
+            _fgColors[y * (int) Width + x] = c;
+        }
+        
+        public void SetBgColor(int x, int y, ConsoleColor c)
+        {
+            if (x < 0 || x >= Width || y < 0 || y >= Height)
+            {
+                return;
+            }
+
+            _bgColors[y * (int) Width + x] = c;
         }
     }
 }

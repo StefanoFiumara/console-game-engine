@@ -10,17 +10,17 @@ namespace ConsoleGameEngine.Example
     public class CustomConsoleGameExample : ConsoleGameEngineBase
     {
         private const float GRAVITY = 25f;
-        private const float TERMINAL_VELOCITY = 35f;
+        private const float TERMINAL_VELOCITY = 55f;
 
-        private const float FRICTION = 10f;
+        private const float FRICTION = 15f;
 
-        private const float MOVE_SPEED = 30f;
-        private const float JUMP_SPEED = 40f;
+        private const float MOVE_ACCEL = 50f;
+        private const float JUMP_VEL = 40f;
 
-        private const int MAX_TRAIL_COUNT = 50;
-        private const float TRAIL_RESET_TIME = 0.5f;
+        private const int MAX_TRAIL_COUNT = 40;
+        private const float TRAIL_RESET_TIME = 0.02f;
 
-        private const ConsoleColor BG_COLOR = ConsoleColor.Blue;
+        private const ConsoleColor BG_COLOR = ConsoleColor.DarkBlue;
         private const ConsoleColor PLAYER_COLOR = ConsoleColor.White;
         private const ConsoleColor TRAIL_COLOR = ConsoleColor.Red;
         
@@ -33,13 +33,13 @@ namespace ConsoleGameEngine.Example
         {
             var spriteGfx = string.Empty;
 
-            spriteGfx += "-----\n";
+            spriteGfx += " ---\n";
             spriteGfx += "|   |\n";
             spriteGfx += "| * |\n";
             spriteGfx += "|   |\n";
-            spriteGfx += "-----\n";
+            spriteGfx += " ---\n";
 
-            _player = new Sprite(spriteGfx, PLAYER_COLOR);
+            _player = new Sprite(spriteGfx, PLAYER_COLOR, BG_COLOR);
             
             _trail = new List<Vector>(MAX_TRAIL_COUNT);
 
@@ -47,6 +47,7 @@ namespace ConsoleGameEngine.Example
 
             _player.Position = new Vector(ScreenWidth / 2f, ScreenHeight / 2f);
 
+            // PerformanceModeEnabled = true;
             return true;
         }
 
@@ -64,16 +65,16 @@ namespace ConsoleGameEngine.Example
             // Input
             if (IsKeyDown(Keys.Left))
             {
-                _player.Velocity += Vector.Left * MOVE_SPEED * elapsedTime;
+                _player.Velocity += Vector.Left * MOVE_ACCEL * elapsedTime;
             }
             else if (IsKeyDown(Keys.Right))
             {
-                _player.Velocity += Vector.Right * MOVE_SPEED * elapsedTime;
+                _player.Velocity += Vector.Right * MOVE_ACCEL * elapsedTime;
             }
 
             if (IsKeyDown(Keys.Space, Keys.Up) && _player.Velocity.Y > 0f)
             {
-                _player.Velocity += Vector.Up * JUMP_SPEED; // No elapsedTime here, instant force.
+                _player.Velocity += Vector.Up * JUMP_VEL; // No elapsedTime here, instant force.
             }
             else
             {
@@ -112,7 +113,7 @@ namespace ConsoleGameEngine.Example
             if ((int)_player.Position.Y + _player.Height > ScreenHeight+1)
             {
                 _player.Position = new Vector(_player.Position.X, ScreenHeight - _player.Height);
-                _player.Velocity = new Vector(_player.Velocity.X, -_player.Velocity.Y);
+                _player.Velocity = new Vector(_player.Velocity.X, -_player.Velocity.Y * 0.9f);
             }
 
             if (_player.Position.X <= 0)
@@ -120,7 +121,7 @@ namespace ConsoleGameEngine.Example
                 _player.Position = new Vector(0, _player.Position.Y);
                 _player.Velocity = new Vector(-_player.Velocity.X, _player.Velocity.Y);
             }
-            else if ((int)_player.Position.X + _player.Width > ScreenWidth+1)
+            else if ((int)_player.Position.X + _player.Width > ScreenWidth)
             {
                 _player.Position = new Vector(ScreenWidth - _player.Width, _player.Position.Y);
                 _player.Velocity = new Vector(-_player.Velocity.X, _player.Velocity.Y);
@@ -136,6 +137,7 @@ namespace ConsoleGameEngine.Example
                 }
                 
                 _trail.Add(_player.Center);
+                _trailCooldown = TRAIL_RESET_TIME;
             }
             
             ////////////////////////
@@ -150,13 +152,11 @@ namespace ConsoleGameEngine.Example
             DrawSprite(_player);
             
             // HUD
-            DrawString(1,1, "ESC: Close");
-            DrawString(1,3, $"Player X: {_player.Position.X:F2}");
-            DrawString(1,4, $"Player Y: {_player.Position.Y:F2}");
+            DrawString(1,1, "INSTRUCTIONS", bgColor: BG_COLOR);
+            DrawString(1,2, "  LEFT/RIGHT: Move Player", bgColor: BG_COLOR);
+            DrawString(1,4, "  UP/SPACE: Jump", bgColor: BG_COLOR);
+            DrawString(1,5, "  ESC: Exit Game", bgColor: BG_COLOR);
             
-            DrawString(1,6, $"Player Vel X: {_player.Velocity.X:F2}");
-            DrawString(1,7, $"Player Vel Y: {_player.Velocity.Y:F2}");
-
             return true;
         }
     }
