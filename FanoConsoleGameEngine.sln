@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleGameEngine.Core", "ConsoleGameEngine.Core\ConsoleGameEngine.Core.csproj", "{DE910C89-C624-4361-98D9-8C1A542F5C4E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleGameEngine.Example", "ConsoleGameEngine.Example\ConsoleGameEngine.Example.csproj", "{063ACB5B-3AD8-444A-962C-84951B26A5A6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DE910C89-C624-4361-98D9-8C1A542F5C4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE910C89-C624-4361-98D9-8C1A542F5C4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE910C89-C624-4361-98D9-8C1A542F5C4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE910C89-C624-4361-98D9-8C1A542F5C4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{063ACB5B-3AD8-444A-962C-84951B26A5A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{063ACB5B-3AD8-444A-962C-84951B26A5A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{063ACB5B-3AD8-444A-962C-84951B26A5A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{063ACB5B-3AD8-444A-962C-84951B26A5A6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
