@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 
-namespace ConsoleGameEngine.Core
+namespace ConsoleGameEngine.Core.Win32
 {
     public abstract class ConsoleGameEngineWin32
     {
@@ -22,6 +22,7 @@ namespace ConsoleGameEngine.Core
 
         protected ConsoleGameEngineWin32()
         {
+            Console.CursorVisible = false;
             DisableMouseInput();
             DisableResize();
             
@@ -66,7 +67,7 @@ namespace ConsoleGameEngine.Core
 
             if (handle != IntPtr.Zero)
             {
-                //DeleteMenu(sysMenu, SC_CLOSE, MF_BYCOMMAND);
+                DeleteMenu(sysMenu, SC_CLOSE, MF_BYCOMMAND);
                 DeleteMenu(sysMenu, SC_MINIMIZE, MF_BYCOMMAND);
                 DeleteMenu(sysMenu, SC_MAXIMIZE, MF_BYCOMMAND);
                 DeleteMenu(sysMenu, SC_SIZE, MF_BYCOMMAND);

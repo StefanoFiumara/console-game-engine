@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace ConsoleGameEngine.Core
+namespace ConsoleGameEngine.Core.Win32
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct Coord

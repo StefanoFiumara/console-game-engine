@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Win32;
 
 namespace ConsoleGameEngine.Core
 {
@@ -74,11 +75,24 @@ namespace ConsoleGameEngine.Core
             gameLoop.Wait();
         }
         
-        protected bool IsKeyDown(Keys key)
+        protected bool IsKeyDown(params Keys[] keys)
         {
-            return KeyStates.Down == (GetKeyState(key) & KeyStates.Down);
+            for (int i = 0; i < keys.Length; i++)
+            {
+                if (IsKeyDown(keys[i]))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
+        private bool IsKeyDown(Keys k)
+        {
+            return KeyStates.Down == (GetKeyState(k) & KeyStates.Down);
+        }
+        
         private void GameLoop()
         {
             if (!Create())
