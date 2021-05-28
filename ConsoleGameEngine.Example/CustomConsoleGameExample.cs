@@ -78,6 +78,7 @@ namespace ConsoleGameEngine.Example
             }
             else
             {
+                // Apply friction along the X axis to slowly bring the player to a stop
                 if (_player.Velocity.X < 0)
                 {
                     _player.Velocity += Vector.Right * FRICTION * elapsedTime;
@@ -98,7 +99,7 @@ namespace ConsoleGameEngine.Example
                 
             }
             
-            // Physics
+            // Gravity
             _player.Velocity += Vector.Down * GRAVITY * elapsedTime;
             
             // Clamp to terminal velocity
@@ -107,9 +108,10 @@ namespace ConsoleGameEngine.Example
                 _player.Velocity = new Vector(_player.Velocity.X, TERMINAL_VELOCITY);
             }
 
+            // Calculate position based on velocity
             _player.Position += _player.Velocity * elapsedTime;
             
-            // Collision
+            // Check for Collisions
             if ((int)_player.Position.Y + _player.Height > ScreenHeight+1)
             {
                 _player.Position = new Vector(_player.Position.X, ScreenHeight - _player.Height);
@@ -127,7 +129,7 @@ namespace ConsoleGameEngine.Example
                 _player.Velocity = new Vector(-_player.Velocity.X, _player.Velocity.Y);
             }
             
-            // Trail
+            // Calculate Trail
             _trailCooldown -= elapsedTime;
             if (_trailCooldown < 0f)
             {
