@@ -15,7 +15,7 @@ namespace ConsoleGameEngine.Example
         private const int MAX_TRAIL_COUNT = 50;
         private const float TRAIL_RESET_TIME = 0.5f;
 
-        private const ConsoleColor BG_COLOR = ConsoleColor.Black;
+        private const ConsoleColor BG_COLOR = ConsoleColor.Blue;
         private const ConsoleColor PLAYER_COLOR = ConsoleColor.White;
         private const ConsoleColor TRAIL_COLOR = ConsoleColor.Red;
         
@@ -63,10 +63,14 @@ namespace ConsoleGameEngine.Example
             {
                 _velX -= MOVE_SPEED * elapsedTime;
             }
-            
-            if (IsKeyDown(Keys.Right))
+            else if (IsKeyDown(Keys.Right))
             {
                 _velX += MOVE_SPEED * elapsedTime;
+            }
+            else
+            {
+                var friction = _velX < 0 ? MOVE_SPEED / 2 : -MOVE_SPEED / 2;
+                _velX += friction * elapsedTime;
             }
 
             if (IsKeyDown(Keys.Up) && _velY > 0f)
@@ -98,7 +102,7 @@ namespace ConsoleGameEngine.Example
             _velY += GRAVITY * elapsedTime;
 
             // Collision
-            if ((int)_posY + _player.Count >= ScreenHeight)
+            if ((int)_posY + _player.Count >= ScreenHeight+1)
             {
                 _posY = ScreenHeight - _player.Count;
                 _velY *= -0.8f;
@@ -109,7 +113,7 @@ namespace ConsoleGameEngine.Example
                 _posX = 0;
                 _velX *= -0.9f;
             }
-            else if ((int)_posX + _player[0].Length >= ScreenWidth)
+            else if ((int)_posX + _player[0].Length >= ScreenWidth+1)
             {
                 _posX = ScreenWidth - _player[0].Length;
                 _velX *= -0.9f;
@@ -125,6 +129,9 @@ namespace ConsoleGameEngine.Example
             }
             
             DrawSprite((int)_posX, (int)_posY, _player, PLAYER_COLOR, bgColor: BG_COLOR);
+            
+            DrawString(2,2, $"Player Vel X: {_velX:F}");
+            DrawString(2,4, $"Player Vel Y: {_velY:F}");
             return true;
         }
     }
