@@ -1,8 +1,10 @@
+using System;
+
 namespace ConsoleGameEngine.Core.Math
 {
     using static System.Math;
     
-    public readonly struct Vector
+    public readonly struct Vector : IEquatable<Vector>
     {
         public const float TOLERANCE_EPSILON = 0.01f;
         public static Vector Zero { get; } = new(0, 0);
@@ -86,6 +88,21 @@ namespace ConsoleGameEngine.Core.Math
         public static bool operator !=(Vector l, Vector r)
         {
             return !(l == r);
+        }
+        
+        public bool Equals(Vector other)
+        {
+            return X.Equals(other.X) && Y.Equals(other.Y);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is Vector other && Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(X, Y);
         }
     }
 }
