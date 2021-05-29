@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Versioning;
 using ConsoleGameEngine.Core;
 
 namespace ConsoleGameEngine.Runner
 {
+    [SupportedOSPlatform("windows")]
     public static class Program
     {
         static void Main(string[] args)

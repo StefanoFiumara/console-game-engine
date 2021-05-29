@@ -10,8 +10,7 @@ namespace ConsoleGameEngine.Core.Win32
         
         private const uint ENABLE_EDIT_MODE = 0x0040;
         private const int STD_INPUT_HANDLE = -10;
-        private const int STD_OUTPUT_HANDLE = -11;
-        
+
         private const int MF_BYCOMMAND = 0x00000000;
         private const int SC_CLOSE = 0xF060;
         private const int SC_MINIMIZE = 0xF020;
@@ -20,6 +19,11 @@ namespace ConsoleGameEngine.Core.Win32
 
         private readonly SafeFileHandle _consoleHandle;
 
+        /// <summary>
+        /// This class does some Win32 API stuff to configure the console window
+        /// Things like writing to the console buffer directly and disabling resize options or "quick edit mode"
+        /// These features are not accessible in native C#
+        /// </summary>
         protected ConsoleGameEngineWin32()
         {
             Console.CursorVisible = false;
