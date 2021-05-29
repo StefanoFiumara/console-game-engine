@@ -6,10 +6,12 @@ namespace ConsoleGameEngine.Runner
     {
         static void Main(string[] args)
         {
-            var game = new CustomConsoleGameExample();
+            var exampleGame = new CustomConsoleGameExample();
+
+            var snakeGame = new SnakeGame();
             
-            game.InitConsole(128,64);
-            game.Start();
+            snakeGame.InitConsole(50, 50);
+            snakeGame.Start();
         }
     }
     

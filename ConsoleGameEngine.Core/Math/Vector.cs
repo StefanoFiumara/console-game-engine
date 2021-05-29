@@ -1,7 +1,10 @@
 namespace ConsoleGameEngine.Core.Math
 {
+    using static System.Math;
+    
     public readonly struct Vector
     {
+        public const float TOLERANCE_EPSILON = 0.01f;
         public static Vector Zero { get; } = new(0, 0);
         
         public static Vector Left { get; } = new(-1, 0);
@@ -12,7 +15,7 @@ namespace ConsoleGameEngine.Core.Math
         public float X { get; }
         public float Y { get; }
 
-        public float Magnitude => (float)System.Math.Sqrt(X * X + Y * Y);
+        public float Magnitude => (float) Sqrt(X * X + Y * Y);
         public Vector Normalized => Magnitude == 0f ? Zero : this / Magnitude;
 
         public Vector Rounded => new((int) X, (int) Y);
@@ -34,7 +37,32 @@ namespace ConsoleGameEngine.Core.Math
             return new(v.X * scalar, v.Y * scalar);
         }
         
+        public static Vector operator *(Vector v, int scalar)
+        {
+            return new(v.X * scalar, v.Y * scalar);
+        }
+
+        public static Vector operator *(float scalar, Vector v)
+        {
+            return new(v.X * scalar, v.Y * scalar);
+        }
+
+        public static Vector operator *(int scalar, Vector v)
+        {
+            return new(v.X * scalar, v.Y * scalar);
+        }
+
         public static Vector operator /(Vector v, float scalar)
+        {
+            return new(v.X / scalar, v.Y / scalar);
+        }
+        
+        public static Vector operator /(float scalar, Vector v)
+        {
+            return new(scalar / v.X, scalar / v.Y);
+        }
+        
+        public static Vector operator /(Vector v, int scalar)
         {
             return new(v.X / scalar, v.Y / scalar);
         }
@@ -47,6 +75,17 @@ namespace ConsoleGameEngine.Core.Math
         public static Vector operator -(Vector l, Vector r)
         {
             return new(l.X - r.X, l.Y - r.Y);
+        }
+
+        public static bool operator ==(Vector l, Vector r)
+        {
+            return Abs(l.X - r.X) < TOLERANCE_EPSILON && 
+                   Abs(l.Y - r.Y) < TOLERANCE_EPSILON;
+        }
+
+        public static bool operator !=(Vector l, Vector r)
+        {
+            return !(l == r);
         }
     }
 }

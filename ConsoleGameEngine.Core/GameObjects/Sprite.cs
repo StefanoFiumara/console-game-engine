@@ -19,8 +19,6 @@ namespace ConsoleGameEngine.Core.GameObjects
         
         public Rect Bounds => new(Position, Size);
 
-        public Vector Center => Position.Rounded + Size * 0.5f;
-
         public Sprite(string gfx, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
             var splitGfx = gfx.Split('\n', StringSplitOptions.RemoveEmptyEntries);

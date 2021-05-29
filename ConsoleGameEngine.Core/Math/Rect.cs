@@ -4,6 +4,7 @@ namespace ConsoleGameEngine.Core.Math
     {
         public Vector Position { get; }
         public Vector Size { get; }
+        public Vector Center => Position.Rounded + Size * 0.5f;
 
         public Rect(Vector position, Vector size)
         {

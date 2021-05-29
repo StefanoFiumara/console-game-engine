@@ -140,7 +140,7 @@ namespace ConsoleGameEngine.Runner.Games
                     _trail.RemoveAt(0);
                 }
                 
-                _trail.Add(_player.Center);
+                _trail.Add(_player.Bounds.Center);
                 _trailCooldown = TRAIL_RESET_TIME;
             }
             
