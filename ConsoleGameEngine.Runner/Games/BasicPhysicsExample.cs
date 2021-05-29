@@ -6,7 +6,7 @@ using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Runner.Games
 {
-    public class CustomConsoleGameExample : ConsoleGameEngineBase
+    public class BasicPhysicsExample : ConsoleGameEngineBase
     {
         private const float GRAVITY = 25f;
         private const float TERMINAL_VELOCITY = 55f;
@@ -19,7 +19,7 @@ namespace ConsoleGameEngine.Runner.Games
         private const int MAX_TRAIL_COUNT = 40;
         private const float TRAIL_RESET_TIME = 0.02f;
 
-        private const ConsoleColor BG_COLOR = ConsoleColor.DarkBlue;
+        private const ConsoleColor BG_COLOR = ConsoleColor.Black;
         private const ConsoleColor PLAYER_COLOR = ConsoleColor.White;
         private const ConsoleColor TRAIL_COLOR = ConsoleColor.Red;
         
@@ -30,6 +30,11 @@ namespace ConsoleGameEngine.Runner.Games
 
         protected override string Name { get; set; } = "Console Game Engine Example";
 
+        public BasicPhysicsExample()
+        {
+            InitConsole(64, 64);
+        }
+        
         protected override bool Create()
         {
             // PerformanceModeEnabled = true;
