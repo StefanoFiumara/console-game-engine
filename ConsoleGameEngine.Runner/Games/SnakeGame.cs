@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Runner.Games
 {
+    // ReSharper disable once UnusedType.Global
     public class SnakeGame : ConsoleGameEngineBase
     {
         protected override string Name { get; set; } = "Snake Game";

@@ -6,6 +6,7 @@ using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Runner.Games
 {
+    // ReSharper disable once UnusedType.Global
     public class BasicPhysicsExample : ConsoleGameEngineBase
     {
         private const float GRAVITY = 25f;
