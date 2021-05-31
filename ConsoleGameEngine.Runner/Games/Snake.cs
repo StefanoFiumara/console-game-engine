@@ -7,7 +7,7 @@ using ConsoleGameEngine.Core.Math;
 namespace ConsoleGameEngine.Runner.Games
 {
     // ReSharper disable once UnusedType.Global
-    public class SnakeGame : ConsoleGameEngineBase
+    public class Snake : ConsoleGameEngineBase
     {
         protected override string Name { get; set; } = "Snake Game";
 
@@ -39,7 +39,7 @@ namespace ConsoleGameEngine.Runner.Games
         
         private float _gameTimer;
 
-        public SnakeGame()
+        public Snake()
         {
             InitConsole(50, 50);
             
