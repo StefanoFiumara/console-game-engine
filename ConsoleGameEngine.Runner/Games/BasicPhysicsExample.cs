@@ -33,7 +33,8 @@ namespace ConsoleGameEngine.Runner.Games
 
         public BasicPhysicsExample()
         {
-            InitConsole(64, 64);
+            InitConsole(320, 240, 4);
+            PerformanceModeEnabled = true;
         }
         
         protected override bool Create()

@@ -23,8 +23,10 @@ namespace ConsoleGameEngine.Runner
                 Console.ForegroundColor = ConsoleColor.White;
                 Console.Title = "Main Menu";
                 Console.CursorVisible = true;
+                
                 Console.SetWindowSize(30, 30);
                 Console.SetBufferSize(30, 30);
+                ConsoleHelper.SetCurrentFont("Modern DOS 8x8", 16);
                 Console.Clear();
                 Console.WriteLine("\n Choose a game to play!\n");
 

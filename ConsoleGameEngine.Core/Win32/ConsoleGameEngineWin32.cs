@@ -29,7 +29,7 @@ namespace ConsoleGameEngine.Core.Win32
             Console.CursorVisible = false;
             DisableMouseInput();
             DisableResize();
-            
+
             _consoleHandle = CreateFile("CONOUT$", 0x40000000, 2, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero);
             if (_consoleHandle.IsInvalid)
             {

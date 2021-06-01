@@ -41,7 +41,7 @@ namespace ConsoleGameEngine.Runner.Games
 
         public Snake()
         {
-            InitConsole(50, 50);
+            InitConsole(50, 50, 14);
             
             _rng = new Random();
 

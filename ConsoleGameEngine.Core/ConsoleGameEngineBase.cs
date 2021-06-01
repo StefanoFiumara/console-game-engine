@@ -55,18 +55,22 @@ namespace ConsoleGameEngine.Core
             _isInit = false;
             PerformanceModeEnabled = false;
         }
-        
+
         /// <summary>
         /// Initializes the Console to the specified size, must be called before Start()
         /// </summary>
         /// <param name="width">The desired Width of the console in columns (not pixels)</param>
         /// <param name="height">The desired Height of the console in rows (not pixels)</param>
+        /// <param name="pixelSize">The size of each cell in pixels</param>
         /// <param name="targetFps">The target framerate the application should aim to achieve</param>
-        public void InitConsole(int width, int height, int targetFps = 60)
+        public void InitConsole(int width, int height, short pixelSize = 8, int targetFps = 60 )
         {
             if (!_isInit)
             {
                 Console.OutputEncoding = Encoding.UTF8;
+
+                if (pixelSize < 4) pixelSize = 4;
+                ConsoleHelper.SetCurrentFont("Modern DOS 8x8", pixelSize);
                 
                 // Clamp width and height while maintaining aspect ratio
                 var maxWidth = Console.LargestWindowWidth - 1;
