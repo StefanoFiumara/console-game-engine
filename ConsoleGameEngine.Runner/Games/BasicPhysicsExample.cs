@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Runner.Games
@@ -29,18 +30,16 @@ namespace ConsoleGameEngine.Runner.Games
         private List<Vector> _trail;
         private float _trailCooldown;
 
-        protected override string Name { get; set; } = "Console Game Engine Example";
+        protected override string Name => "Console Game Engine Example";
 
         public BasicPhysicsExample()
         {
-            InitConsole(320, 240, 4);
+            InitConsole(160, 120);
             PerformanceModeEnabled = true;
         }
         
         protected override bool Create()
         {
-            // PerformanceModeEnabled = true;
-
             var spriteGfx = string.Empty;
 
             spriteGfx += " --- \n";
@@ -60,28 +59,28 @@ namespace ConsoleGameEngine.Runner.Games
             return true;
         }
 
-        protected override bool Update(float elapsedTime)
+        protected override bool Update(float elapsedTime, KeyboardInput input)
         {
             // Clear the screen each frame
             Fill(ScreenRect, ' ', bgColor: BG_COLOR);
-
-            if(IsKeyDown(Keys.Esc)) 
+            
+            if(input.IsKeyHeld(KeyCode.Esc)) 
             {
                 // Close the game
                 return false;
             }
 
             // Input
-            if (IsKeyDown(Keys.Left))
+            if (input.IsKeyHeld(KeyCode.Left))
             {
                 _player.Velocity += Vector.Left * MOVE_ACCEL * elapsedTime;
             }
-            else if (IsKeyDown(Keys.Right))
+            else if (input.IsKeyHeld(KeyCode.Right))
             {
                 _player.Velocity += Vector.Right * MOVE_ACCEL * elapsedTime;
             }
 
-            if (IsKeyDown(Keys.Space) && _player.Velocity.Y > 0f)
+            if (input.IsKeyHeld(KeyCode.Space) && _player.Velocity.Y > 0f)
             {
                 _player.Velocity += Vector.Up * JUMP_VEL; // No elapsedTime here, instant force.
             }

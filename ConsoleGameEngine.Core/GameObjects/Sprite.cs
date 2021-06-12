@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using ConsoleGameEngine.Core.Math;
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace ConsoleGameEngine.Core.GameObjects
 {

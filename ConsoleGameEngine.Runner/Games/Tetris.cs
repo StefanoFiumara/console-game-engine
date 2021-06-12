@@ -1,14 +1,14 @@
-using System;
 using System.Collections.Generic;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Input;
 
 namespace ConsoleGameEngine.Runner.Games
 {
     // ReSharper disable once UnusedType.Global
     public class Tetris : ConsoleGameEngineBase
     {
-        protected override string Name { get; set; } = "Tetris";
+        protected override string Name => "Tetris";
 
         private const float GAME_TICK = 0.5f;
 
@@ -78,9 +78,9 @@ namespace ConsoleGameEngine.Runner.Games
             return true;
         }
 
-        protected override bool Update(float elapsedTime)
+        protected override bool Update(float elapsedTime, KeyboardInput input)
         {
-            if (IsKeyDown(Keys.Esc))
+            if (input.IsKeyDown(KeyCode.Esc))
             {
                 return false;
             }

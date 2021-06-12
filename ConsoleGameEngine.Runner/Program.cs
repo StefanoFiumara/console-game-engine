@@ -3,13 +3,14 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
 using ConsoleGameEngine.Core;
+using ConsoleGameEngine.Core.Win32;
 
 namespace ConsoleGameEngine.Runner
 {
     [SupportedOSPlatform("windows")]
     public static class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var games = 
                 Assembly.GetExecutingAssembly()
@@ -26,7 +27,7 @@ namespace ConsoleGameEngine.Runner
                 
                 Console.SetWindowSize(30, 30);
                 Console.SetBufferSize(30, 30);
-                ConsoleHelper.SetCurrentFont("Modern DOS 8x8", 16);
+                ConsoleGameEngineWin32.SetCurrentFont("Modern DOS 8x8", 16);
                 Console.Clear();
                 Console.WriteLine("\n Choose a game to play!\n");
 

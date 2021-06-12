@@ -2,21 +2,25 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
+// ReSharper disable StringLiteralTypo
 
 namespace ConsoleGameEngine.Core.Win32
 {
     public abstract class ConsoleGameEngineWin32
     {
-        
         private const uint ENABLE_EDIT_MODE = 0x0040;
         private const int STD_INPUT_HANDLE = -10;
-
+        private const int STANDARD_OUTPUT_HANDLE = -11;
+        
         private const int MF_BYCOMMAND = 0x00000000;
         private const int SC_CLOSE = 0xF060;
         private const int SC_MINIMIZE = 0xF020;
         private const int SC_MAXIMIZE = 0xF030;
         private const int SC_SIZE = 0xF000;
+        
+        private const int FIXED_WIDTH_TRUE_TYPE = 54;
 
+        private static readonly IntPtr ConsoleOutputHandle = GetStdHandle(STANDARD_OUTPUT_HANDLE);
         private readonly SafeFileHandle _consoleHandle;
 
         /// <summary>
@@ -78,22 +82,50 @@ namespace ConsoleGameEngine.Core.Win32
             }
         }
         
-        protected static KeyStates GetKeyState(Keys key)
+        
+        
+        public static void SetCurrentFont(string font, short fontSize = 0)
         {
-            var state = KeyStates.None;
+            Console.WriteLine("Set Current Font: " + font);
 
-            var retVal = GetKeyState((int)key);
+            FontInfo before = new FontInfo
+            {
+                cbSize = Marshal.SizeOf<FontInfo>()
+            };
 
-            //If the high-order bit is 1, the key is down
-            //otherwise, it is up.
-            if ((retVal & 0x8000) == 0x8000)
-                state |= KeyStates.Down;
+            if (GetCurrentConsoleFontEx(ConsoleOutputHandle, false, ref before))
+            {
 
-            //If the low-order bit is 1, the key is toggled.
-            if ((retVal & 1) == 1)
-                state |= KeyStates.Toggled;
+                FontInfo set = new FontInfo
+                {
+                    cbSize = Marshal.SizeOf<FontInfo>(),
+                    FontIndex = 0,
+                    FontFamily = FIXED_WIDTH_TRUE_TYPE,
+                    FontName = font,
+                    FontWeight = 400,
+                    FontSize = fontSize > 0 ? fontSize : before.FontSize
+                };
 
-            return state;
+                // Get some settings from current font.
+                if (!SetCurrentConsoleFontEx(ConsoleOutputHandle, false, ref set))
+                {
+                    var ex = Marshal.GetLastWin32Error();
+                    Console.WriteLine("Set error " + ex);
+                    throw new System.ComponentModel.Win32Exception(ex);
+                }
+
+                FontInfo after = new FontInfo
+                {
+                    cbSize = Marshal.SizeOf<FontInfo>()
+                };
+                GetCurrentConsoleFontEx(ConsoleOutputHandle, false, ref after);
+
+                return;
+            }
+
+            var er = Marshal.GetLastWin32Error();
+            Console.WriteLine("Get error " + er);
+            throw new System.ComponentModel.Win32Exception(er);
         }
         
         [DllImport("kernel32.dll", SetLastError = true)]
@@ -132,7 +164,14 @@ namespace ConsoleGameEngine.Core.Win32
         [DllImport("kernel32.dll", ExactSpelling = true)]
         private static extern IntPtr GetConsoleWindow();
         
-        [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-        private static extern short GetKeyState(int keyCode);
+        
+        
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern bool SetCurrentConsoleFontEx(IntPtr hConsoleOutput, bool maximumWindow, ref FontInfo consoleCurrentFontEx);
+
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        private static extern bool GetCurrentConsoleFontEx(IntPtr hConsoleOutput, bool maximumWindow, ref FontInfo consoleCurrentFontEx);
     }
 }
