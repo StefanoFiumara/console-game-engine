@@ -1,10 +1,10 @@
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 using ConsoleGameEngine.Core.Win32;
 // ReSharper disable MemberCanBePrivate.Global
@@ -17,11 +17,12 @@ namespace ConsoleGameEngine.Core
         private bool _isInit;
 
         private bool _gameRunning;
+        private readonly KeyboardInput _input;
 
         /// <summary>
         /// The name of the game
         /// </summary>
-        protected abstract string Name { get; set; }
+        protected abstract string Name { get; }
         
         /// <summary>
         /// Shortcut to grab the Screen Width
@@ -42,18 +43,19 @@ namespace ConsoleGameEngine.Core
         /// Gets or Sets the target framework for the update loop, ignored if PerformanceModeEnabled is set to true.
         /// </summary>
         protected int TargetFps { get; set; }
-        
+
         /// <summary>
         /// Enabling performance mode allows the game loop to run as fast as possible
         /// instead of suspending the game loop thread to hit the target framerate.
         /// This uses a lot more CPU.
         /// </summary>
-        protected bool PerformanceModeEnabled { get; set; }
+        protected bool PerformanceModeEnabled { get; init; }
 
         protected ConsoleGameEngineBase()
         {
             _isInit = false;
             PerformanceModeEnabled = false;
+            _input = new KeyboardInput();
         }
 
         /// <summary>
@@ -63,14 +65,14 @@ namespace ConsoleGameEngine.Core
         /// <param name="height">The desired Height of the console in rows (not pixels)</param>
         /// <param name="pixelSize">The size of each cell in pixels</param>
         /// <param name="targetFps">The target framerate the application should aim to achieve</param>
-        public void InitConsole(int width, int height, short pixelSize = 8, int targetFps = 60 )
+        protected void InitConsole(int width, int height, short pixelSize = 8, int targetFps = 60 )
         {
             if (!_isInit)
             {
                 Console.OutputEncoding = Encoding.UTF8;
 
                 if (pixelSize < 4) pixelSize = 4;
-                ConsoleHelper.SetCurrentFont("Modern DOS 8x8", pixelSize);
+                SetCurrentFont("Modern DOS 8x8", pixelSize);
                 
                 // Clamp width and height while maintaining aspect ratio
                 var maxWidth = Console.LargestWindowWidth - 1;
@@ -110,29 +112,16 @@ namespace ConsoleGameEngine.Core
         /// </summary>
         public void Start()
         {
+            if (!_isInit)
+            {
+                throw new InvalidOperationException("Console Window must be initialized with InitConsole() before calling Start()");
+            }
+            
             _gameRunning = true;
             var gameLoop = Task.Run(GameLoop);
             gameLoop.Wait();
         }
-        
-        /// <summary>
-        /// Checks of any of the given keys are currently being pressed by the player
-        /// </summary>
-        /// <param name="keys">The keycodes to check</param>
-        /// <returns>True if any of the given keys are pressed, false otherwise.</returns>
-        protected bool IsKeyDown(params Keys[] keys)
-        {
-            for (int i = 0; i < keys.Length; i++)
-            {
-                if (IsKeyDown(keys[i]))
-                {
-                    return true;
-                }
-            }
 
-            return false;
-        }
-        
         /// <summary>
         /// Runs at startup, used to set up game data.
         /// This function should return true if setup was successful, false otherwise.
@@ -144,7 +133,8 @@ namespace ConsoleGameEngine.Core
         /// If this function returns false, the game loop stops and the application is terminated. 
         /// </summary>
         /// <param name="elapsedTime">The elapsed time since the last frame (in seconds)</param>
-        protected abstract bool Update(float elapsedTime);
+        /// <param name="input">The keyboard input state for the current frame</param>
+        protected abstract bool Update(float elapsedTime, KeyboardInput input);
 
         /// <summary>
         /// Draws a character to the screen at the given position.
@@ -159,9 +149,8 @@ namespace ConsoleGameEngine.Core
         /// </summary>
         protected void Draw(int x, int y, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
-            if (x >= ScreenWidth || x < 0 ||
-                y >= ScreenHeight || y < 0
-            )
+            if (x >= ScreenWidth  || x < 0 ||
+                y >= ScreenHeight || y < 0)
             {
                 return;
             }
@@ -231,6 +220,19 @@ namespace ConsoleGameEngine.Core
                 }
             }
         }
+
+        /// <summary>
+        /// Draws a string of text to the screen at the given coordinates.
+        /// </summary>
+        protected void DrawString(Vector position, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        {
+            DrawString(
+                (int) position.X, 
+                (int) position.Y, 
+                msg, 
+                fgColor, 
+                bgColor);
+        }
         
         /// <summary>
         /// Draws a string of text to the screen at the given coordinates.
@@ -243,12 +245,6 @@ namespace ConsoleGameEngine.Core
             }
         }
         
-
-        private bool IsKeyDown(Keys k)
-        {
-            return KeyStates.Down == (GetKeyState(k) & KeyStates.Down);
-        }
-        
         private void GameLoop()
         {
             if (!Create())
@@ -256,24 +252,27 @@ namespace ConsoleGameEngine.Core
                 _gameRunning = false;
             }
             
-            var timer = new Stopwatch();
-            timer.Start();
-
-            var previousTime = timer.Elapsed.TotalMilliseconds;
-
             long framesRendered = 0;
 
+            var timer = new Stopwatch();
+            timer.Start();
+            
+            var previousTime = timer.Elapsed.TotalMilliseconds;
             while (_gameRunning)
             {
                 var currentTime = timer.Elapsed.TotalMilliseconds;
                 var elapsedTime = (currentTime - previousTime);
                 previousTime = currentTime;
                 
-                if (!Update((float) elapsedTime / 1000f))
+                _input.Update();
+                
+                // Game Logic
+                if (!Update((float) elapsedTime / 1000f, _input))
                 {
                     _gameRunning = false;
                 }
                 
+                // Render to screen
                 DrawBuffer(_screenBuffer, ScreenWidth, ScreenHeight);
 
                 var averageFps = ++framesRendered / (timer.Elapsed.TotalMilliseconds / 1000f);

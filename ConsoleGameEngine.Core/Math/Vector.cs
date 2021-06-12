@@ -1,4 +1,5 @@
 using System;
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace ConsoleGameEngine.Core.Math
 {
@@ -6,7 +7,8 @@ namespace ConsoleGameEngine.Core.Math
     
     public readonly struct Vector : IEquatable<Vector>
     {
-        public const float TOLERANCE_EPSILON = 0.01f;
+        private const float TOLERANCE_EPSILON = 0.01f;
+        
         public static Vector Zero { get; } = new(0, 0);
         
         public static Vector Left { get; } = new(-1, 0);
@@ -18,6 +20,7 @@ namespace ConsoleGameEngine.Core.Math
         public float Y { get; }
 
         public float Magnitude => (float) Sqrt(X * X + Y * Y);
+        
         public Vector Normalized => Magnitude == 0f ? Zero : this / Magnitude;
 
         public Vector Rounded => new((int) X, (int) Y);
@@ -92,7 +95,7 @@ namespace ConsoleGameEngine.Core.Math
         
         public bool Equals(Vector other)
         {
-            return X.Equals(other.X) && Y.Equals(other.Y);
+            return this == other;
         }
 
         public override bool Equals(object obj)

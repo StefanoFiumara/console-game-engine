@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Runner.Games
@@ -9,7 +10,7 @@ namespace ConsoleGameEngine.Runner.Games
     // ReSharper disable once UnusedType.Global
     public class Snake : ConsoleGameEngineBase
     {
-        protected override string Name { get; set; } = "Snake Game";
+        protected override string Name => "Snake Game";
 
         private const char PLAYER_HEAD = '0';
         private const char PLAYER_BODY = 'O';
@@ -78,9 +79,9 @@ namespace ConsoleGameEngine.Runner.Games
             return true;
         }
 
-        protected override bool Update(float elapsedTime)
+        protected override bool Update(float elapsedTime, KeyboardInput input)
         {
-            if (IsKeyDown(Keys.Esc))
+            if (input.IsKeyDown(KeyCode.Esc))
             {
                 return false;
             }
@@ -88,10 +89,10 @@ namespace ConsoleGameEngine.Runner.Games
             Fill(ScreenRect, ' ');
 
             // Handle Input
-            if(IsKeyDown(Keys.Left)  && _snakeDirection != Vector.Right) _input = Vector.Left;
-            if(IsKeyDown(Keys.Right) && _snakeDirection != Vector.Left)  _input = Vector.Right;
-            if(IsKeyDown(Keys.Up)    && _snakeDirection != Vector.Down)  _input = Vector.Up;
-            if(IsKeyDown(Keys.Down)  && _snakeDirection != Vector.Up)    _input = Vector.Down;
+            if(input.IsKeyHeld(KeyCode.Left)  && _snakeDirection != Vector.Right) _input = Vector.Left;
+            if(input.IsKeyHeld(KeyCode.Right) && _snakeDirection != Vector.Left)  _input = Vector.Right;
+            if(input.IsKeyHeld(KeyCode.Up)    && _snakeDirection != Vector.Down)  _input = Vector.Up;
+            if(input.IsKeyHeld(KeyCode.Down)  && _snakeDirection != Vector.Up)    _input = Vector.Down;
 
             // Ticks the game forward every GAME_TICK seconds.
             _gameTimer -= elapsedTime;

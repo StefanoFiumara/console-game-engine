@@ -1,4 +1,6 @@
 using System.Runtime.InteropServices;
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable FieldCanBeMadeReadOnly.Global
 
 namespace ConsoleGameEngine.Core.Win32
 {
@@ -10,8 +12,8 @@ namespace ConsoleGameEngine.Core.Win32
 
         public Coord(short x, short y)
         {
-            this.X = x;
-            this.Y = y;
+            X = x;
+            Y = y;
         }
     };
 
@@ -36,5 +38,19 @@ namespace ConsoleGameEngine.Core.Win32
         public short Top;
         public short Right;
         public short Bottom;
+    }
+    
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public struct FontInfo
+    {
+        internal int cbSize;
+        internal int FontIndex;
+        internal short FontWidth;
+        public short FontSize;
+        public int FontFamily;
+        public int FontWeight;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        //[MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.wc, SizeConst = 32)]
+        public string FontName;
     }
 }
