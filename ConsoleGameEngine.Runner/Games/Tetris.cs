@@ -20,7 +20,7 @@ namespace ConsoleGameEngine.Runner.Games
 
         public Tetris()
         {
-            InitConsole(32, 50);
+            InitConsole(32, 50, 14);
 
             _shapes = new string[7];
             _tetrominos = new List<Sprite>();
