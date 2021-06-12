@@ -24,7 +24,7 @@ namespace ConsoleGameEngine.Core.Input
             _previousKeyState = new bool[256];
             _keyStates = new KeyState[256];
         }
-
+        
         /// <summary>
         /// Returns true if the given key was pressed in the current frame 
         /// </summary>
