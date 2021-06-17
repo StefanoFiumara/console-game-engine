@@ -69,6 +69,11 @@ namespace ConsoleGameEngine.Core.GameObjects
                 _bgColors[i] = color;
             }
         }
+
+        public char GetGlyph(Vector pos)
+        {
+            return GetGlyph((int) pos.X, (int) pos.Y);
+        }
         
         public char GetGlyph(int x, int y)
         {
