@@ -14,8 +14,9 @@ namespace ConsoleGameEngine.Runner.Games
     {
         protected override string Name => "First Person Shooter";
 
-        private const float TURN_SPEED = 1f;
-        private const float MOVE_SPEED = 2.0f;
+        private const float TURN_SPEED = 2f;
+        private const float MOVE_SPEED = 5.0f;
+        private const float RAYCAST_STEP = 0.05f;
         
         private Vector _playerPosition;
         private float _playerAngle;
@@ -29,7 +30,8 @@ namespace ConsoleGameEngine.Runner.Games
 
         public FirstPersonShooter()
         {
-            InitConsole(420, 140, 4);
+            PerformanceModeEnabled = true;
+            InitConsole(160, 120, 8);
         }
         
         protected override bool Create()
@@ -109,7 +111,7 @@ namespace ConsoleGameEngine.Runner.Games
                 // Calculate distance 
                 while (!hitWall && distanceToWall < maxDepth) 
                 {
-                    distanceToWall += 0.1f; // Raycast step
+                    distanceToWall += RAYCAST_STEP;
 
                     var testPos = (_playerPosition + direction * distanceToWall);
 
