@@ -54,6 +54,27 @@ namespace ConsoleGameEngine.Core.GameObjects
             SetSpriteBackground(bgColor);
         }
 
+        public Sprite(Sprite spr)
+        {
+            Size = spr.Size;
+            Position = spr.Position;
+            Velocity = spr.Velocity;
+            
+            _glyphs = new char[spr._glyphs.Length];
+            _fgColors = new ConsoleColor[_glyphs.Length];
+            _bgColors = new ConsoleColor[_glyphs.Length];
+            
+            for (int i = 0; i < spr.Height; i++)
+            {
+                for (int j = 0; j < spr.Width; j++)
+                {
+                    _glyphs[i * (int)Size.X + j] = spr.GetGlyph(j, i);
+                    _fgColors[i * (int)Size.X + j] = spr.GetFgColor(j, i);
+                    _bgColors[i * (int)Size.X + j] = spr.GetBgColor(j, i);
+                }
+            }
+        }
+        
         public void SetSpriteColor(ConsoleColor color)
         {
             for (int i = 0; i < _fgColors.Length; i++)
@@ -83,6 +104,16 @@ namespace ConsoleGameEngine.Core.GameObjects
             return _glyphs[y * (int)Width + x];
         }
 
+        public char GetGlyph(int index)
+        {
+            if (index < 0 || index >= _glyphs.Length)
+            {
+                return ' ';
+            }
+
+            return _glyphs[index];
+        }
+
         public ConsoleColor GetFgColor(int x, int y)
         {
             if (x < 0 || x >= Width || y < 0 || y >= Height)
@@ -98,7 +129,12 @@ namespace ConsoleGameEngine.Core.GameObjects
             
             return _bgColors[y * (int)Width + x];
         }
-        
+
+        public void SetGlyph(Vector pos, char c)
+        {
+            SetGlyph((int)pos.X, (int)pos.Y, c);
+        }
+
         public void SetGlyph(int x, int y, char c)
         {
             if (x < 0 || x >= Width || y < 0 || y >= Height)
@@ -107,6 +143,11 @@ namespace ConsoleGameEngine.Core.GameObjects
             }
 
             _glyphs[y * (int) Width + x] = c;
+        }
+
+        public void SetFgColor(Vector pos, ConsoleColor c)
+        {
+            SetFgColor((int)pos.X, (int)pos.Y, c);
         }
         
         public void SetFgColor(int x, int y, ConsoleColor c)
@@ -117,6 +158,11 @@ namespace ConsoleGameEngine.Core.GameObjects
             }
 
             _fgColors[y * (int) Width + x] = c;
+        }
+
+        public void SetBgColor(Vector pos, ConsoleColor c)
+        {
+            SetBgColor((int)pos.X, (int)pos.Y, c);
         }
         
         public void SetBgColor(int x, int y, ConsoleColor c)

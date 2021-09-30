@@ -42,11 +42,9 @@ namespace ConsoleGameEngine.Runner.Games
         {
             var spriteGfx = string.Empty;
 
-            spriteGfx += " --- \n";
-            spriteGfx += "|   |\n";
-            spriteGfx += "| * |\n";
-            spriteGfx += "|   |\n";
-            spriteGfx += " --- \n";
+            spriteGfx += "***\n";
+            spriteGfx += "***\n";
+            spriteGfx += "***\n";
 
             _trail = new List<Vector>(MAX_TRAIL_COUNT);
             _trailCooldown = TRAIL_RESET_TIME;

@@ -7,7 +7,7 @@ using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 using ConsoleGameEngine.Core.Win32;
-// ReSharper disable MemberCanBePrivate.Global
+
 
 namespace ConsoleGameEngine.Core
 {
@@ -18,6 +18,7 @@ namespace ConsoleGameEngine.Core
 
         private bool _gameRunning;
         private readonly KeyboardInput _input;
+        private int _targetFps;
 
         /// <summary>
         /// The name of the game
@@ -38,11 +39,6 @@ namespace ConsoleGameEngine.Core
         /// The bounds of the screen
         /// </summary>
         protected Rect ScreenRect { get; private set; }
-        
-        /// <summary>
-        /// Gets or Sets the target framework for the update loop, ignored if PerformanceModeEnabled is set to true.
-        /// </summary>
-        protected int TargetFps { get; set; }
 
         /// <summary>
         /// Enabling performance mode allows the game loop to run as fast as possible
@@ -97,8 +93,8 @@ namespace ConsoleGameEngine.Core
                 Console.SetWindowSize(width, height);
                 Console.SetBufferSize(width, height);
 
-                TargetFps = targetFps;
-                if (TargetFps < 30) TargetFps = 30;
+                _targetFps = targetFps;
+                if (_targetFps < 30) _targetFps = 30;
                 _isInit = true;
             }
             else
@@ -155,7 +151,7 @@ namespace ConsoleGameEngine.Core
                 return;
             }
          
-            var index = GetScreenIndex(x, y);
+            var index = y * ScreenWidth + x;
             var color = (short)((int)fgColor + ((int)bgColor << 4));
             
             _screenBuffer[index].Attributes = color;
@@ -170,10 +166,7 @@ namespace ConsoleGameEngine.Core
             Fill(rect.Position, rect.Size, c, fgColor, bgColor);
         }
         
-        /// <summary>
-        /// Draws a rectangle to the screen at the given position, with the given size.
-        /// </summary>
-        protected void Fill(Vector position, Vector size, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        private void Fill(Vector position, Vector size, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
             Fill((int)position.X, 
                  (int)position.Y,
@@ -182,10 +175,7 @@ namespace ConsoleGameEngine.Core
                  c, fgColor, bgColor);
         }
         
-        /// <summary>
-        /// Draws a rectangle to the screen at the given coordinates
-        /// </summary>
-        protected void Fill(int x1, int y1, int x2, int y2, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        private void Fill(int x1, int y1, int x2, int y2, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
             Clip(ref x1, ref y1);
             Clip(ref x2, ref y2);
@@ -284,7 +274,7 @@ namespace ConsoleGameEngine.Core
                 {
                     // Give back some system resources by suspending the thread if update loop takes less time than necessary to hit our target FPS.
                     // This vastly reduces CPU usage!
-                    var waitTime = 1f / TargetFps * 1000f - elapsedTime;
+                    var waitTime = 1f / _targetFps * 1000f - elapsedTime;
                     if (waitTime > 0)
                     {
                         Thread.Sleep((int)waitTime);
@@ -293,8 +283,6 @@ namespace ConsoleGameEngine.Core
             }
         }
         
-        private int GetScreenIndex(int x, int y) => y * ScreenWidth + x;
-
         private void Clip(ref int x, ref int y)
         {
             if (x < 0) x = 0;

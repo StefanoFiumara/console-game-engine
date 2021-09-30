@@ -21,14 +21,8 @@ namespace ConsoleGameEngine.Runner
             int choice;
             do
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.Title = "Main Menu";
-                Console.CursorVisible = true;
-                
-                Console.SetWindowSize(30, 30);
-                Console.SetBufferSize(30, 30);
-                ConsoleGameEngineWin32.SetCurrentFont("Modern DOS 8x8", 16);
-                Console.Clear();
+                InitConsoleDefaults();
+
                 Console.WriteLine("\n Choose a game to play!\n");
 
                 for (var i = 0; i < games.Count; i++)
@@ -36,10 +30,12 @@ namespace ConsoleGameEngine.Runner
                     var game = games[i];
                     Console.WriteLine($" {i+1}: {game.Name}\n");
                 }
+
                 Console.WriteLine($" {games.Count+1}: Quit\n");
                 
                 Console.Write("\n >> ");
                 var selection = Console.ReadLine();
+                
                 if (int.TryParse(selection, out choice))
                 {
                     choice--;
@@ -51,6 +47,18 @@ namespace ConsoleGameEngine.Runner
                     }
                 }
             } while (choice != games.Count);
+        }
+
+        private static void InitConsoleDefaults()
+        {
+            Console.ForegroundColor = ConsoleColor.White;
+            Console.Title = "Main Menu";
+            Console.CursorVisible = true;
+
+            Console.SetWindowSize(30, 30);
+            Console.SetBufferSize(30, 30);
+            ConsoleGameEngineWin32.SetCurrentFont("Modern DOS 8x8", 16);
+            Console.Clear();
         }
     }
     

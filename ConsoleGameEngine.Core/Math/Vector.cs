@@ -37,6 +37,11 @@ namespace ConsoleGameEngine.Core.Math
             Y = y;
         }
 
+        public override string ToString()
+        {
+            return $"(X: {X}, Y: {Y})";
+        }
+
         public static Vector operator *(Vector v, float scalar)
         {
             return new(v.X * scalar, v.Y * scalar);

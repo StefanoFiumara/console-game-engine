@@ -9,5 +9,7 @@ namespace ConsoleGameEngine.Core.Input
         Up = 0x26,
         Right = 0x27,
         Down = 0x28,
+        Z = 0x5A,
+        X = 0x58, 
     }
 }
