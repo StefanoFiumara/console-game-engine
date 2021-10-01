@@ -114,6 +114,26 @@ namespace ConsoleGameEngine.Core.GameObjects
             return _glyphs[index];
         }
 
+        public ConsoleColor GetFgColor(int index)
+        {
+            if (index < 0 || index >= _fgColors.Length)
+            {
+                return ConsoleColor.Black;
+            }
+
+            return _fgColors[index];
+        }
+        
+        public ConsoleColor GetBgColor(int index)
+        {
+            if (index < 0 || index >= _bgColors.Length)
+            {
+                return ConsoleColor.Black;
+            }
+
+            return _bgColors[index];
+        }
+        
         public ConsoleColor GetFgColor(int x, int y)
         {
             if (x < 0 || x >= Width || y < 0 || y >= Height)
