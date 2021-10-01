@@ -10,6 +10,7 @@ namespace ConsoleGameEngine.Core.Input
         Right = 0x27,
         Down = 0x28,
         Z = 0x5A,
-        X = 0x58, 
+        X = 0x58,
+        Enter = 0x0D
     }
 }

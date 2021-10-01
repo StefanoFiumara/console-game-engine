@@ -36,7 +36,7 @@ namespace ConsoleGameEngine.Core.Input
         /// <summary>
         /// Returns true if the given key was released in the current frame 
         /// </summary>
-        public bool IsKeyReleased(KeyCode k)
+        public bool IsKeyUp(KeyCode k)
         {
             return _keyStates[(int) k].IsReleased;
         }

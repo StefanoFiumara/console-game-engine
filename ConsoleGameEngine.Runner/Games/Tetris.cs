@@ -14,8 +14,8 @@ namespace ConsoleGameEngine.Runner.Games
 
         private readonly Random _rng;
         
-        private const float GAME_TICK = 0.05f;
-        private const float INPUT_TICK = 0.06f;
+        private const float GAME_TICK = 0.06f;
+        private const float INPUT_TICK = 0.087f;
 
         private readonly List<Sprite> _tetrominos;
         
@@ -29,21 +29,29 @@ namespace ConsoleGameEngine.Runner.Games
         private float _inputTimer;
         private int _level;
 
-        private int Speed => 10 - _level;
+        private int Speed => 20 - _level;
 
         private int _speedCounter;
+
+        private bool _inputHeld;
         private bool _forceDown;
         private bool _gameOver;
 
+        private bool _lockGray = true;
+        
         private int _lineCount;
         private int _score;
         
         private List<int> _clearedLines;
-        
+        private int _droppedPieces;
 
+        private Sprite _heldPiece;
+
+        private List<Sprite> _randomizerBag;
+        
         public Tetris()
         {
-            InitConsole(32, 60, 16);
+            InitConsole(32, 40, 16);
 
             _rng = new Random();
 
@@ -103,11 +111,17 @@ namespace ConsoleGameEngine.Runner.Games
                 var sprite = new Sprite(shape, colors[i], colors[i]);
                 _tetrominos.Add(sprite);
             }
+            
         }
 
         protected override bool Create()
         {
+            _gameOver = false;
             _level = 0;
+            _lineCount = 0;
+            _score = 0;
+
+            _randomizerBag = new List<Sprite>(_tetrominos);
             
             var fieldLayout = string.Empty;
             for (int i = 0; i < 21; i++)
@@ -125,15 +139,6 @@ namespace ConsoleGameEngine.Runner.Games
             return true;
         }
 
-        private void SpawnNewPiece()
-        {
-            _currentPiece = _tetrominos[_rng.Next(0, 7)];
-            _currentPiece.Position = _field.Bounds.Center + Vector.Up * _field.Height / 2 + Vector.Left * _currentPiece.Width / 2;
-            _ghostPiece = new Sprite(_currentPiece);
-            _ghostPiece.SetSpriteBackground(ConsoleColor.Black);
-            _currentRotation = 0;
-        }
-
         protected override bool Update(float elapsedTime, KeyboardInput input)
         {
             if (input.IsKeyDown(KeyCode.Esc))
@@ -143,23 +148,21 @@ namespace ConsoleGameEngine.Runner.Games
 
             if (_gameOver)
             {
-                // TODO: Draw game over screen
-                // TODO: Restart Button
-            }
-            
-            if (input.IsKeyDown(KeyCode.Z)) RotatePiece(-90);
-            else if (input.IsKeyDown(KeyCode.X)) RotatePiece(90);
+                Fill(ScreenRect, ' ');
+                DrawString(ScreenRect.Center, "GAME OVER", centered: true);
+                DrawString(ScreenRect.Center + 2 * Vector.Down, $"Score: {_score}", centered: true);
+                DrawString(ScreenRect.Center + 4 * Vector.Down, $"Level: {_level}", centered: true);
+                DrawString(ScreenRect.Center + 6 * Vector.Down, $"Lines: {_lineCount}", centered: true);
+                DrawString(ScreenRect.Center + 8 * Vector.Down, $"Press ENTER to restart", centered: true);
 
-            _inputTimer -= elapsedTime;
-            if (_inputTimer <= 0)
-            {
-                _inputTimer = INPUT_TICK;
-                if (input.IsKeyHeld(KeyCode.Left))  MovePiece(_currentPiece, _currentRotation, Vector.Left);
-                if (input.IsKeyHeld(KeyCode.Right)) MovePiece(_currentPiece, _currentRotation, Vector.Right);
-                if (input.IsKeyHeld(KeyCode.Down))  MovePiece(_currentPiece, _currentRotation, Vector.Down);
+                if (input.IsKeyDown(KeyCode.Enter))
+                {
+                    return Create();
+                }
+                return true;
             }
             
-            if (input.IsKeyDown(KeyCode.Up)) HardDropPiece();
+            HandleInput(elapsedTime, input);
             
             // Ticks the game forward every GAME_TICK seconds.
             _gameTimer -= elapsedTime;
@@ -179,27 +182,99 @@ namespace ConsoleGameEngine.Runner.Games
                     if(!MovePiece(_currentPiece, _currentRotation, Vector.Down))
                     {
                         LockPiece();
-                        
-                        if (!DoesPieceFit(_currentPiece, _currentRotation, _currentPiece.Position))
-                        {
-                            _gameOver = true;
-                            return false;
-                        }
                     }
 
                     _speedCounter = 0;
                     _forceDown = false;
                 }
                 
-                DrawString(3 * Vector.Down, $"Score: {_score}");
-                DrawString(5 * Vector.Down, $"Lines: {_lineCount}");
-                
                 DrawGhostPiece();
                 DrawRotatedSprite(_currentPiece, _currentRotation);
                 DrawSprite(_field);
+                
+                DrawHud();
             }
             
             return true;
+        }
+
+        private void HandleInput(float elapsedTime, KeyboardInput input)
+        {
+            // Hold queue
+            if (input.IsKeyDown(KeyCode.Space))
+            {
+                var current = _currentPiece;
+                
+                SpawnNewPiece(_heldPiece);
+
+                _heldPiece = new Sprite(current);
+            }
+            
+            // Rotations
+            if (input.IsKeyDown(KeyCode.Z)) RotatePiece(-90);
+            else if (input.IsKeyDown(KeyCode.X)) RotatePiece(90);
+            if (input.IsKeyDown(KeyCode.Up)) HardDropPiece();
+
+
+            // Input timer for Left/Right/Down inputs
+            if (input.IsKeyDown(KeyCode.Left) ||
+                input.IsKeyDown(KeyCode.Right) ||
+                input.IsKeyDown(KeyCode.Down))
+            {
+                _inputHeld = true;
+                _inputTimer = 0;
+            }
+
+            if (input.IsKeyUp(KeyCode.Left) ||
+                input.IsKeyUp(KeyCode.Right) ||
+                input.IsKeyUp(KeyCode.Down))
+            {
+                _inputHeld = false;
+                _inputTimer = 0;
+            }
+
+            if (_inputHeld) _inputTimer -= elapsedTime;
+
+            _inputTimer -= elapsedTime;
+            if (_inputHeld && _inputTimer <= 0)
+            {
+                _inputTimer = INPUT_TICK;
+                if (input.IsKeyHeld(KeyCode.Left)) MovePiece(_currentPiece, _currentRotation, Vector.Left);
+                if (input.IsKeyHeld(KeyCode.Right)) MovePiece(_currentPiece, _currentRotation, Vector.Right);
+                if (input.IsKeyHeld(KeyCode.Down))
+                {
+                    MovePiece(_currentPiece, _currentRotation, Vector.Down);
+                }
+            }
+        }
+
+        private void SpawnNewPiece(Sprite newPiece = null)
+        {
+            if (_randomizerBag.Count == 0)
+            {
+                _randomizerBag.AddRange(_tetrominos);
+            }
+
+            if (newPiece != null)
+            {
+                _currentPiece = newPiece;
+            }
+            else
+            {
+                var index = _rng.Next(0, _randomizerBag.Count);
+                _currentPiece = _randomizerBag[index];
+                _randomizerBag.RemoveAt(index);
+            }
+            
+            _currentPiece.Position = _field.Bounds.Center + Vector.Up * _field.Height / 2 + Vector.Left * _currentPiece.Width / 2;
+            _ghostPiece = new Sprite(_currentPiece);
+            _ghostPiece.SetSpriteBackground(ConsoleColor.Black);
+            _currentRotation = 0;
+            
+            if (!DoesPieceFit(_currentPiece, _currentRotation, _currentPiece.Position))
+            {
+                _gameOver = true;
+            }
         }
 
         private void DrawGhostPiece()
@@ -212,7 +287,7 @@ namespace ConsoleGameEngine.Runner.Games
             
             DrawRotatedSprite(_ghostPiece, _currentRotation);
         }
-        
+
         private void HardDropPiece()
         {
             while (DoesPieceFit(_currentPiece, _currentRotation, _currentPiece.Position + Vector.Down))
@@ -223,7 +298,22 @@ namespace ConsoleGameEngine.Runner.Games
             LockPiece();
         }
 
-        private void CheckLines()
+        private void DrawHud()
+        {
+            DrawString(Vector.Down + Vector.Right * ScreenWidth / 2, "TETRIS", centered: true);
+            DrawString(4 * Vector.Down, $"Score: {_score}");
+            DrawString(6 * Vector.Down, $"Level: {_level}");
+            DrawString(8 * Vector.Down, $"Lines: {_lineCount}");
+            
+            DrawString(new Vector(5, 15), $"HOLD");
+            if (_heldPiece != null)
+            {
+                _heldPiece.Position = new Vector(5, 16);
+                DrawSprite(_heldPiece);
+            }
+        }
+
+        private void CheckForClearedLines()
         {
             for (int y = 0; y < _currentPiece.Height; y++)
             {
@@ -263,12 +353,13 @@ namespace ConsoleGameEngine.Runner.Games
                         for (int i = line; i > 0; i--)
                         {
                             var above = _field.GetGlyph(x, i - 1);
+                            var aboveColor = _field.GetFgColor(x, i - 1);
                             _field.SetGlyph(x, i, above);
 
                             if (above == 'X')
                             {
-                                _field.SetFgColor(x, i, ConsoleColor.DarkGray);
-                                _field.SetBgColor(x, i, ConsoleColor.DarkGray);
+                                _field.SetFgColor(x, i, _lockGray ? ConsoleColor.DarkGray : aboveColor);
+                                _field.SetBgColor(x, i, _lockGray ? ConsoleColor.DarkGray : aboveColor);
                             }
                             else
                             {
@@ -295,15 +386,21 @@ namespace ConsoleGameEngine.Runner.Games
                     if (_currentPiece.GetGlyph(pieceIndex) == 'X')
                     {
                         _field.SetGlyph(fieldRelativePosition, 'X');
-                        _field.SetFgColor(fieldRelativePosition, ConsoleColor.DarkGray);
-                        _field.SetBgColor(fieldRelativePosition, ConsoleColor.DarkGray);
+                        _field.SetFgColor(fieldRelativePosition, _lockGray ? ConsoleColor.DarkGray : _currentPiece.GetFgColor(pieceIndex));
+                        _field.SetBgColor(fieldRelativePosition, _lockGray ? ConsoleColor.DarkGray : _currentPiece.GetFgColor(pieceIndex));
                     }
                 }
             }
 
             _score += 25;
             _speedCounter = 0;
-            CheckLines();
+            _droppedPieces++;
+
+            if (_droppedPieces % 15 == 0)
+            {
+                _level++;
+            }
+            CheckForClearedLines();
             SpawnNewPiece();
         }
 
@@ -342,6 +439,12 @@ namespace ConsoleGameEngine.Runner.Games
                     WrapRotation();
                 }
             }
+
+            if (!DoesPieceFit(_currentPiece, _currentRotation, _currentPiece.Position + Vector.Down))
+            {
+                // Gives the player some room to play with before their piece locks into place
+                _speedCounter -= 2;
+            }
         }
 
         private bool DoesPieceFit(Sprite tetromino, int rotation, Vector newPosition)
@@ -363,21 +466,6 @@ namespace ConsoleGameEngine.Runner.Games
             return true;
         }
 
-        private int GetRotatedIndex(int x, int y, int rotation)
-        {
-            switch (rotation)
-            {
-                case 90:
-                    return 12 + y - (x * 4);
-                case 180:
-                    return 15 - (y * 4) - x;
-                case 270:
-                    return 3 - y + (x * 4);
-                default:
-                    return y * 4 + x;
-            }
-        }
-        
         private void DrawRotatedSprite(Sprite sprite, int rotation)
         {
             for (var y = 0; y < sprite.Height; y++)
@@ -395,6 +483,21 @@ namespace ConsoleGameEngine.Runner.Games
                             sprite.GetBgColor(x, y));
                     }
                 }
+            }
+        }
+
+        private int GetRotatedIndex(int x, int y, int rotation)
+        {
+            switch (rotation)
+            {
+                case 90:
+                    return 12 + y - (x * 4);
+                case 180:
+                    return 15 - (y * 4) - x;
+                case 270:
+                    return 3 - y + (x * 4);
+                default:
+                    return y * 4 + x;
             }
         }
     }
