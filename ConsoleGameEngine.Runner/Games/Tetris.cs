@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Input;
@@ -114,6 +115,14 @@ namespace ConsoleGameEngine.Runner.Games
             
         }
 
+        private List<Sprite> GetRandomTetrominoBag()
+        {
+            var result = _tetrominos.Select(tetromino => new Sprite(tetromino)).ToList();
+
+            result.Shuffle(_rng);
+            return result;
+        }
+        
         protected override bool Create()
         {
             _gameOver = false;
@@ -121,7 +130,10 @@ namespace ConsoleGameEngine.Runner.Games
             _lineCount = 0;
             _score = 0;
 
-            _randomizerBag = new List<Sprite>(_tetrominos);
+            _randomizerBag = GetRandomTetrominoBag();
+            _randomizerBag.AddRange(GetRandomTetrominoBag());
+            
+            //TODO: Figure out circular buffer for next piece queue
             
             var fieldLayout = string.Empty;
             for (int i = 0; i < 21; i++)
@@ -198,6 +210,35 @@ namespace ConsoleGameEngine.Runner.Games
             return true;
         }
 
+        private void SpawnNewPiece(Sprite newPiece = null)
+        {
+            if (newPiece != null)
+            {
+                _currentPiece = newPiece;
+            }
+            else
+            {
+                _currentPiece = _randomizerBag[0];
+                _randomizerBag.RemoveAt(0);
+
+                if (_randomizerBag.Count <= 7)
+                {
+                    _randomizerBag.AddRange(GetRandomTetrominoBag());
+                }
+                
+            }
+            
+            _currentPiece.Position = _field.Bounds.Center + Vector.Up * _field.Height / 2 + Vector.Left * _currentPiece.Width / 2;
+            _ghostPiece = new Sprite(_currentPiece);
+            _ghostPiece.SetSpriteBackground(ConsoleColor.Black);
+            _currentRotation = 0;
+            
+            if (!DoesPieceFit(_currentPiece, _currentRotation, _currentPiece.Position))
+            {
+                _gameOver = true;
+            }
+        }
+
         private void HandleInput(float elapsedTime, KeyboardInput input)
         {
             // Hold queue
@@ -248,35 +289,6 @@ namespace ConsoleGameEngine.Runner.Games
             }
         }
 
-        private void SpawnNewPiece(Sprite newPiece = null)
-        {
-            if (_randomizerBag.Count == 0)
-            {
-                _randomizerBag.AddRange(_tetrominos);
-            }
-
-            if (newPiece != null)
-            {
-                _currentPiece = newPiece;
-            }
-            else
-            {
-                var index = _rng.Next(0, _randomizerBag.Count);
-                _currentPiece = _randomizerBag[index];
-                _randomizerBag.RemoveAt(index);
-            }
-            
-            _currentPiece.Position = _field.Bounds.Center + Vector.Up * _field.Height / 2 + Vector.Left * _currentPiece.Width / 2;
-            _ghostPiece = new Sprite(_currentPiece);
-            _ghostPiece.SetSpriteBackground(ConsoleColor.Black);
-            _currentRotation = 0;
-            
-            if (!DoesPieceFit(_currentPiece, _currentRotation, _currentPiece.Position))
-            {
-                _gameOver = true;
-            }
-        }
-
         private void DrawGhostPiece()
         {
             _ghostPiece.Position = _currentPiece.Position;
@@ -310,6 +322,16 @@ namespace ConsoleGameEngine.Runner.Games
             {
                 _heldPiece.Position = new Vector(5, 16);
                 DrawSprite(_heldPiece);
+            }
+            
+            DrawString(new Vector(23, 15), $"NEXT");
+
+            for (int i = 0; i < 4; i++)
+            {
+                var nextPiece = _randomizerBag[i];
+                nextPiece.Position = new Vector(23, 16 + 4 * i);
+                DrawSprite(nextPiece);
+
             }
         }
 
