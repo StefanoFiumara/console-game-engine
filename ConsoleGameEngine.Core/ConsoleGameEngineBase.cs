@@ -118,6 +118,54 @@ namespace ConsoleGameEngine.Core
             gameLoop.Wait();
         }
 
+        private void GameLoop()
+        {
+            if (!Create())
+            {
+                _gameRunning = false;
+            }
+            
+            long framesRendered = 0;
+
+            var timer = new Stopwatch();
+            timer.Start();
+            
+            var previousTime = timer.Elapsed.TotalMilliseconds;
+            while (_gameRunning)
+            {
+                var currentTime = timer.Elapsed.TotalMilliseconds;
+                var elapsedTime = (currentTime - previousTime);
+                previousTime = currentTime;
+                
+                _input.Update();
+                
+                // Game Logic
+                if (!Update((float) elapsedTime / 1000f, _input))
+                {
+                    _gameRunning = false;
+                }
+                
+                // Render to screen
+                DrawBuffer(_screenBuffer, ScreenWidth, ScreenHeight);
+
+                var averageFps = ++framesRendered / (timer.Elapsed.TotalMilliseconds / 1000f);
+                Console.Title = $"{Name} ~ Average FPS: {averageFps:F}";
+
+                
+
+                if (!PerformanceModeEnabled)
+                {
+                    // Give back some system resources by suspending the thread if update loop takes less time than necessary to hit our target FPS.
+                    // This vastly reduces CPU usage!
+                    var waitTime = 1f / _targetFps * 1000f - elapsedTime;
+                    if (waitTime > 0)
+                    {
+                        Thread.Sleep((int)waitTime);
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Runs at startup, used to set up game data.
         /// This function should return true if setup was successful, false otherwise.
@@ -139,7 +187,7 @@ namespace ConsoleGameEngine.Core
         {
             Draw((int)position.X, (int)position.Y, c, fgColor, bgColor);
         }
-        
+
         /// <summary>
         /// Draws a character to the screen at the given position.
         /// </summary>
@@ -165,7 +213,7 @@ namespace ConsoleGameEngine.Core
         {
             Fill(rect.Position, rect.Size, c, fgColor, bgColor);
         }
-        
+
         private void Fill(Vector position, Vector size, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
             Fill((int)position.X, 
@@ -174,7 +222,7 @@ namespace ConsoleGameEngine.Core
                  (int)(size.Y + position.Y),
                  c, fgColor, bgColor);
         }
-        
+
         private void Fill(int x1, int y1, int x2, int y2, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
             Clip(ref x1, ref y1);
@@ -224,7 +272,7 @@ namespace ConsoleGameEngine.Core
                 bgColor,
                 centered);
         }
-        
+
         /// <summary>
         /// Draws a string of text to the screen at the given coordinates.
         /// </summary>
@@ -240,55 +288,7 @@ namespace ConsoleGameEngine.Core
                 Draw(x + i, y, msg[i], fgColor, bgColor);
             }
         }
-        
-        private void GameLoop()
-        {
-            if (!Create())
-            {
-                _gameRunning = false;
-            }
-            
-            long framesRendered = 0;
 
-            var timer = new Stopwatch();
-            timer.Start();
-            
-            var previousTime = timer.Elapsed.TotalMilliseconds;
-            while (_gameRunning)
-            {
-                var currentTime = timer.Elapsed.TotalMilliseconds;
-                var elapsedTime = (currentTime - previousTime);
-                previousTime = currentTime;
-                
-                _input.Update();
-                
-                // Game Logic
-                if (!Update((float) elapsedTime / 1000f, _input))
-                {
-                    _gameRunning = false;
-                }
-                
-                // Render to screen
-                DrawBuffer(_screenBuffer, ScreenWidth, ScreenHeight);
-
-                var averageFps = ++framesRendered / (timer.Elapsed.TotalMilliseconds / 1000f);
-                Console.Title = $"{Name} ~ Average FPS: {averageFps:F}";
-
-                
-
-                if (!PerformanceModeEnabled)
-                {
-                    // Give back some system resources by suspending the thread if update loop takes less time than necessary to hit our target FPS.
-                    // This vastly reduces CPU usage!
-                    var waitTime = 1f / _targetFps * 1000f - elapsedTime;
-                    if (waitTime > 0)
-                    {
-                        Thread.Sleep((int)waitTime);
-                    }
-                }
-            }
-        }
-        
         private void Clip(ref int x, ref int y)
         {
             if (x < 0) x = 0;

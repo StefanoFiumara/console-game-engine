@@ -324,7 +324,7 @@ namespace ConsoleGameEngine.Runner.Games
                 DrawSprite(_heldPiece);
             }
             
-            DrawString(new Vector(23, 15), $"NEXT");
+            DrawString(new Vector(23, 15), "NEXT");
 
             for (int i = 0; i < 4; i++)
             {
