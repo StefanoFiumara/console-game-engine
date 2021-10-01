@@ -214,21 +214,27 @@ namespace ConsoleGameEngine.Core
         /// <summary>
         /// Draws a string of text to the screen at the given coordinates.
         /// </summary>
-        protected void DrawString(Vector position, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        protected void DrawString(Vector position, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black, bool centered = false)
         {
             DrawString(
                 (int) position.X, 
                 (int) position.Y, 
                 msg, 
                 fgColor, 
-                bgColor);
+                bgColor,
+                centered);
         }
         
         /// <summary>
         /// Draws a string of text to the screen at the given coordinates.
         /// </summary>
-        protected void DrawString(int x, int y, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        protected void DrawString(int x, int y, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black, bool centered = false)
         {
+            if (centered)
+            {
+                x -= msg.Length / 2;
+            }
+            
             for (int i = 0; i < msg.Length; i++)
             {
                 Draw(x + i, y, msg[i], fgColor, bgColor);
