@@ -86,8 +86,6 @@ namespace ConsoleGameEngine.Core.Win32
         
         public static void SetCurrentFont(string font, short fontSize = 0)
         {
-            Console.WriteLine("Set Current Font: " + font);
-
             FontInfo before = new FontInfo
             {
                 cbSize = Marshal.SizeOf<FontInfo>()
