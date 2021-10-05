@@ -114,8 +114,7 @@ namespace ConsoleGameEngine.Core
             }
             
             _gameRunning = true;
-            var gameLoop = Task.Run(GameLoop);
-            gameLoop.Wait();
+            GameLoop();
         }
 
         private void GameLoop()
@@ -150,8 +149,6 @@ namespace ConsoleGameEngine.Core
 
                 var averageFps = ++framesRendered / (timer.Elapsed.TotalMilliseconds / 1000f);
                 Console.Title = $"{Name} ~ Average FPS: {averageFps:F}";
-
-                
 
                 if (!PerformanceModeEnabled)
                 {
