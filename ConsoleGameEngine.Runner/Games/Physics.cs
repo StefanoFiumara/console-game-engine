@@ -8,7 +8,7 @@ using ConsoleGameEngine.Core.Math;
 namespace ConsoleGameEngine.Runner.Games
 {
     // ReSharper disable once UnusedType.Global
-    public class BasicPhysicsExample : ConsoleGameEngineBase
+    public class Physics : ConsoleGameEngineBase
     {
         private const float GRAVITY = 25f;
         private const float TERMINAL_VELOCITY = 55f;
@@ -30,9 +30,9 @@ namespace ConsoleGameEngine.Runner.Games
         private List<Vector> _trail;
         private float _trailCooldown;
 
-        protected override string Name => "Console Game Engine Example";
+        protected override string Name => "Physics";
 
-        public BasicPhysicsExample()
+        public Physics()
         {
             InitConsole(160, 120);
             PerformanceModeEnabled = true;

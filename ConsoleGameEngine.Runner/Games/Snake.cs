@@ -10,7 +10,7 @@ namespace ConsoleGameEngine.Runner.Games
     // ReSharper disable once UnusedType.Global
     public class Snake : ConsoleGameEngineBase
     {
-        protected override string Name => "Snake Game";
+        protected override string Name => "Snake";
 
         private const char PLAYER_HEAD = '0';
         private const char PLAYER_BODY = 'O';
@@ -47,13 +47,13 @@ namespace ConsoleGameEngine.Runner.Games
             _rng = new Random();
 
             // Create a 32x32 map with WALL chars along the edges.
-            var mapLayout = "################################\n";
+            var map = "################################\n";
             for (int i = 0; i < 30; i++)
             {
-                mapLayout += "#                              #\n";
+                map += "#                              #\n";
             }
-            mapLayout += "################################\n";
-            _map = new Sprite(mapLayout);
+            map += "################################\n";
+            _map = new Sprite(map);
             _map.Position = ScreenRect.Center - _map.Bounds.Size * 0.5f + 7 * Vector.Down;
         }
 
@@ -98,6 +98,7 @@ namespace ConsoleGameEngine.Runner.Games
             _gameTimer -= elapsedTime;
             if (_gameTimer <= 0f)
             {
+                // Game ticks faster based on current level
                 _gameTimer = GAME_TICK - _level * 0.02f;
 
                 _snakeDirection = _input;
@@ -139,6 +140,7 @@ namespace ConsoleGameEngine.Runner.Games
                         _food = _rng.NextVector(_map.Bounds);
                     } while (_body.Contains(_food)); // Ensure food pellet doesn't spawn in snake's body. 
                     
+                    // Make snake longer
                     _body.Insert(0, _body[^1]);
                 }
             }
@@ -151,14 +153,14 @@ namespace ConsoleGameEngine.Runner.Games
                 Draw(piece, gfx, ConsoleColor.Green);
             }
 
-            var title = $"SNAKE GAME";
+            var title = $"SNAKE";
             
-            DrawString(1,1, title.PadLeft(ScreenWidth/2 + title.Length/2));
-            DrawString(1,3, $"Up/Down/Left/Right: Move");
-            DrawString(1,5, $"ESC: Exit");
-            DrawString(1,9, $"High Score: {_highScore}");
-            DrawString(1,11, $"Score: {_score}");
-            DrawString(1,13, $"Level: {_level}");
+            DrawString(ScreenWidth / 2, 1, title, centered: true);
+            DrawString(1,5, $"Arrow Keys: Move");
+            DrawString(1,7, $"ESC: Exit");
+            DrawString(1,10, $"High Score: {_highScore}");
+            DrawString(1,12, $"Score: {_score}");
+            DrawString(1,14, $"Level: {_level}");
             
             DrawSprite(_map);
             

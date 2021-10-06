@@ -8,9 +8,10 @@ using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Runner.Games
 {
-    using static System.Math;
+    using static Math;
     
-    public class FirstPersonShooter : ConsoleGameEngineBase
+    // ReSharper disable once UnusedType.Global
+    public class Maze : ConsoleGameEngineBase
     {
         protected override string Name => "First Person Shooter";
 
@@ -28,7 +29,7 @@ namespace ConsoleGameEngine.Runner.Games
         private float _fieldOfView = 3.14159f / 4f; // 90 degree fov
         private Sprite _map;
 
-        public FirstPersonShooter()
+        public Maze()
         {
             PerformanceModeEnabled = true;
             InitConsole(160, 120, 8);
@@ -64,16 +65,9 @@ namespace ConsoleGameEngine.Runner.Games
         protected override bool Update(float elapsedTime, KeyboardInput input)
         {
             // handle input
-
-            if (input.IsKeyHeld(KeyCode.Left))
-            {
-                _playerAngle -= TURN_SPEED * elapsedTime;
-            }
+            if (input.IsKeyHeld(KeyCode.Left))  _playerAngle -= TURN_SPEED * elapsedTime;
+            if (input.IsKeyHeld(KeyCode.Right)) _playerAngle += TURN_SPEED * elapsedTime;
             
-            if (input.IsKeyHeld(KeyCode.Right))
-            {
-                _playerAngle += TURN_SPEED * elapsedTime;
-            }
 
             if (input.IsKeyHeld(KeyCode.Up))
             {
