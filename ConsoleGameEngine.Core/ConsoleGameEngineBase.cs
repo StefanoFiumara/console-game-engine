@@ -24,17 +24,17 @@ namespace ConsoleGameEngine.Core
         /// The name of the game
         /// </summary>
         protected abstract string Name { get; }
-        
+
         /// <summary>
         /// Shortcut to grab the Screen Width
         /// </summary>
         protected int ScreenWidth => (int)ScreenRect.Size.X;
-        
+
         /// <summary>
         /// Shortcut to grab the Screen Height
         /// </summary>
         protected int ScreenHeight => (int)ScreenRect.Size.Y;
-        
+
         /// <summary>
         /// The bounds of the screen
         /// </summary>
@@ -69,27 +69,27 @@ namespace ConsoleGameEngine.Core
 
                 if (pixelSize < 4) pixelSize = 4;
                 SetCurrentFont("Modern DOS 8x8", pixelSize);
-                
+
                 // Clamp width and height while maintaining aspect ratio
                 var maxWidth = Console.LargestWindowWidth - 1;
-                var maxHeight = Console.LargestWindowHeight - 1; 
-                
+                var maxHeight = Console.LargestWindowHeight - 1;
+
                 if (width  > maxWidth || height > maxHeight)
                 {
                     var widthRatio = (float) maxWidth / width;
                     var heightRatio = (float) maxHeight / height;
-                    
+
                     // use whichever multiplier is smaller
                     var ratio = widthRatio < heightRatio ? widthRatio : heightRatio;
 
                     width = (int) (width * ratio);
                     height = (int) (height * ratio);
                 }
-                
+
                 ScreenRect = new Rect(Vector.Zero, new Vector(width, height));
-                
+
                 _screenBuffer = new CharInfo[width * height];
-                
+
                 Console.SetWindowSize(width, height);
                 Console.SetBufferSize(width, height);
 
@@ -102,7 +102,7 @@ namespace ConsoleGameEngine.Core
                 throw new InvalidOperationException("Console is already initialized.");
             }
         }
-        
+
         /// <summary>
         /// Starts the game loop, must call InitConsole first to set dimensions and target fps.
         /// </summary>
@@ -112,7 +112,7 @@ namespace ConsoleGameEngine.Core
             {
                 throw new InvalidOperationException("Console Window must be initialized with InitConsole() before calling Start()");
             }
-            
+
             _gameRunning = true;
             GameLoop();
         }
@@ -123,27 +123,27 @@ namespace ConsoleGameEngine.Core
             {
                 _gameRunning = false;
             }
-            
+
             long framesRendered = 0;
 
             var timer = new Stopwatch();
             timer.Start();
-            
+
             var previousTime = timer.Elapsed.TotalMilliseconds;
             while (_gameRunning)
             {
                 var currentTime = timer.Elapsed.TotalMilliseconds;
                 var elapsedTime = (currentTime - previousTime);
                 previousTime = currentTime;
-                
+
                 _input.Update();
-                
+
                 // Game Logic
                 if (!Update((float) elapsedTime / 1000f, _input))
                 {
                     _gameRunning = false;
                 }
-                
+
                 // Render to screen
                 DrawBuffer(_screenBuffer, ScreenWidth, ScreenHeight);
 
@@ -171,7 +171,7 @@ namespace ConsoleGameEngine.Core
 
         /// <summary>
         /// The main game loop, runs once per frame.
-        /// If this function returns false, the game loop stops and the application is terminated. 
+        /// If this function returns false, the game loop stops and the application is terminated.
         /// </summary>
         /// <param name="elapsedTime">The elapsed time since the last frame (in seconds)</param>
         /// <param name="input">The keyboard input state for the current frame</param>
@@ -195,10 +195,25 @@ namespace ConsoleGameEngine.Core
             {
                 return;
             }
-         
+
             var index = y * ScreenWidth + x;
             var color = (short)((int)fgColor + ((int)bgColor << 4));
-            
+
+            _screenBuffer[index].Attributes = color;
+            _screenBuffer[index].Char.UnicodeChar = c;
+        }
+
+        protected void Draw(int x, int y, char c, int fgColor, int bgColor)
+        {
+            if (x >= ScreenWidth  || x < 0 ||
+                y >= ScreenHeight || y < 0)
+            {
+                return;
+            }
+
+            var index = y * ScreenWidth + x;
+            var color = (short)((int)fgColor + ((int)bgColor << 4));
+
             _screenBuffer[index].Attributes = color;
             _screenBuffer[index].Char.UnicodeChar = c;
         }
@@ -213,9 +228,9 @@ namespace ConsoleGameEngine.Core
 
         private void Fill(Vector position, Vector size, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
-            Fill((int)position.X, 
+            Fill((int)position.X,
                  (int)position.Y,
-                 (int)(size.X + position.X), 
+                 (int)(size.X + position.X),
                  (int)(size.Y + position.Y),
                  c, fgColor, bgColor);
         }
@@ -246,13 +261,46 @@ namespace ConsoleGameEngine.Core
                     if (sprite.GetGlyph(x, y) != ' ')
                     {
                         Draw(
-                            (int)sprite.Position.X + x, 
-                            (int)sprite.Position.Y + y, 
-                            sprite.GetGlyph(x, y), 
+                            (int)sprite.Position.X + x,
+                            (int)sprite.Position.Y + y,
+                            sprite.GetGlyph(x, y),
                             sprite.GetFgColor(x, y),
                             sprite.GetBgColor(x, y));
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Draws a line from the starting point to the ending point.
+        /// </summary>
+        protected void DrawLine(Vector start, Vector end, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        {
+            DrawLine(
+                (int) start.X, (int) start.Y,
+                (int) end.X, (int) end.Y,
+                c, fgColor, bgColor);
+        }
+
+        /// <summary>
+        /// Draws a line from the starting point to the ending point.
+        /// </summary>
+        protected void DrawLine(int x0, int y0, int x1, int y1, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        {
+            var dx = x1 - x0;
+            var dy = y1 - y0;
+            var d = 2 * dy - dx;
+            var y = y0;
+
+            for (int x = x0; x < x1; x++)
+            {
+                Draw(x, y, c, fgColor, bgColor);
+                if (d > 0)
+                {
+                    y++;
+                    d -= 2 * dx;
+                }
+                d += 2*dy;
             }
         }
 
@@ -262,10 +310,10 @@ namespace ConsoleGameEngine.Core
         protected void DrawString(Vector position, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black, bool centered = false)
         {
             DrawString(
-                (int) position.X, 
-                (int) position.Y, 
-                msg, 
-                fgColor, 
+                (int) position.X,
+                (int) position.Y,
+                msg,
+                fgColor,
                 bgColor,
                 centered);
         }
@@ -279,7 +327,7 @@ namespace ConsoleGameEngine.Core
             {
                 x -= msg.Length / 2;
             }
-            
+
             for (int i = 0; i < msg.Length; i++)
             {
                 Draw(x + i, y, msg[i], fgColor, bgColor);
