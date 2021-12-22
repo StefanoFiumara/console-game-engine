@@ -5,7 +5,7 @@ using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Runner.Games
 {
-    public class TestGame : ConsoleGameEngineBase
+    public class LineTest : ConsoleGameEngineBase
     {
         protected override string Name => "Test Game";
 
@@ -16,7 +16,7 @@ namespace ConsoleGameEngine.Runner.Games
         private Vector _end;
         private float _degrees;
 
-        public TestGame()
+        public LineTest()
         {
             InitConsole(64,64);
         }
