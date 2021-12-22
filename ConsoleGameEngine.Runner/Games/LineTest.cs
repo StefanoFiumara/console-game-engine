@@ -9,8 +9,12 @@ namespace ConsoleGameEngine.Runner.Games
     {
         protected override string Name => "Test Game";
 
-        private const float GAME_TICK = 0.2f;
+        private const float GAME_TICK = 0.02f;
         private float _gameTimer;
+
+        private Vector _start;
+        private Vector _end;
+        private float _degrees;
 
         public TestGame()
         {
@@ -19,6 +23,9 @@ namespace ConsoleGameEngine.Runner.Games
         protected override bool Create()
         {
             _gameTimer = GAME_TICK;
+            _start = ScreenRect.Center;
+            _end = Vector.Zero;
+            _degrees = 0;
             return true;
         }
 
@@ -30,17 +37,22 @@ namespace ConsoleGameEngine.Runner.Games
                 return false;
             }
 
-            var start = Vector.Zero;
-            var end = ScreenRect.Center * 0.5f;
-
-            DrawLine(start, end, ' ', bgColor: ConsoleColor.Red);
-
             // Ticks the game forward every GAME_TICK seconds.
             _gameTimer -= elapsedTime;
             if (_gameTimer <= 0f)
             {
                 _gameTimer = GAME_TICK;
                 // Tick logic here
+                Fill(ScreenRect, ' ');
+
+                _end = new Vector(
+                    (float) Math.Cos(_degrees * Math.PI/180) * ScreenWidth * 0.5f,
+                    (float) Math.Sin(_degrees * Math.PI/180) * ScreenHeight * 0.5f);
+
+                _degrees++;
+
+                DrawLine(_start, _start + _end, ' ', bgColor: ConsoleColor.Red);
+                DrawString(0,0, $"Deg: {_degrees}");
             }
 
             return true;

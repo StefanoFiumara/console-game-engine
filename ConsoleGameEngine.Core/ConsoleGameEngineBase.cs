@@ -285,24 +285,104 @@ namespace ConsoleGameEngine.Core
         /// <summary>
         /// Draws a line from the starting point to the ending point.
         /// </summary>
-        protected void DrawLine(int x0, int y0, int x1, int y1, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        void DrawLine(int x1, int y1, int x2, int y2, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
-            var dx = x1 - x0;
-            var dy = y1 - y0;
-            var d = 2 * dy - dx;
-            var y = y0;
+            int x;
+            int y;
 
-            for (int x = x0; x < x1; x++)
+            var dx = x2 - x1;
+            var dy = y2 - y1;
+
+            var dx1 = System.Math.Abs(dx);
+            var dy1 = System.Math.Abs(dy);
+
+            var px = 2 * dy1 - dx1;
+            var py = 2 * dx1 - dy1;
+
+            if (dy1 <= dx1)
             {
-                Draw(x, y, c, fgColor, bgColor);
-                if (d > 0)
+                int xe;
+                if (dx >= 0)
                 {
-                    y++;
-                    d -= 2 * dx;
+                    x = x1;
+                    y = y1;
+                    xe = x2;
                 }
-                d += 2*dy;
+                else
+                {
+                    x = x2;
+                    y = y2;
+                    xe = x1;
+                }
+
+                Draw(x, y, c, fgColor, bgColor);
+
+                for (var i = 0; x < xe; i++)
+                {
+                    x = x + 1;
+                    if (px < 0)
+                    {
+                        px += 2 * dy1;
+                    }
+                    else
+                    {
+                        if (dx < 0 && dy < 0 || dx > 0 && dy > 0)
+                        {
+                            y += 1;
+                        }
+                        else
+                        {
+                            y -= 1;
+                        }
+                        px += 2 * (dy1 - dx1);
+                    }
+
+                    Draw(x, y, c, fgColor, bgColor);
+                }
+            }
+            else
+            {
+                int ye;
+                if (dy >= 0)
+                {
+                    x = x1;
+                    y = y1;
+                    ye = y2;
+                }
+                else
+                {
+                    x = x2;
+                    y = y2;
+                    ye = y1;
+                }
+
+                Draw(x, y, c, fgColor, bgColor);
+
+                for (var i = 0; y < ye; i++)
+                {
+                    y += 1;
+                    if (py <= 0)
+                    {
+                        py += 2 * dx1;
+                    }
+                    else
+                    {
+                        if (dx < 0 && dy < 0 || dx > 0 && dy > 0)
+                        {
+                            x += 1;
+                        }
+                        else
+                        {
+                            x -= 1;
+                        }
+                        py += 2 * (dx1 - dy1);
+                    }
+
+                    Draw(x, y, c, fgColor, bgColor);
+                }
             }
         }
+
 
         /// <summary>
         /// Draws a string of text to the screen at the given coordinates.
