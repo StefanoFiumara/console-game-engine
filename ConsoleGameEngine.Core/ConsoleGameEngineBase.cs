@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using ConsoleGameEngine.Core.GameObjects;
@@ -10,13 +11,20 @@ using ConsoleGameEngine.Core.Win32;
 
 namespace ConsoleGameEngine.Core
 {
+    public enum TextAlignment
+    {
+        Left,
+        Centered,
+        Right
+    }
+    
     public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
     {
         private CharInfo[] _screenBuffer;
         private bool _isInit;
 
         private bool _gameRunning;
-        private readonly KeyboardInput _input;
+        private readonly PlayerInput _input;
         private int _targetFps;
 
         /// <summary>
@@ -39,6 +47,10 @@ namespace ConsoleGameEngine.Core
         /// </summary>
         protected Rect ScreenRect { get; private set; }
 
+        protected Vector ScreenPosition { get; private set; }
+
+        protected int PixelSize { get; private set; }
+        
         /// <summary>
         /// Enabling performance mode allows the game loop to run as fast as possible
         /// instead of suspending the game loop thread to hit the target framerate.
@@ -50,9 +62,9 @@ namespace ConsoleGameEngine.Core
         {
             _isInit = false;
             PerformanceModeEnabled = false;
-            _input = new KeyboardInput();
+            _input = new PlayerInput();
         }
-
+        
         /// <summary>
         /// Initializes the Console to the specified size, must be called before Start()
         /// </summary>
@@ -67,6 +79,7 @@ namespace ConsoleGameEngine.Core
                 Console.OutputEncoding = Encoding.UTF8;
 
                 if (pixelSize < 4) pixelSize = 4;
+                PixelSize = pixelSize;
                 SetCurrentFont("Modern DOS 8x8", pixelSize);
 
                 // Clamp width and height while maintaining aspect ratio
@@ -134,8 +147,9 @@ namespace ConsoleGameEngine.Core
                 var currentTime = timer.Elapsed.TotalMilliseconds;
                 var elapsedTime = (currentTime - previousTime);
                 previousTime = currentTime;
-
-                _input.Update();
+                
+                ScreenPosition = GetWindowPosition();
+                _input.Update(ScreenPosition);
 
                 // Game Logic
                 if (!Update((float) elapsedTime / 1000f, _input))
@@ -148,7 +162,7 @@ namespace ConsoleGameEngine.Core
 
                 var averageFps = ++framesRendered / (timer.Elapsed.TotalMilliseconds / 1000f);
                 Console.Title = $"{Name} ~ Average FPS: {averageFps:F}";
-
+                
                 if (!PerformanceModeEnabled)
                 {
                     // Give back some system resources by suspending the thread if update loop takes less time than necessary to hit our target FPS.
@@ -174,7 +188,7 @@ namespace ConsoleGameEngine.Core
         /// </summary>
         /// <param name="elapsedTime">The elapsed time since the last frame (in seconds)</param>
         /// <param name="input">The keyboard input state for the current frame</param>
-        protected abstract bool Update(float elapsedTime, KeyboardInput input);
+        protected abstract bool Update(float elapsedTime, PlayerInput input);
 
         /// <summary>
         /// Draws a character to the screen at the given position.
@@ -188,21 +202,6 @@ namespace ConsoleGameEngine.Core
         /// Draws a character to the screen at the given position.
         /// </summary>
         protected void Draw(int x, int y, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
-        {
-            if (x >= ScreenWidth  || x < 0 ||
-                y >= ScreenHeight || y < 0)
-            {
-                return;
-            }
-
-            var index = y * ScreenWidth + x;
-            var color = (short)((int)fgColor + ((int)bgColor << 4));
-
-            _screenBuffer[index].Attributes = color;
-            _screenBuffer[index].Char.UnicodeChar = c;
-        }
-
-        protected void Draw(int x, int y, char c, int fgColor, int bgColor)
         {
             if (x >= ScreenWidth  || x < 0 ||
                 y >= ScreenHeight || y < 0)
@@ -382,11 +381,11 @@ namespace ConsoleGameEngine.Core
             }
         }
 
-
+        
         /// <summary>
         /// Draws a string of text to the screen at the given coordinates.
         /// </summary>
-        protected void DrawString(Vector position, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black, bool centered = false)
+        protected void DrawString(Vector position, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black, TextAlignment alignment = TextAlignment.Left)
         {
             DrawString(
                 (int) position.X,
@@ -394,17 +393,21 @@ namespace ConsoleGameEngine.Core
                 msg,
                 fgColor,
                 bgColor,
-                centered);
+                alignment);
         }
 
         /// <summary>
         /// Draws a string of text to the screen at the given coordinates.
         /// </summary>
-        protected void DrawString(int x, int y, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black, bool centered = false)
+        protected void DrawString(int x, int y, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black, TextAlignment alignment = TextAlignment.Left)
         {
-            if (centered)
+            if (alignment == TextAlignment.Centered)
             {
                 x -= msg.Length / 2;
+            }
+            else if (alignment == TextAlignment.Right)
+            {
+                x -= msg.Length;
             }
 
             for (int i = 0; i < msg.Length; i++)

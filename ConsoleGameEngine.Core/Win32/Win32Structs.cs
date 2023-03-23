@@ -40,6 +40,18 @@ namespace ConsoleGameEngine.Core.Win32
         public short Bottom;
     }
     
+    [StructLayout(LayoutKind.Sequential)]
+    struct IntRect
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+
+        public int Width => Right - Left;
+        public int Height => Bottom - Top;
+    }
+    
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     public struct FontInfo
     {

@@ -57,7 +57,7 @@ namespace ConsoleGameEngine.Runner.Games
             return true;
         }
 
-        protected override bool Update(float elapsedTime, KeyboardInput input)
+        protected override bool Update(float elapsedTime, PlayerInput input)
         {
             // Clear the screen each frame
             Fill(ScreenRect, ' ', bgColor: BG_COLOR);

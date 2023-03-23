@@ -1,22 +1,33 @@
 using System;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
+using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Core.Input
 {
-    public class KeyboardInput
+    public class PlayerInput
     {
         [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         private static extern short GetAsyncKeyState(int keyCode);
         
+        [DllImport("user32.dll")]
+        private static extern bool GetCursorPos(ref Point lpPoint);
+
         private readonly bool[] _currentKeyState;
         private readonly bool[] _previousKeyState;
         
         private readonly KeyState[] _keyStates;
 
         private readonly KeyCode[] _keys;
+        
+        // Point that will be updated by the function with the current mouse coordinates
+        private Point _pointRef;
+        private Vector _mousePosition;
 
-        internal KeyboardInput()
+        public Vector MousePosition => _mousePosition;
+        
+        internal PlayerInput()
         {
             _keys = Enum.GetValues<KeyCode>().ToArray();
 
@@ -48,9 +59,14 @@ namespace ConsoleGameEngine.Core.Input
         {
             return _keyStates[(int) k].IsHeld;
         }
-        
-        internal void Update()
+
+        internal void Update(Vector windowPos)
         {
+            // Update Mouse Position
+            GetCursorPos(ref _pointRef);
+            _mousePosition.X = _pointRef.X - windowPos.X - 8; // TODO: not sure why this is needed but the point ref and window pos values are slightly off
+            _mousePosition.Y = _pointRef.Y - windowPos.Y - 30; // TODO: is there a programmatic way to measure the title bar?
+            
             // only loop through supported keys in the KeyCode enum
             for (int i = 0; i < _keys.Length; i++)
             {

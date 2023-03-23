@@ -30,7 +30,7 @@ namespace ConsoleGameEngine.Runner.Games
         }
 
 
-        protected override bool Update(float elapsedTime, KeyboardInput input)
+        protected override bool Update(float elapsedTime, PlayerInput input)
         {
             if (input.IsKeyDown(KeyCode.Esc))
             {

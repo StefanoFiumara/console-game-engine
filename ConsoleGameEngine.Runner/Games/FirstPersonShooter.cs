@@ -12,9 +12,9 @@ namespace ConsoleGameEngine.Runner.Games
     using static Math;
 
     // ReSharper disable once UnusedType.Global
-    public class Maze : ConsoleGameEngineBase
+    public class FirstPersonShooter : ConsoleGameEngineBase
     {
-        protected override string Name => "Maze";
+        protected override string Name => "First Person Shooter";
 
         private const float TURN_SPEED = 2f;
         private const float MOVE_SPEED = 5.0f;
@@ -31,7 +31,7 @@ namespace ConsoleGameEngine.Runner.Games
 
         private float _boundaryTolerance = 0.005f;
 
-        public Maze()
+        public FirstPersonShooter()
         {
             PerformanceModeEnabled = true;
             InitConsole(240, 135, 6);
@@ -64,7 +64,7 @@ namespace ConsoleGameEngine.Runner.Games
             return true;
         }
 
-        protected override bool Update(float elapsedTime, KeyboardInput input)
+        protected override bool Update(float elapsedTime, PlayerInput input)
         {
             // handle input
             if (input.IsKeyHeld(KeyCode.Left))  _playerAngle -= TURN_SPEED * elapsedTime;
@@ -225,8 +225,8 @@ namespace ConsoleGameEngine.Runner.Games
 
             // Draw HUD
             DrawSprite(_map);
-            DrawString(0, 0, $"Raycast steps: {raycastStepCount}");
-            DrawString(0, 1, $"Boundary Tol: {_boundaryTolerance}");
+            DrawString(ScreenWidth, (int)_map.Position.Y - 2, $"Raycasts: {raycastStepCount}", alignment: TextAlignment.Right);
+            DrawString(ScreenWidth, (int)_map.Position.Y - 1, $"Boundary Tol: {_boundaryTolerance}", alignment: TextAlignment.Right);
             Draw(_map.Position + _playerPosition.Rounded, 'X', ConsoleColor.Red);
 
             return !input.IsKeyDown(KeyCode.Esc);

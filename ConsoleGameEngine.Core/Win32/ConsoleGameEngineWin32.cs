@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using ConsoleGameEngine.Core.Math;
 using Microsoft.Win32.SafeHandles;
 // ReSharper disable StringLiteralTypo
 
@@ -22,7 +23,7 @@ namespace ConsoleGameEngine.Core.Win32
 
         private static readonly IntPtr ConsoleOutputHandle = GetStdHandle(STANDARD_OUTPUT_HANDLE);
         private readonly SafeFileHandle _consoleHandle;
-
+        
         /// <summary>
         /// This class does some Win32 API stuff to configure the console window
         /// Things like writing to the console buffer directly and disabling resize options or "quick edit mode"
@@ -31,9 +32,8 @@ namespace ConsoleGameEngine.Core.Win32
         protected ConsoleGameEngineWin32()
         {
             Console.CursorVisible = false;
-            DisableMouseInput();
             DisableResize();
-
+            DisableMouseInput();
             _consoleHandle = CreateFile("CONOUT$", 0x40000000, 2, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero);
             if (_consoleHandle.IsInvalid)
             {
@@ -57,6 +57,18 @@ namespace ConsoleGameEngine.Core.Win32
                 ref boundsRect);
         }
 
+        protected Vector GetWindowPosition()
+        {
+            if (!GetWindowRect(GetConsoleWindow(), out IntRect rect))
+            {
+                var ex = Marshal.GetLastWin32Error();
+                Console.WriteLine("Set error " + ex);
+                throw new System.ComponentModel.Win32Exception(ex);
+            }
+
+            return new Vector(rect.Left, rect.Top);
+        }
+        
         private static void DisableMouseInput()
         {
             var consoleHandle = GetStdHandle(STD_INPUT_HANDLE);
@@ -67,7 +79,7 @@ namespace ConsoleGameEngine.Core.Win32
 
             SetConsoleMode(consoleHandle, consoleMode);
         }
-
+        
         private static void DisableResize()
         {
             var handle = GetConsoleWindow();
@@ -82,11 +94,9 @@ namespace ConsoleGameEngine.Core.Win32
             }
         }
         
-        
-        
         public static void SetCurrentFont(string font, short fontSize = 0)
         {
-            FontInfo before = new FontInfo
+            var before = new FontInfo
             {
                 cbSize = Marshal.SizeOf<FontInfo>()
             };
@@ -94,7 +104,7 @@ namespace ConsoleGameEngine.Core.Win32
             if (GetCurrentConsoleFontEx(ConsoleOutputHandle, false, ref before))
             {
 
-                FontInfo set = new FontInfo
+                var set = new FontInfo
                 {
                     cbSize = Marshal.SizeOf<FontInfo>(),
                     FontIndex = 0,
@@ -112,7 +122,7 @@ namespace ConsoleGameEngine.Core.Win32
                     throw new System.ComponentModel.Win32Exception(ex);
                 }
 
-                FontInfo after = new FontInfo
+                var after = new FontInfo
                 {
                     cbSize = Marshal.SizeOf<FontInfo>()
                 };
@@ -125,10 +135,12 @@ namespace ConsoleGameEngine.Core.Win32
             Console.WriteLine("Get error " + er);
             throw new System.ComponentModel.Win32Exception(er);
         }
-        
+
+    #region DLL Imports
+
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr GetStdHandle(int nStdHandle);
-
+        
         [DllImport("kernel32.dll")]
         private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
 
@@ -162,8 +174,6 @@ namespace ConsoleGameEngine.Core.Win32
         [DllImport("kernel32.dll", ExactSpelling = true)]
         private static extern IntPtr GetConsoleWindow();
         
-        
-        
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern bool SetCurrentConsoleFontEx(IntPtr hConsoleOutput, bool maximumWindow, ref FontInfo consoleCurrentFontEx);
@@ -171,5 +181,12 @@ namespace ConsoleGameEngine.Core.Win32
         [return: MarshalAs(UnmanagedType.Bool)]
         [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern bool GetCurrentConsoleFontEx(IntPtr hConsoleOutput, bool maximumWindow, ref FontInfo consoleCurrentFontEx);
+        
+        [DllImport(@"user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetWindowRect(IntPtr hWnd, out IntRect lpRect);
+        
+    #endregion
+        
     }
 }

@@ -151,7 +151,7 @@ namespace ConsoleGameEngine.Runner.Games
             return true;
         }
 
-        protected override bool Update(float elapsedTime, KeyboardInput input)
+        protected override bool Update(float elapsedTime, PlayerInput input)
         {
             if (input.IsKeyDown(KeyCode.Esc))
             {
@@ -161,11 +161,11 @@ namespace ConsoleGameEngine.Runner.Games
             if (_gameOver)
             {
                 Fill(ScreenRect, ' ');
-                DrawString(ScreenRect.Center, "GAME OVER", centered: true);
-                DrawString(ScreenRect.Center + 2 * Vector.Down, $"Score: {_score}", centered: true);
-                DrawString(ScreenRect.Center + 4 * Vector.Down, $"Level: {_level}", centered: true);
-                DrawString(ScreenRect.Center + 6 * Vector.Down, $"Lines: {_lineCount}", centered: true);
-                DrawString(ScreenRect.Center + 8 * Vector.Down, $"Press ENTER to restart", centered: true);
+                DrawString(ScreenRect.Center, "GAME OVER", alignment: TextAlignment.Centered);
+                DrawString(ScreenRect.Center + 2 * Vector.Down, $"Score: {_score}", alignment: TextAlignment.Centered);
+                DrawString(ScreenRect.Center + 4 * Vector.Down, $"Level: {_level}", alignment: TextAlignment.Centered);
+                DrawString(ScreenRect.Center + 6 * Vector.Down, $"Lines: {_lineCount}", alignment: TextAlignment.Centered);
+                DrawString(ScreenRect.Center + 8 * Vector.Down, $"Press ENTER to restart", alignment: TextAlignment.Centered);
 
                 if (input.IsKeyDown(KeyCode.Enter))
                 {
@@ -239,7 +239,7 @@ namespace ConsoleGameEngine.Runner.Games
             }
         }
 
-        private void HandleInput(float elapsedTime, KeyboardInput input)
+        private void HandleInput(float elapsedTime, PlayerInput input)
         {
             // Hold queue
             if (input.IsKeyDown(KeyCode.Space))
@@ -312,7 +312,7 @@ namespace ConsoleGameEngine.Runner.Games
 
         private void DrawHud()
         {
-            DrawString(Vector.Down + Vector.Right * ScreenWidth / 2, "TETRIS", centered: true);
+            DrawString(Vector.Down + Vector.Right * ScreenWidth / 2, "TETRIS", alignment: TextAlignment.Centered);
             DrawString(4 * Vector.Down, $"Score: {_score}");
             DrawString(6 * Vector.Down, $"Level: {_level}");
             DrawString(8 * Vector.Down, $"Lines: {_lineCount}");

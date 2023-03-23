@@ -78,7 +78,7 @@ namespace ConsoleGameEngine.Runner.Games
             return true;
         }
 
-        protected override bool Update(float elapsedTime, KeyboardInput input)
+        protected override bool Update(float elapsedTime, PlayerInput input)
         {
             if (input.IsKeyDown(KeyCode.Esc))
             {
@@ -154,7 +154,7 @@ namespace ConsoleGameEngine.Runner.Games
 
             var title = $"SNAKE";
 
-            DrawString(ScreenWidth / 2, 1, title, centered: true);
+            DrawString(ScreenWidth / 2, 1, title, alignment: TextAlignment.Centered);
             DrawString(1,5, $"Arrow Keys: Move");
             DrawString(1,7, $"ESC: Exit");
             DrawString(1,10, $"High Score: {_highScore}");
