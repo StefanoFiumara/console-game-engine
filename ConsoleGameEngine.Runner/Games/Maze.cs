@@ -29,7 +29,7 @@ namespace ConsoleGameEngine.Runner.Games
         private readonly float _fieldOfView = 3.14159f / 4f; // 90 degree fov
         private Sprite _map;
 
-        private float _boundaryTolerance = 0.007f;
+        private float _boundaryTolerance = 0.005f;
 
         public Maze()
         {
