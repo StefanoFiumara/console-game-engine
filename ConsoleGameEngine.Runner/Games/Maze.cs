@@ -5,36 +5,38 @@ using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
+using ConsoleGameEngine.Core.Physics;
 
 namespace ConsoleGameEngine.Runner.Games
 {
     using static Math;
-    
+
     // ReSharper disable once UnusedType.Global
     public class Maze : ConsoleGameEngineBase
     {
-        protected override string Name => "First Person Shooter";
+        protected override string Name => "Maze";
 
         private const float TURN_SPEED = 2f;
         private const float MOVE_SPEED = 5.0f;
-        private const float RAYCAST_STEP = 0.05f;
-        
+
         private Vector _playerPosition;
         private float _playerAngle;
-        
+
         private Vector PlayerFacingAngle => new(
-            (float) Sin(_playerAngle), 
+            (float) Sin(_playerAngle),
             (float) Cos(_playerAngle));
 
-        private float _fieldOfView = 3.14159f / 4f; // 90 degree fov
+        private readonly float _fieldOfView = 3.14159f / 4f; // 90 degree fov
         private Sprite _map;
+
+        private float _boundaryTolerance = 0.007f;
 
         public Maze()
         {
             PerformanceModeEnabled = true;
-            InitConsole(160, 120, 8);
+            InitConsole(240, 135, 6);
         }
-        
+
         protected override bool Create()
         {
             var map = "";
@@ -67,7 +69,7 @@ namespace ConsoleGameEngine.Runner.Games
             // handle input
             if (input.IsKeyHeld(KeyCode.Left))  _playerAngle -= TURN_SPEED * elapsedTime;
             if (input.IsKeyHeld(KeyCode.Right)) _playerAngle += TURN_SPEED * elapsedTime;
-            
+
 
             if (input.IsKeyHeld(KeyCode.Up))
             {
@@ -78,7 +80,7 @@ namespace ConsoleGameEngine.Runner.Games
                     _playerPosition -= PlayerFacingAngle * MOVE_SPEED * elapsedTime;
                 }
             }
-            
+
             if (input.IsKeyHeld(KeyCode.Down))
             {
                 _playerPosition -= PlayerFacingAngle * MOVE_SPEED * elapsedTime;
@@ -87,83 +89,38 @@ namespace ConsoleGameEngine.Runner.Games
                     _playerPosition += PlayerFacingAngle * MOVE_SPEED * elapsedTime;
                 }
             }
+
+            if (input.IsKeyHeld(KeyCode.Z))
+            {
+                _boundaryTolerance -= 0.01f * elapsedTime;
+                if (_boundaryTolerance < 0f) _boundaryTolerance = 0f;
+            }
             
+            if (input.IsKeyHeld(KeyCode.X))
+            {
+                _boundaryTolerance += 0.01f * elapsedTime;
+            }
             
-            
+            int raycastStepCount = 0;
             // Basic raycast algorithm for each column on the screen
             for (int x = 0; x < ScreenWidth; x++)
             {
                 // Create ray vector
-                double rayAngle = (_playerAngle - _fieldOfView / 2.0f) + ((x / (double) ScreenWidth) * _fieldOfView);
-                float distanceToWall = 0f;
-                float maxDepth = 16f;
-                bool hitWall = false;
-                bool hitBoundary = false;
-
+                double rayAngle = (_playerAngle - _fieldOfView / 2.0d) + ((x / (double) ScreenWidth) * _fieldOfView);
                 var direction = new Vector((float) Sin(rayAngle), (float) Cos(rayAngle));
 
-                // Calculate distance 
-                while (!hitWall && distanceToWall < maxDepth) 
-                {
-                    distanceToWall += RAYCAST_STEP;
-
-                    var testPos = (_playerPosition + direction * distanceToWall);
-
-                    // Test position on map
-                    if (testPos.X < 0 || testPos.X >= _map.Width ||
-                        testPos.Y < 0 || testPos.Y >= _map.Height)
-                    {
-                        // Out of bounds
-                        hitWall = true;
-                        distanceToWall = maxDepth;
-                    }
-                    else if (_map.GetGlyph(testPos) == '#')
-                    {
-                        hitWall = true;
-
-                        // To highlight tile boundaries, cast a ray from each corner
-                        // of the tile, to the player. The more coincident this ray
-                        // is to the rendering ray, the closer we are to a tile 
-                        // boundary, which we'll shade to add detail to the walls
-                        var boundaryRays = new List<(float distance, float dotProduct)>(4);
-
-                        // Test each corner of hit tile, storing the distance from
-                        // the player, and the calculated dot product of the two rays
-                        for (int cornerX = 0; cornerX < 2; cornerX++)
-                        {
-                            for (int cornerY = 0; cornerY < 2; cornerY++)
-                            {
-                                // Angle of corner to eye
-                                var cornerRay = new Vector(
-                                    testPos.Rounded.X + cornerX - _playerPosition.X, 
-                                    testPos.Rounded.Y + cornerY - _playerPosition.Y);
-
-                                // TODO: formalize dot product in Vector Class
-                                float dot = (direction.X * cornerRay.X / cornerRay.Magnitude) + (direction.Y * cornerRay.Y / cornerRay.Magnitude);
-
-                                boundaryRays.Add((cornerRay.Magnitude, dot));
-                            }
-                        }
-
-                        // Sort Pairs from closest to farthest
-                        boundaryRays = boundaryRays.OrderBy(v => v.distance).ToList();
-
-                        // First two/three are closest (we will never see all four)
-                        float fBound = 0.0025f;
-                        if (Acos(boundaryRays[0].dotProduct) < fBound) hitBoundary = true;
-                        if (Acos(boundaryRays[1].dotProduct) < fBound) hitBoundary = true;
-                        if (Acos(boundaryRays[2].dotProduct) < fBound) hitBoundary = true;
-                    }
-                }
+                var ray = Raycast.Send(_map, _playerPosition, direction, '#', _boundaryTolerance);
+                raycastStepCount += ray.StepCount;
                 
                 // Use distance to wall to determine ceiling and floor height for this column
                 // From the midpoint (height / 2), subtract an amount proportional to the distance of the wall
-                int ceiling = (int) (ScreenHeight / 2f - ScreenHeight / distanceToWall);
+                int ceiling = (int) (ScreenHeight / 2f - ScreenHeight / ray.Distance);
                 // Floor is mirror of ceiling
                 int floor = ScreenHeight - ceiling;
-                
-                
+
+
                 // Render column based on ceiling and floor values
+                // TODO: use shading map to determine colors
                 for (int y = 0; y < ScreenHeight; y++)
                 {
                     if (y < ceiling)
@@ -183,48 +140,46 @@ namespace ConsoleGameEngine.Runner.Games
                         var fgColor = ConsoleColor.White;
                         var bgColor = ConsoleColor.DarkGray;
 
-                        if (distanceToWall <= maxDepth / 4f)
+                        switch (ray.Distance)
                         {
-                            shade = fullShade; 
-                            fgColor = ConsoleColor.Gray;
-                            bgColor = ConsoleColor.White;
-                        }
-                        else if (distanceToWall <= maxDepth / 3f)
-                        {
-                            shade = darkShade;
-                            fgColor = ConsoleColor.Gray;
-                            bgColor = ConsoleColor.White;
-                        }
-                        else if (distanceToWall <= maxDepth / 2f)
-                        {
-                            shade = mediumShade;
-                            fgColor = ConsoleColor.DarkGray;
-                            bgColor = ConsoleColor.Gray;
-                        }
-                        else if (distanceToWall <= maxDepth)
-                        {
-                            fgColor = ConsoleColor.Gray;
-                            bgColor = ConsoleColor.DarkGray;
-                            shade = lightShade;
-                        }
-                        else
-                        {
-                            fgColor = ConsoleColor.DarkGray;
-                            shade = emptyShade;
+                            case <= Raycast.MAX_RAYCAST_DEPTH / 4f:
+                                shade = fullShade;
+                                fgColor = ConsoleColor.Gray;
+                                bgColor = ConsoleColor.White;
+                                break;
+                            case <= Raycast.MAX_RAYCAST_DEPTH / 3f:
+                                shade = darkShade;
+                                fgColor = ConsoleColor.Gray;
+                                bgColor = ConsoleColor.White;
+                                break;
+                            case <= Raycast.MAX_RAYCAST_DEPTH / 2f:
+                                shade = mediumShade;
+                                fgColor = ConsoleColor.DarkGray;
+                                bgColor = ConsoleColor.Gray;
+                                break;
+                            case <= Raycast.MAX_RAYCAST_DEPTH:
+                                fgColor = ConsoleColor.Gray;
+                                bgColor = ConsoleColor.DarkGray;
+                                shade = lightShade;
+                                break;
+                            default:
+                                fgColor = ConsoleColor.Magenta;
+                                shade = emptyShade;
+                                break;
                         }
 
-                        if (hitBoundary)
+                        if (ray.HitBoundary)
                         {
                             fgColor = ConsoleColor.Black;
                             bgColor = ConsoleColor.Black;
                         }
-                        
+
                         Draw(x, y, shade, fgColor, bgColor);
                     }
                     else
                     {
                         float groundDistance = 1.0f - (y - ScreenHeight / 2.0f) / (ScreenHeight / 2.0f);
-                        
+
                         char emptyShade = '#';
                         char lightShade = 'X';
                         char mediumShade = '.';
@@ -235,48 +190,45 @@ namespace ConsoleGameEngine.Runner.Games
                         var fgColor = ConsoleColor.Green;
                         ConsoleColor bgColor;
 
-                        if (groundDistance <= 0.25f)
+                        switch (groundDistance)
                         {
-                            shade = fullShade; 
-                            fgColor = ConsoleColor.Green;
-                            bgColor = ConsoleColor.Green;
-                            
-                        }
-                        else if (groundDistance <= 0.5f)
-                        {
-                            shade = darkShade;
-                            fgColor = ConsoleColor.DarkGreen;
-                            bgColor = ConsoleColor.Green;
-                            
-                        }
-                        else if (groundDistance <= 0.75f)
-                        {
-                            fgColor = ConsoleColor.Black;
-                            bgColor = ConsoleColor.DarkGreen;
-                            shade = mediumShade;
-                            
-                        }
-                        else if (groundDistance <= 0.9f)
-                        {
-                            fgColor = ConsoleColor.DarkGreen;
-                            bgColor = ConsoleColor.Black;
-                            shade = lightShade;
-                        }
-                        else
-                        {
-                            shade = emptyShade;
-                            bgColor = ConsoleColor.DarkGreen;
+                            case <= 0.25f:
+                                shade = fullShade;
+                                fgColor = ConsoleColor.Green;
+                                bgColor = ConsoleColor.Green;
+                                break;
+                            case <= 0.5f:
+                                shade = darkShade;
+                                fgColor = ConsoleColor.DarkGreen;
+                                bgColor = ConsoleColor.Green;
+                                break;
+                            case <= 0.75f:
+                                fgColor = ConsoleColor.Black;
+                                bgColor = ConsoleColor.DarkGreen;
+                                shade = mediumShade;
+                                break;
+                            case <= 0.9f:
+                                fgColor = ConsoleColor.DarkGreen;
+                                bgColor = ConsoleColor.Black;
+                                shade = lightShade;
+                                break;
+                            default:
+                                shade = emptyShade;
+                                bgColor = ConsoleColor.Magenta;
+                                break;
                         }
 
                         Draw(x, y, shade, fgColor, bgColor);
                     }
                 }
             }
-            
+
             // Draw HUD
             DrawSprite(_map);
+            DrawString(0, 0, $"Raycast steps: {raycastStepCount}");
+            DrawString(0, 1, $"Boundary Tol: {_boundaryTolerance}");
             Draw(_map.Position + _playerPosition.Rounded, 'X', ConsoleColor.Red);
-            
+
             return !input.IsKeyDown(KeyCode.Esc);
         }
     }

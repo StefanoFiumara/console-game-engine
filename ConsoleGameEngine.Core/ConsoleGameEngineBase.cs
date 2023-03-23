@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
@@ -285,7 +284,7 @@ namespace ConsoleGameEngine.Core
         /// <summary>
         /// Draws a line from the starting point to the ending point.
         /// </summary>
-        void DrawLine(int x1, int y1, int x2, int y2, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        private void DrawLine(int x1, int y1, int x2, int y2, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
         {
             int x;
             int y;

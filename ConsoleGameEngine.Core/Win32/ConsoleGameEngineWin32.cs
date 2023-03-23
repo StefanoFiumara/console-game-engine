@@ -26,7 +26,7 @@ namespace ConsoleGameEngine.Core.Win32
         /// <summary>
         /// This class does some Win32 API stuff to configure the console window
         /// Things like writing to the console buffer directly and disabling resize options or "quick edit mode"
-        /// These features are not accessible in native C#
+        /// These features are not accessible in native C#, so we import some kernel32.dll functions to achieve it.
         /// </summary>
         protected ConsoleGameEngineWin32()
         {

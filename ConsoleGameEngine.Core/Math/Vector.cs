@@ -1,11 +1,10 @@
 using System;
-// ReSharper disable MemberCanBePrivate.Global
 
 namespace ConsoleGameEngine.Core.Math
 {
     using static System.Math;
     
-    public readonly struct Vector : IEquatable<Vector>
+    public struct Vector : IEquatable<Vector>
     {
         private const float TOLERANCE_EPSILON = 0.01f;
         
@@ -16,15 +15,20 @@ namespace ConsoleGameEngine.Core.Math
         public static Vector Up { get; } = new(0, -1);
         public static Vector Down { get; } = new(0, 1);
         
-        public float X { get; }
-        public float Y { get; }
+        public float X { get; set; }
+        public float Y { get; set; }
 
         public float Magnitude => (float) Sqrt(X * X + Y * Y);
         
         public Vector Normalized => Magnitude == 0f ? Zero : this / Magnitude;
 
         public Vector Rounded => new((int) X, (int) Y);
-        
+
+        public Vector(double x, double y)
+        {
+            X = (float) x;
+            Y = (float) y;
+        }
         public Vector(float x, float y)
         {
             X = x;
