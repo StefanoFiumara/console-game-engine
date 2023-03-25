@@ -24,7 +24,7 @@ namespace ConsoleGameEngine.Core
         private bool _isInit;
 
         private bool _gameRunning;
-        private readonly PlayerInput _input;
+        private PlayerInput _input;
         private int _targetFps;
 
         /// <summary>
@@ -62,7 +62,6 @@ namespace ConsoleGameEngine.Core
         {
             _isInit = false;
             PerformanceModeEnabled = false;
-            _input = new PlayerInput();
         }
         
         /// <summary>
@@ -107,6 +106,8 @@ namespace ConsoleGameEngine.Core
 
                 _targetFps = targetFps;
                 if (_targetFps < 30) _targetFps = 30;
+                
+                _input = new PlayerInput(pixelSize);
                 _isInit = true;
             }
             else
@@ -145,7 +146,7 @@ namespace ConsoleGameEngine.Core
             while (_gameRunning)
             {
                 var currentTime = timer.Elapsed.TotalMilliseconds;
-                var elapsedTime = (currentTime - previousTime);
+                var elapsedTime = currentTime - previousTime;
                 previousTime = currentTime;
                 
                 ScreenPosition = GetWindowPosition();
@@ -231,6 +232,31 @@ namespace ConsoleGameEngine.Core
                  (int)(size.X + position.X),
                  (int)(size.Y + position.Y),
                  c, fgColor, bgColor);
+        }
+
+        protected void DrawBorder(Rect rect, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        {
+            var borderPos = new Vector(rect.Position.X - 1, rect.Position.Y - 1);
+            var borderSize = new Vector(rect.Width + 1, rect.Height + 1);
+            
+            DrawBox(borderPos, borderSize, c, fgColor, bgColor);
+        }
+        protected void DrawBox(Rect rect, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        {
+            DrawBox(rect.Position, rect.Size, c, fgColor, bgColor);
+        }
+        
+        protected void DrawBox(Vector position, Vector size, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+        {
+            var topLeft = position;
+            var topRight = position + Vector.Right * size.X;
+            var bottomLeft = position + Vector.Down * size.Y;
+            var bottomRight = position + size;
+            
+            DrawLine(topLeft, topRight, c, fgColor, bgColor);
+            DrawLine(bottomLeft, bottomRight, c, fgColor, bgColor);
+            DrawLine(topLeft, bottomLeft, c, fgColor, bgColor);
+            DrawLine(topRight, bottomRight, c, fgColor, bgColor);
         }
 
         private void Fill(int x1, int y1, int x2, int y2, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)

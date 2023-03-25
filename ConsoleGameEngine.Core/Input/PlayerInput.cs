@@ -8,6 +8,8 @@ namespace ConsoleGameEngine.Core.Input
 {
     public class PlayerInput
     {
+        private readonly short _pixelSize;
+
         [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
         private static extern short GetAsyncKeyState(int keyCode);
         
@@ -24,11 +26,12 @@ namespace ConsoleGameEngine.Core.Input
         // Point that will be updated by the function with the current mouse coordinates
         private Point _pointRef;
         private Vector _mousePosition;
-
-        public Vector MousePosition => _mousePosition;
         
-        internal PlayerInput()
+        public Vector MousePosition => (_mousePosition / _pixelSize).Rounded;
+        
+        internal PlayerInput(short pixelSize)
         {
+            _pixelSize = pixelSize;
             _keys = Enum.GetValues<KeyCode>().ToArray();
 
             _currentKeyState = new bool[256];

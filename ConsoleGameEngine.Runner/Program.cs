@@ -23,7 +23,7 @@ namespace ConsoleGameEngine.Runner
             {
                 InitConsoleDefaults();
 
-                Console.WriteLine("\n Choose a game to play!\n");
+                Console.WriteLine("\n Choose an application to run:\n");
 
                 for (var i = 0; i < games.Count; i++)
                 {

@@ -1,12 +1,22 @@
 using System;
 using System.Linq;
+using System.Text;
 using ConsoleGameEngine.Core.Math;
 // ReSharper disable MemberCanBePrivate.Global
 
 namespace ConsoleGameEngine.Core.GameObjects
 {
+    // TODO: Split between Sprite and GameObject
+    //          * Sprite should hold only graphics data
+    //          * GameObject holds position and velocity info
+    
+    //          * Then we can optionally apply physics concepts to game objects
+    //            with a physics engine, rather than making the user
+    //            re-implement physics in each individual game 
     public class Sprite
     {
+        public const char SOLID_PIXEL = '\xDB';
+        
         private readonly char[] _glyphs;
         private readonly ConsoleColor[] _fgColors;
         private readonly ConsoleColor[] _bgColors;
@@ -50,10 +60,26 @@ namespace ConsoleGameEngine.Core.GameObjects
             _fgColors = new ConsoleColor[_glyphs.Length];
             _bgColors = new ConsoleColor[_glyphs.Length];
             
-            SetSpriteColor(fgColor);
             SetSpriteBackground(bgColor);
+            SetSpriteColor(fgColor);
         }
 
+        public static Sprite CreateSolid(int width, int height, ConsoleColor color)
+        {
+            var sb = new StringBuilder();
+            for (int w = 0; w < width; w++)
+            {
+                for (int h = 0; h < height; h++)
+                {
+                    sb.Append(SOLID_PIXEL);
+                }
+
+                sb.Append('\n');
+            }
+
+            return new Sprite(sb.ToString(), color);
+        }
+        
         public Sprite(Sprite spr)
         {
             Size = spr.Size;
@@ -80,6 +106,10 @@ namespace ConsoleGameEngine.Core.GameObjects
             for (int i = 0; i < _fgColors.Length; i++)
             {
                 _fgColors[i] = color;
+                if (_glyphs[i] == SOLID_PIXEL)
+                {
+                    _bgColors[i] = color;
+                }
             }
         }
         
@@ -178,6 +208,11 @@ namespace ConsoleGameEngine.Core.GameObjects
             }
 
             _fgColors[y * (int) Width + x] = c;
+            
+            if (GetGlyph(x,y) == SOLID_PIXEL)
+            {
+                _bgColors[y * (int) Width + x] = c;
+            }
         }
 
         public void SetBgColor(Vector pos, ConsoleColor c)
@@ -193,6 +228,11 @@ namespace ConsoleGameEngine.Core.GameObjects
             }
 
             _bgColors[y * (int) Width + x] = c;
+            
+            if (GetGlyph(x,y) == SOLID_PIXEL)
+            {
+                _fgColors[y * (int) Width + x] = c;
+            }
         }
     }
 }

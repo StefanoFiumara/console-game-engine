@@ -155,8 +155,8 @@ namespace ConsoleGameEngine.Runner.Games
             var title = $"SNAKE";
 
             DrawString(ScreenWidth / 2, 1, title, alignment: TextAlignment.Centered);
-            DrawString(1,5, $"Arrow Keys: Move");
-            DrawString(1,7, $"ESC: Exit");
+            DrawString(1,5, "Arrow Keys: Move");
+            DrawString(1,7, "ESC: Exit");
             DrawString(1,10, $"High Score: {_highScore}");
             DrawString(1,12, $"Score: {_score}");
             DrawString(1,14, $"Level: {_level}");
