@@ -48,11 +48,11 @@ namespace ConsoleGameEngine.Runner.Games
             map += "#..............#\n";
             map += "#..............#\n";
             map += "#..............#\n";
-            map += "#.......########\n";
+            map += "#........#######\n";
             map += "#..............#\n";
-            map += "#...#..........#\n";
-            map += "#...#..........#\n";
-            map += "#...#..........#\n";
+            map += "#....#.........#\n";
+            map += "#....#.........#\n";
+            map += "#....#.........#\n";
             map += "################\n";
 
             _map = new Sprite(map);
@@ -102,7 +102,6 @@ namespace ConsoleGameEngine.Runner.Games
                 // Floor is mirror of ceiling
                 int floor = ScreenHeight - ceiling;
 
-
                 // Render column based on ceiling and floor values
                 for (int y = 0; y < ScreenHeight; y++)
                 {
@@ -151,7 +150,7 @@ namespace ConsoleGameEngine.Runner.Games
             new(Raycast.MAX_RAYCAST_DEPTH / 4f, Shade.MEDIUM_SHADE, ConsoleColor.Gray,     ConsoleColor.White),
             new(Raycast.MAX_RAYCAST_DEPTH / 3f, Shade.DARK_SHADE,   ConsoleColor.Gray,     ConsoleColor.White),
             new(Raycast.MAX_RAYCAST_DEPTH / 2f, Shade.LIGHT_SHADE,  ConsoleColor.DarkGray, ConsoleColor.Gray),
-            new(Raycast.MAX_RAYCAST_DEPTH / 1f, Shade.MEDIUM_SHADE, ConsoleColor.DarkGray, ConsoleColor.DarkGray)
+            new(Raycast.MAX_RAYCAST_DEPTH / 1f, Shade.MEDIUM_SHADE, ConsoleColor.White, ConsoleColor.DarkGray)
         };
         
         private static readonly List<Shade> GroundShades = new()
