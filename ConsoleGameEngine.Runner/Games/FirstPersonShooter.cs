@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Input;
@@ -69,8 +68,7 @@ namespace ConsoleGameEngine.Runner.Games
             // handle input
             if (input.IsKeyHeld(KeyCode.Left))  _playerAngle -= TURN_SPEED * elapsedTime;
             if (input.IsKeyHeld(KeyCode.Right)) _playerAngle += TURN_SPEED * elapsedTime;
-
-
+            
             if (input.IsKeyHeld(KeyCode.Up))
             {
                 _playerPosition += PlayerFacingAngle * MOVE_SPEED * elapsedTime;
@@ -101,7 +99,6 @@ namespace ConsoleGameEngine.Runner.Games
                 _boundaryTolerance += 0.01f * elapsedTime;
             }
             
-            int raycastStepCount = 0;
             // Basic raycast algorithm for each column on the screen
             for (int x = 0; x < ScreenWidth; x++)
             {
@@ -110,8 +107,7 @@ namespace ConsoleGameEngine.Runner.Games
                 var direction = new Vector((float) Sin(rayAngle), (float) Cos(rayAngle));
 
                 var ray = Raycast.Send(_map, _playerPosition, direction, '#', _boundaryTolerance);
-                raycastStepCount += ray.StepCount;
-                
+
                 // Use distance to wall to determine ceiling and floor height for this column
                 // From the midpoint (height / 2), subtract an amount proportional to the distance of the wall
                 int ceiling = (int) (ScreenHeight / 2f - ScreenHeight / ray.Distance);
@@ -120,7 +116,6 @@ namespace ConsoleGameEngine.Runner.Games
 
 
                 // Render column based on ceiling and floor values
-                // TODO: use shading map to determine colors
                 for (int y = 0; y < ScreenHeight; y++)
                 {
                     if (y < ceiling)
@@ -129,107 +124,78 @@ namespace ConsoleGameEngine.Runner.Games
                     }
                     else if (y >= ceiling && y <= floor)
                     {
-                        // TODO: Clean up shading logic
-                        char emptyShade = '#';
-                        char lightShade = 'X';
-                        char mediumShade = '.';
-                        char darkShade = '-';
-                        char fullShade = '.';
-
-                        char shade;
-                        var fgColor = ConsoleColor.White;
-                        var bgColor = ConsoleColor.DarkGray;
-
-                        switch (ray.Distance)
-                        {
-                            case <= Raycast.MAX_RAYCAST_DEPTH / 4f:
-                                shade = fullShade;
-                                fgColor = ConsoleColor.Gray;
-                                bgColor = ConsoleColor.White;
-                                break;
-                            case <= Raycast.MAX_RAYCAST_DEPTH / 3f:
-                                shade = darkShade;
-                                fgColor = ConsoleColor.Gray;
-                                bgColor = ConsoleColor.White;
-                                break;
-                            case <= Raycast.MAX_RAYCAST_DEPTH / 2f:
-                                shade = mediumShade;
-                                fgColor = ConsoleColor.DarkGray;
-                                bgColor = ConsoleColor.Gray;
-                                break;
-                            case <= Raycast.MAX_RAYCAST_DEPTH:
-                                fgColor = ConsoleColor.Gray;
-                                bgColor = ConsoleColor.DarkGray;
-                                shade = lightShade;
-                                break;
-                            default:
-                                fgColor = ConsoleColor.Magenta;
-                                shade = emptyShade;
-                                break;
-                        }
-
-                        if (ray.HitBoundary)
-                        {
-                            fgColor = ConsoleColor.Black;
-                            bgColor = ConsoleColor.Black;
-                        }
-
-                        Draw(x, y, shade, fgColor, bgColor);
+                        var shade = ray.HitBoundary ? Shade.Black : CalculateShade(WallShades, ray.Distance);
+                        Draw(x, y, shade.Character, shade.ForegroundColor, shade.BackgroundColor);
                     }
                     else
                     {
-                        float groundDistance = 1.0f - (y - ScreenHeight / 2.0f) / (ScreenHeight / 2.0f);
-
-                        char emptyShade = '#';
-                        char lightShade = 'X';
-                        char mediumShade = '.';
-                        char darkShade = '-';
-                        char fullShade = ' ';
-
-                        char shade;
-                        var fgColor = ConsoleColor.Green;
-                        ConsoleColor bgColor;
-
-                        switch (groundDistance)
-                        {
-                            case <= 0.25f:
-                                shade = fullShade;
-                                fgColor = ConsoleColor.Green;
-                                bgColor = ConsoleColor.Green;
-                                break;
-                            case <= 0.5f:
-                                shade = darkShade;
-                                fgColor = ConsoleColor.DarkGreen;
-                                bgColor = ConsoleColor.Green;
-                                break;
-                            case <= 0.75f:
-                                fgColor = ConsoleColor.Black;
-                                bgColor = ConsoleColor.DarkGreen;
-                                shade = mediumShade;
-                                break;
-                            case <= 0.9f:
-                                fgColor = ConsoleColor.DarkGreen;
-                                bgColor = ConsoleColor.Black;
-                                shade = lightShade;
-                                break;
-                            default:
-                                shade = emptyShade;
-                                bgColor = ConsoleColor.Magenta;
-                                break;
-                        }
-
-                        Draw(x, y, shade, fgColor, bgColor);
+                        var groundDistance = 1.0f - (y - ScreenHeight / 2.0f) / (ScreenHeight / 2.0f);
+                        
+                        var shade = CalculateShade(GroundShades, groundDistance);
+                        Draw(x, y, shade.Character, shade.ForegroundColor, shade.BackgroundColor);
                     }
                 }
             }
 
             // Draw HUD
             DrawSprite(_map);
-            DrawString(ScreenWidth, (int)_map.Position.Y - 2, $"Raycasts: {raycastStepCount}", alignment: TextAlignment.Right);
             DrawString(ScreenWidth, (int)_map.Position.Y - 1, $"Boundary Tol: {_boundaryTolerance}", alignment: TextAlignment.Right);
             Draw(_map.Position + _playerPosition.Rounded, 'X', ConsoleColor.Red);
 
             return !input.IsKeyDown(KeyCode.Esc);
+        }
+        
+        private static Shade CalculateShade(IEnumerable<Shade> shades, float groundDistance)
+        {
+            foreach (var shade in shades)
+            {
+                if (groundDistance <= shade.DistanceThreshold)
+                {
+                    return shade;
+                }
+            }
+
+            return Shade.Default;
+        }
+        
+        private static readonly List<Shade> WallShades = new()
+        {
+            new(Raycast.MAX_RAYCAST_DEPTH / 4f, Shade.MEDIUM_SHADE, ConsoleColor.Gray,     ConsoleColor.White),
+            new(Raycast.MAX_RAYCAST_DEPTH / 3f, Shade.DARK_SHADE,   ConsoleColor.Gray,     ConsoleColor.White),
+            new(Raycast.MAX_RAYCAST_DEPTH / 2f, Shade.LIGHT_SHADE,  ConsoleColor.DarkGray, ConsoleColor.Gray),
+            new(Raycast.MAX_RAYCAST_DEPTH / 1f, Shade.MEDIUM_SHADE, ConsoleColor.DarkGray, ConsoleColor.DarkGray)
+        };
+        
+        private static readonly List<Shade> GroundShades = new()
+        {
+            new(0.25f, Shade.FULL_SHADE,   ConsoleColor.Green,     ConsoleColor.Green),
+            new(0.5f,  Shade.DARK_SHADE,   ConsoleColor.DarkGreen, ConsoleColor.Green),
+            new(0.75f, Shade.MEDIUM_SHADE, ConsoleColor.Black,     ConsoleColor.DarkGreen),
+            new(0.9f,  Shade.LIGHT_SHADE,  ConsoleColor.DarkGreen, ConsoleColor.Black)
+        };
+        
+        private class Shade
+        {
+            public static readonly Shade Default = new(0, '#', ConsoleColor.Magenta, ConsoleColor.DarkMagenta);
+            public static readonly Shade Black = new(0, ' ', ConsoleColor.Black, ConsoleColor.Black);
+            
+            public const char FULL_SHADE = ' ';
+            public const char DARK_SHADE = '-';
+            public const char MEDIUM_SHADE = '.';
+            public const char LIGHT_SHADE = 'X';
+
+            public float DistanceThreshold { get; }
+            public char Character { get; }
+            public ConsoleColor ForegroundColor { get; }
+            public ConsoleColor BackgroundColor { get; }
+
+            public Shade(float distanceThreshold, char character, ConsoleColor foregroundColor, ConsoleColor backgroundColor)
+            {
+                DistanceThreshold = distanceThreshold;
+                Character = character;
+                ForegroundColor = foregroundColor;
+                BackgroundColor = backgroundColor;
+            }
         }
     }
 }

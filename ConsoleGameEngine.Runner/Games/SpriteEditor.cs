@@ -28,11 +28,12 @@ namespace ConsoleGameEngine.Runner.Games
         
         /*
          * TODO: Sprite Editor Features
-         *
-         * 2. Adjust Canvas Size
-         * 5. Save sprite to file (allow to name file?)
-         * 6. Update Sprite class to be able to load from file
-         * 7. Load sprite in editor from file in working directory (show file list?) 
+         * 1. Draw Brush
+         * 2. Adjustable Brush Size
+         * 3. Adjustable Canvas Size
+         * 4. Save sprite to file (allow to name file?)
+         * 5. Update Sprite class to be able to load from file
+         * 6. Load sprite in editor from file in working directory (show file list?) 
          */
         
         protected override bool Create()
@@ -149,14 +150,18 @@ namespace ConsoleGameEngine.Runner.Games
             DrawBorder(_canvas.Bounds, '*');
             DrawSprite(_canvas);
             
-            // Show Canvas Coordinates On Canvas Hover
+            // On Canvas Hover
             if (_canvas.Bounds.Contains(input.MousePosition))
             {
+                // Show canvas position
                 DrawString(
                     (int)(_canvas.Position.X + _canvas.Width), 
                     (int)_canvas.Position.Y - 2, 
                     canvasPos.ToString(),
                     alignment: TextAlignment.Right);
+                
+                // Show Brush
+                Draw(input.MousePosition, Sprite.SOLID_PIXEL, Primary, Primary);
             }
             
             // Draw Palette

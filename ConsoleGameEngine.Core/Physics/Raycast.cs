@@ -47,10 +47,8 @@ namespace ConsoleGameEngine.Core.Physics
                 rayLength1D.Y = (mapCheck.Y+1 - startPos.Y) * unitStepSize.Y;
             }
 
-            while (!result.Hit && result.Distance < MAX_RAYCAST_DEPTH)
+            while (result is { Hit: false, Distance: < MAX_RAYCAST_DEPTH })
             {
-                result.StepCount++;
-                
                 if (rayLength1D.X < rayLength1D.Y)
                 {
                     mapCheck.X += step.X;
@@ -120,9 +118,6 @@ namespace ConsoleGameEngine.Core.Physics
 
     public struct RaycastInfo
     {
-        // Number of steps it took to determine if the raycast hit an object
-        public int StepCount { get; set; }
-
         // Whether or not the raycast hit an object
         public bool Hit { get; set; }
         

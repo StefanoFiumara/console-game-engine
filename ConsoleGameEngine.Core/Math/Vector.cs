@@ -29,6 +29,7 @@ namespace ConsoleGameEngine.Core.Math
             X = (float) x;
             Y = (float) y;
         }
+
         public Vector(float x, float y)
         {
             X = x;
