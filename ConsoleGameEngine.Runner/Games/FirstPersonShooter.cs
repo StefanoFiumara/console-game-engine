@@ -17,7 +17,9 @@ namespace ConsoleGameEngine.Runner.Games
 
         private const float TURN_SPEED = 2f;
         private const float MOVE_SPEED = 5.0f;
-
+        private const float BOUNDARY_TOLERANCE = 0.005f;
+        private const float FIELD_OF_VIEW = 3.14159f / 4f; // 90 degree fov
+        
         private Vector _playerPosition;
         private float _playerAngle;
 
@@ -25,10 +27,7 @@ namespace ConsoleGameEngine.Runner.Games
             (float) Sin(_playerAngle),
             (float) Cos(_playerAngle));
 
-        private readonly float _fieldOfView = 3.14159f / 4f; // 90 degree fov
         private Sprite _map;
-
-        private float _boundaryTolerance = 0.005f;
 
         public FirstPersonShooter()
         {
@@ -87,26 +86,15 @@ namespace ConsoleGameEngine.Runner.Games
                     _playerPosition += PlayerFacingAngle * MOVE_SPEED * elapsedTime;
                 }
             }
-
-            if (input.IsKeyHeld(KeyCode.Z))
-            {
-                _boundaryTolerance -= 0.01f * elapsedTime;
-                if (_boundaryTolerance < 0f) _boundaryTolerance = 0f;
-            }
-            
-            if (input.IsKeyHeld(KeyCode.X))
-            {
-                _boundaryTolerance += 0.01f * elapsedTime;
-            }
             
             // Basic raycast algorithm for each column on the screen
             for (int x = 0; x < ScreenWidth; x++)
             {
                 // Create ray vector
-                double rayAngle = (_playerAngle - _fieldOfView / 2.0d) + ((x / (double) ScreenWidth) * _fieldOfView);
+                double rayAngle = (_playerAngle - FIELD_OF_VIEW / 2.0d) + ((x / (double) ScreenWidth) * FIELD_OF_VIEW);
                 var direction = new Vector((float) Sin(rayAngle), (float) Cos(rayAngle));
 
-                var ray = Raycast.Send(_map, _playerPosition, direction, '#', _boundaryTolerance);
+                var ray = Raycast.Send(_map, _playerPosition, direction, '#', BOUNDARY_TOLERANCE);
 
                 // Use distance to wall to determine ceiling and floor height for this column
                 // From the midpoint (height / 2), subtract an amount proportional to the distance of the wall
@@ -139,7 +127,7 @@ namespace ConsoleGameEngine.Runner.Games
 
             // Draw HUD
             DrawSprite(_map);
-            DrawString(ScreenWidth, (int)_map.Position.Y - 1, $"Boundary Tol: {_boundaryTolerance}", alignment: TextAlignment.Right);
+            DrawString(ScreenWidth, (int)_map.Position.Y - 1, $"Boundary Tol: {BOUNDARY_TOLERANCE}", alignment: TextAlignment.Right);
             Draw(_map.Position + _playerPosition.Rounded, 'X', ConsoleColor.Red);
 
             return !input.IsKeyDown(KeyCode.Esc);
