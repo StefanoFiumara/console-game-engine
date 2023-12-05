@@ -1,12 +1,11 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Math;
+using static System.Math;
 
 namespace ConsoleGameEngine.Core.Physics;
 
-using static System.Math;
 public static class Raycast
 {
     public const float MaxRaycastDepth = 20f;
