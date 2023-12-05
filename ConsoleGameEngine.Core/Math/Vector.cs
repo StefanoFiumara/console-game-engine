@@ -1,121 +1,120 @@
 using System;
 
-namespace ConsoleGameEngine.Core.Math
-{
-    using static System.Math;
+namespace ConsoleGameEngine.Core.Math;
+
+using static System.Math;
     
-    public struct Vector : IEquatable<Vector>
+public struct Vector : IEquatable<Vector>
+{
+    private const float ToleranceEpsilon = 0.01f;
+        
+    public static Vector Zero { get; } = new(0, 0);
+        
+    public static Vector Left { get; } = new(-1, 0);
+    public static Vector Right { get; } = new(1, 0);
+    public static Vector Up { get; } = new(0, -1);
+    public static Vector Down { get; } = new(0, 1);
+        
+    public float X { get; set; }
+    public float Y { get; set; }
+
+    public float Magnitude => (float) Sqrt(X * X + Y * Y);
+        
+    public Vector Normalized => Magnitude == 0f ? Zero : this / Magnitude;
+
+    public Vector Rounded => new((int) X, (int) Y);
+
+    public Vector(double x, double y)
     {
-        private const float TOLERANCE_EPSILON = 0.01f;
+        X = (float) x;
+        Y = (float) y;
+    }
+
+    public Vector(float x, float y)
+    {
+        X = x;
+        Y = y;
+    }
         
-        public static Vector Zero { get; } = new(0, 0);
+    public Vector(int x, int y)
+    {
+        X = x;
+        Y = y;
+    }
+
+    public override string ToString()
+    {
+        return $"(X: {X}, Y: {Y})";
+    }
+
+    public static Vector operator *(Vector v, float scalar)
+    {
+        return new(v.X * scalar, v.Y * scalar);
+    }
         
-        public static Vector Left { get; } = new(-1, 0);
-        public static Vector Right { get; } = new(1, 0);
-        public static Vector Up { get; } = new(0, -1);
-        public static Vector Down { get; } = new(0, 1);
+    public static Vector operator *(Vector v, int scalar)
+    {
+        return new(v.X * scalar, v.Y * scalar);
+    }
+
+    public static Vector operator *(float scalar, Vector v)
+    {
+        return new(v.X * scalar, v.Y * scalar);
+    }
+
+    public static Vector operator *(int scalar, Vector v)
+    {
+        return new(v.X * scalar, v.Y * scalar);
+    }
+
+    public static Vector operator /(Vector v, float scalar)
+    {
+        return new(v.X / scalar, v.Y / scalar);
+    }
         
-        public float X { get; set; }
-        public float Y { get; set; }
-
-        public float Magnitude => (float) Sqrt(X * X + Y * Y);
+    public static Vector operator /(float scalar, Vector v)
+    {
+        return new(scalar / v.X, scalar / v.Y);
+    }
         
-        public Vector Normalized => Magnitude == 0f ? Zero : this / Magnitude;
+    public static Vector operator /(Vector v, int scalar)
+    {
+        return new(v.X / scalar, v.Y / scalar);
+    }
 
-        public Vector Rounded => new((int) X, (int) Y);
-
-        public Vector(double x, double y)
-        {
-            X = (float) x;
-            Y = (float) y;
-        }
-
-        public Vector(float x, float y)
-        {
-            X = x;
-            Y = y;
-        }
+    public static Vector operator +(Vector l, Vector r)
+    {
+        return new(l.X + r.X, l.Y + r.Y);
+    }
         
-        public Vector(int x, int y)
-        {
-            X = x;
-            Y = y;
-        }
+    public static Vector operator -(Vector l, Vector r)
+    {
+        return new(l.X - r.X, l.Y - r.Y);
+    }
 
-        public override string ToString()
-        {
-            return $"(X: {X}, Y: {Y})";
-        }
+    public static bool operator ==(Vector l, Vector r)
+    {
+        return Abs(l.X - r.X) < ToleranceEpsilon && 
+               Abs(l.Y - r.Y) < ToleranceEpsilon;
+    }
 
-        public static Vector operator *(Vector v, float scalar)
-        {
-            return new(v.X * scalar, v.Y * scalar);
-        }
+    public static bool operator !=(Vector l, Vector r)
+    {
+        return !(l == r);
+    }
         
-        public static Vector operator *(Vector v, int scalar)
-        {
-            return new(v.X * scalar, v.Y * scalar);
-        }
+    public bool Equals(Vector other)
+    {
+        return this == other;
+    }
 
-        public static Vector operator *(float scalar, Vector v)
-        {
-            return new(v.X * scalar, v.Y * scalar);
-        }
+    public override bool Equals(object obj)
+    {
+        return obj is Vector other && Equals(other);
+    }
 
-        public static Vector operator *(int scalar, Vector v)
-        {
-            return new(v.X * scalar, v.Y * scalar);
-        }
-
-        public static Vector operator /(Vector v, float scalar)
-        {
-            return new(v.X / scalar, v.Y / scalar);
-        }
-        
-        public static Vector operator /(float scalar, Vector v)
-        {
-            return new(scalar / v.X, scalar / v.Y);
-        }
-        
-        public static Vector operator /(Vector v, int scalar)
-        {
-            return new(v.X / scalar, v.Y / scalar);
-        }
-
-        public static Vector operator +(Vector l, Vector r)
-        {
-            return new(l.X + r.X, l.Y + r.Y);
-        }
-        
-        public static Vector operator -(Vector l, Vector r)
-        {
-            return new(l.X - r.X, l.Y - r.Y);
-        }
-
-        public static bool operator ==(Vector l, Vector r)
-        {
-            return Abs(l.X - r.X) < TOLERANCE_EPSILON && 
-                   Abs(l.Y - r.Y) < TOLERANCE_EPSILON;
-        }
-
-        public static bool operator !=(Vector l, Vector r)
-        {
-            return !(l == r);
-        }
-        
-        public bool Equals(Vector other)
-        {
-            return this == other;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is Vector other && Equals(other);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(X, Y);
-        }
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(X, Y);
     }
 }

@@ -1,9 +1,8 @@
-namespace ConsoleGameEngine.Core.Input
+namespace ConsoleGameEngine.Core.Input;
+
+internal struct KeyState
 {
-    internal struct KeyState
-    {
-        public bool IsDown;
-        public bool IsReleased;
-        public bool IsHeld;
-    }
+    public bool IsDown;
+    public bool IsReleased;
+    public bool IsHeld;
 }
