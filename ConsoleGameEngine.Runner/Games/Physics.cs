@@ -40,7 +40,8 @@ public class Physics : ConsoleGameEngineBase
         
     protected override bool Create()
     {
-        _player = new PhysicsObject(Sprite.CreateSolid(3,3, PlayerColor), new Vector(ScreenWidth / 2f, ScreenHeight / 2f));
+        // TODO: Upgrade to use physics Engine
+        _player = new PhysicsObject(Sprite.CreateSolid(3,3, PlayerColor), ScreenRect.Center);
         _trail = new List<Vector>(MaxTrailCount);
         _trailCooldown = TrailResetTime;
             
@@ -54,7 +55,6 @@ public class Physics : ConsoleGameEngineBase
             
         if(input.IsKeyHeld(KeyCode.Esc)) 
         {
-            // Close the game
             return false;
         }
 

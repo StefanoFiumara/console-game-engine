@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Math;
 
@@ -6,15 +8,25 @@ namespace ConsoleGameEngine.Core.Physics;
 
 public class PhysicsEngine
 {
+    /*TODO:
+        * Collisions 
+     */
+    
     public float Gravity { get; set; } = 25f;
     public float TerminalVelocity { get; set; } = 55f;
-    public float Friction { get; set; } = 15f;
+    public float FrictionCoefficient { get; set; } = 0.2f;
 
     public List<PhysicsObject> Objects { get; }
 
+    private readonly ParallelOptions _parallelOptions;
+    
     public PhysicsEngine(List<PhysicsObject> objects)
     {
         Objects = objects;
+        _parallelOptions = new ParallelOptions
+        {
+            MaxDegreeOfParallelism = Environment.ProcessorCount,
+        };
     }
 
     public void Update(float elapsedTime)
@@ -22,39 +34,35 @@ public class PhysicsEngine
         for (int i = 0; i < Objects.Count; i++)
         {
             var obj = Objects[i];
+            // Friction
+            if (obj.Velocity.Magnitude > 0)
+            {
+                var friction = -obj.Velocity.Normalized.X * FrictionCoefficient;
+                obj.ApplyForce(new Vector(friction, 0));
+            }
             
             // Gravity
-            obj.Velocity += Vector.Down * Gravity * elapsedTime;
+            obj.ApplyForce(Gravity * Vector.Down);
             
-            // Clamp to terminal velocity
+            // Update Velocity
+            obj.Velocity += obj.Acceleration * elapsedTime;
+            
+            // Apply terminal velocity
             if (obj.Velocity.Y > TerminalVelocity)
             {
                 obj.Velocity = new Vector(obj.Velocity.X, TerminalVelocity);
             }
             
-            // Apply friction along the X axis to slowly bring the object to a stop
-            // TODO: Use clamping to clean up logic
-            if (obj.Velocity.X < 0)
+            if (obj.Velocity.Magnitude < 0.01f)
             {
-                obj.Velocity += Vector.Right * Friction * elapsedTime;
-                if (obj.Velocity.X > 0)
-                {
-                    obj.Velocity = new Vector(0, obj.Velocity.Y);
-                }
-            }
-            else
-            {
-                obj.Velocity += Vector.Left * Friction * elapsedTime;
-                if (obj.Velocity.X < 0)
-                {
-                    obj.Velocity = new Vector(0, obj.Velocity.Y);
-                }
+                obj.Velocity = Vector.Zero;
             }
             
             // Calculate position based on velocity
             obj.Position += obj.Velocity * elapsedTime;
             
-            // TODO: Can we handle collisions here? Maybe check against a separate static collision shape?
+            // Reset Acceleration
+            obj.Acceleration = Vector.Zero;
         }
     }
 }

@@ -5,6 +5,7 @@ using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Core.GameObjects;
 
+// TODO: Animated Sprite
 public class Sprite
 {
     public const char SolidPixel = '\xDB';

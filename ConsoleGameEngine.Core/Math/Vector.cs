@@ -102,6 +102,11 @@ public struct Vector : IEquatable<Vector>
     {
         return !(l == r);
     }
+    
+    public static Vector operator -(Vector v)
+    {
+        return new Vector(-v.X, -v.Y);
+    } 
         
     public bool Equals(Vector other)
     {

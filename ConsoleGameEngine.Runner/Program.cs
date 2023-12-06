@@ -10,7 +10,7 @@ namespace ConsoleGameEngine.Runner;
 [SupportedOSPlatform("windows")]
 public static class Program
 {
-    private static void Main(string[] args)
+    private static void Main()
     {
         var games = 
             Assembly.GetExecutingAssembly()
