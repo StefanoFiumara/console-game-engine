@@ -10,8 +10,6 @@ namespace ConsoleGameEngine.Runner.Games;
 // ReSharper disable once UnusedType.Global
 public class Snake : ConsoleGameEngineBase
 {
-    protected override string Name => "Snake";
-
     private const char PlayerHead = '0';
     private const char PlayerBody = 'O';
     private const char Pellet = '*';

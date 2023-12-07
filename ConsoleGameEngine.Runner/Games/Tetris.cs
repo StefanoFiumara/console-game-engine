@@ -11,8 +11,6 @@ namespace ConsoleGameEngine.Runner.Games;
 // ReSharper disable once UnusedType.Global
 public class Tetris : ConsoleGameEngineBase
 {
-    protected override string Name => "Tetris";
-
     private readonly Random _rng;
         
     private const float GameTick = 0.06f;

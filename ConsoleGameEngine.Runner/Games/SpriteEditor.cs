@@ -9,8 +9,6 @@ namespace ConsoleGameEngine.Runner.Games;
 // ReSharper disable once UnusedType.Global
 public class SpriteEditor : ConsoleGameEngineBase
 {
-    protected override string Name => "SPRITE EDITOR";
-
     private GameObject _canvas;
         
     private GameObject[] _palette;
@@ -147,7 +145,7 @@ public class SpriteEditor : ConsoleGameEngineBase
         }
             
         // Draw HUD
-        DrawString((int) ScreenRect.Center.X, 3, Name, alignment: TextAlignment.Centered);
+        DrawString((int) ScreenRect.Center.X, 3, "SPRITE EDITOR", alignment: TextAlignment.Centered);
 
         DrawBorder(_canvas.Bounds, '*');
         DrawObject(_canvas);

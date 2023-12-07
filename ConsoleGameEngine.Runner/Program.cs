@@ -55,9 +55,9 @@ public static class Program
         Console.Title = "Main Menu";
         Console.CursorVisible = true;
 
-        Console.SetWindowSize(30, 30);
-        Console.SetBufferSize(30, 30);
-        ConsoleGameEngineWin32.SetCurrentFont("Modern DOS 8x8", 16);
+        Console.SetWindowSize(40, 40);
+        Console.SetBufferSize(40, 40);
+        ConsoleGameEngineWin32.SetCurrentFont("Modern DOS 8x8", 14);
         Console.Clear();
     }
 }

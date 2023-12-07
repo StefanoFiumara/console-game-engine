@@ -30,8 +30,6 @@ public class Physics : ConsoleGameEngineBase
     private List<Vector> _trail;
     private float _trailCooldown;
 
-    protected override string Name => "Physics";
-
     public Physics()
     {
         InitConsole(160, 120);

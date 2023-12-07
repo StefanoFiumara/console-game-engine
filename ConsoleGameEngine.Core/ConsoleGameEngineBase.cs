@@ -26,11 +26,10 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
     private PlayerInput _input;
     private int _targetFps;
 
-    /// <summary>
-    /// The name of the game
-    /// </summary>
-    protected abstract string Name { get; }
-
+    private Vector _screenPosition;
+    
+    private readonly string _name;
+    
     /// <summary>
     /// Shortcut to grab the Screen Width
     /// </summary>
@@ -46,8 +45,6 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
     /// </summary>
     protected Rect ScreenRect { get; private set; }
 
-    protected Vector ScreenPosition { get; private set; }
-
     protected int PixelSize { get; private set; }
         
     /// <summary>
@@ -61,6 +58,8 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
     {
         _isInit = false;
         PerformanceModeEnabled = false;
+        _name = GetType().Name;
+
     }
         
     /// <summary>
@@ -148,8 +147,8 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
             var elapsedTime = currentTime - previousTime;
             previousTime = currentTime;
                 
-            ScreenPosition = GetWindowPosition();
-            _input.Update(ScreenPosition);
+            _screenPosition = GetWindowPosition();
+            _input.Update(_screenPosition);
 
             // Game Logic
             if (!Update((float) elapsedTime / 1000f, _input))
@@ -161,7 +160,7 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
             DrawBuffer(_screenBuffer, ScreenWidth, ScreenHeight);
 
             var averageFps = ++framesRendered / (timer.Elapsed.TotalMilliseconds / 1000f);
-            Console.Title = $"{Name} ~ Average FPS: {averageFps:F}";
+            Console.Title = $"{_name} ~ Average FPS: {averageFps:F}";
                 
             if (!PerformanceModeEnabled)
             {

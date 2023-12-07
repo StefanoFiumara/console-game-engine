@@ -42,7 +42,7 @@ public class PhysicsEngine
             }
             
             // Gravity
-            obj.ApplyForce(Gravity * Vector.Down);
+            obj.ApplyForce(Gravity * Vector.Down); 
             
             // Update Velocity
             obj.Velocity += obj.Acceleration * elapsedTime;

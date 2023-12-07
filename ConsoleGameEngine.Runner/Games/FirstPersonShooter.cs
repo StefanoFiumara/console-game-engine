@@ -13,8 +13,6 @@ using static Math;
 // ReSharper disable once UnusedType.Global
 public class FirstPersonShooter : ConsoleGameEngineBase
 {
-    protected override string Name => "First Person Shooter";
-
     private const float TurnSpeed = 2f;
     private const float MoveSpeed = 5.0f;
     private const float BoundaryTolerance = 0.005f;

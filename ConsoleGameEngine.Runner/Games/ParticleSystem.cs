@@ -32,10 +32,6 @@ public class ParticleSystem : ConsoleGameEngineBase
         
     };
 
-    private Sprite _paloma;
-
-    protected override string Name => "Particle System";
-
     public ParticleSystem()
     {
         InitConsole(160, 120);
