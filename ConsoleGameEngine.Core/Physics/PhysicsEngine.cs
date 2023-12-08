@@ -31,38 +31,42 @@ public class PhysicsEngine
 
     public void Update(float elapsedTime)
     {
-        for (int i = 0; i < Objects.Count; i++)
+        Parallel.ForEach(Objects, _parallelOptions, obj =>
         {
-            var obj = Objects[i];
-            // Friction
-            if (obj.Velocity.Magnitude > 0)
-            {
-                var friction = -obj.Velocity.Normalized.X * FrictionCoefficient;
-                obj.ApplyForce(new Vector(friction, 0));
-            }
-            
-            // Gravity
-            obj.ApplyForce(Gravity * Vector.Down); 
-            
-            // Update Velocity
-            obj.Velocity += obj.Acceleration * elapsedTime;
-            
-            // Apply terminal velocity
-            if (obj.Velocity.Y > TerminalVelocity)
-            {
-                obj.Velocity = new Vector(obj.Velocity.X, TerminalVelocity);
-            }
-            
-            if (obj.Velocity.Magnitude < 0.01f)
-            {
-                obj.Velocity = Vector.Zero;
-            }
-            
-            // Calculate position based on velocity
-            obj.Position += obj.Velocity * elapsedTime;
-            
-            // Reset Acceleration
-            obj.Acceleration = Vector.Zero;
+            UpdatePhysicsObject(obj, elapsedTime);
+        });
+    }
+
+    private void UpdatePhysicsObject(PhysicsObject obj, float elapsedTime)
+    {
+        // Friction
+        if (obj.Velocity.Magnitude > 0)
+        {
+            var friction = -obj.Velocity.Normalized.X * FrictionCoefficient;
+            obj.ApplyForce(new Vector(friction, 0));
         }
+
+        // Gravity
+        obj.ApplyForce(Gravity * Vector.Down);
+
+        // Update Velocity
+        obj.Velocity += obj.Acceleration * elapsedTime;
+
+        // Apply terminal velocity
+        if (obj.Velocity.Y > TerminalVelocity)
+        {
+            obj.Velocity = new Vector(obj.Velocity.X, TerminalVelocity);
+        }
+
+        if (obj.Velocity.Magnitude < 0.01f)
+        {
+            obj.Velocity = Vector.Zero;
+        }
+
+        // Calculate position based on velocity
+        obj.Position += obj.Velocity * elapsedTime;
+
+        // Reset Acceleration
+        obj.Acceleration = Vector.Zero;
     }
 }
