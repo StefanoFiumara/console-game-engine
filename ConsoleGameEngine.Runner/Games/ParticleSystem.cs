@@ -15,22 +15,13 @@ public class ParticleSystem : ConsoleGameEngineBase
     private ObjectPool<PhysicsObject> _pool;
     private readonly Random _rng;
     
-    private const float GameTick = 0.03f;
+    private const float GameTick = 0.02f;
     private float _gameTimer;
 
     private PhysicsEngine _physicsEngine;
 
     private int _colorIndex = 0;
-    private readonly ConsoleColor[] _colors =
-    {
-        ConsoleColor.Blue, 
-        ConsoleColor.DarkBlue, 
-         ConsoleColor.Cyan,
-         ConsoleColor.DarkCyan,
-        ConsoleColor.White ,
-        ConsoleColor.Yellow
-        
-    };
+    private readonly ConsoleColor[] _colors = Enum.GetValues<ConsoleColor>();
 
     public ParticleSystem()
     {
@@ -43,7 +34,11 @@ public class ParticleSystem : ConsoleGameEngineBase
     {
         _fountainPosition = ScreenRect.Center + 7 * Vector.Down;
         _pool = new ObjectPool<PhysicsObject>(CreateParticle);
-        _physicsEngine = new PhysicsEngine(new List<PhysicsObject>());
+        _physicsEngine = new PhysicsEngine(new List<PhysicsObject>())
+        {
+            Gravity = 0,
+            FrictionCoefficient = 0f,
+        };
         _gameTimer = GameTick;
         
         return true;
@@ -54,16 +49,19 @@ public class ParticleSystem : ConsoleGameEngineBase
         var color = _colors[_colorIndex++ % _colors.Length];
         return new PhysicsObject(new Sprite("*", color), _fountainPosition);
     }
-    
+
+    private int _angle = 1;
     public Vector GenerateParticleForce()
     {
-        var angleDegrees = _rng.Next(80, 100);
+        var angleDegrees = _angle;
+        _angle += 10;
+        if (_angle > 360) _angle = 0;
         var angleRadians = angleDegrees * (Math.PI / 180);
         
         var x = Math.Cos(angleRadians);
         var y = -Math.Sin(angleRadians);
 
-        return new Vector(x, y).Normalized * _rng.Next(85, 125);
+        return new Vector(x, y).Normalized * 20;
     }
     
     protected override bool Update(float elapsedTime, PlayerInput input)
@@ -92,7 +90,7 @@ public class ParticleSystem : ConsoleGameEngineBase
         for (var i = _physicsEngine.Objects.Count - 1; i >= 0; i--)
         {
             var particle = _physicsEngine.Objects[i];
-            if (particle.Position.Y > _fountainPosition.Y)
+            if (!ScreenRect.Contains(particle.Position))
             {
                 _pool.Return(particle);
                 _physicsEngine.Objects.Remove(particle);
