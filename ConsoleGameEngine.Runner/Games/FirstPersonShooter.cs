@@ -13,8 +13,8 @@ using static Math;
 // ReSharper disable once UnusedType.Global
 public class FirstPersonShooter : ConsoleGameEngineBase
 {
-    private const float TurnSpeed = 2f;
-    private const float MoveSpeed = 5.0f;
+    private const float TurnSpeed = 1.2f;
+    private const float MoveSpeed = 3.0f;
     private const float BoundaryTolerance = 0.005f;
     private const float FieldOfView = 3.14159f / 4f; // 90 degree fov
         
