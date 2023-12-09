@@ -19,6 +19,8 @@ public class PhysicsEngine
     public List<PhysicsObject> Objects { get; }
 
     private readonly ParallelOptions _parallelOptions;
+
+    public PhysicsEngine() : this(new List<PhysicsObject>()) { }
     
     public PhysicsEngine(List<PhysicsObject> objects)
     {
