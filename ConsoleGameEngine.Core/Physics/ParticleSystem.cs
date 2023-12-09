@@ -7,10 +7,9 @@ namespace ConsoleGameEngine.Core.Physics;
 
 public class ParticleOptions
 {
-    // TODO: Defaults?
-    public float Lifetime { get; init; }
-    public float Gravity { get; init; }
-    public float Friction { get; init; }
+    public float Lifetime { get; init; } = 1.5f;
+    public float Gravity { get; init; } = 25f;
+    public float Friction { get; init; } = 0.2f;
 }
 
 public class ParticleSystem
@@ -28,6 +27,16 @@ public class ParticleSystem
 
     public IReadOnlyList<PhysicsObject> ActiveParticles => _engine.Objects;
 
+    /// <summary>
+    /// Creates a Particle System, note that the particles need to be drawn during Update in a separate
+    /// loop since this class does not have access to any rendering. You must loop through the ActiveParticles
+    /// property in order to draw each particle to the screen.
+    /// </summary>
+    /// <param name="position">Position where the particles spawn from.</param>
+    /// <param name="particles">An array of particle sprites, the spawner will cycle through this array when actively spawning new particles.</param>
+    /// <param name="initParticleAction">A function to execute on each particle when it spawns, useful to set the particle's velocity or color.</param>
+    /// <param name="spawnInterval">How often (in seconds) to spawn each particle.</param>
+    /// <param name="options">Physics options to apply to the system.</param>
     public ParticleSystem(
         Vector position,
         Sprite[] particles, 
@@ -52,7 +61,7 @@ public class ParticleSystem
         _pool = new ObjectPool<PhysicsObject>(CreateParticle);
     }
 
-    private int _spriteIndex = 0;
+    private int _spriteIndex;
 
     private PhysicsObject CreateParticle()
     {

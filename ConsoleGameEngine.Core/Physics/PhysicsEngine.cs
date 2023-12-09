@@ -27,16 +27,13 @@ public class PhysicsEngine
         Objects = objects;
         _parallelOptions = new ParallelOptions
         {
-            MaxDegreeOfParallelism = Environment.ProcessorCount,
+            MaxDegreeOfParallelism = Environment.ProcessorCount
         };
     }
 
     public void Update(float elapsedTime)
     {
-        Parallel.ForEach(Objects, _parallelOptions, obj =>
-        {
-            UpdatePhysicsObject(obj, elapsedTime);
-        });
+        Parallel.ForEach(Objects, _parallelOptions, obj => UpdatePhysicsObject(obj, elapsedTime));
     }
 
     private void UpdatePhysicsObject(PhysicsObject obj, float elapsedTime)

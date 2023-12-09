@@ -8,6 +8,7 @@ using ConsoleGameEngine.Core.Physics;
 
 namespace ConsoleGameEngine.Runner.Games;
 
+// ReSharper disable once UnusedType.Global
 public class Particles : ConsoleGameEngineBase
 {
     private Vector _spiralPosition;
@@ -48,7 +49,7 @@ public class Particles : ConsoleGameEngineBase
             spiralSprites,
             initParticleAction: p => p.Velocity = GenerateSpiralForce(), 
             spawnInterval: 0.02f, 
-            new()
+            new ParticleOptions()
             {
                 Friction = 0, 
                 Gravity = 0, 
@@ -60,7 +61,7 @@ public class Particles : ConsoleGameEngineBase
             fountainSprites,
             initParticleAction: p => p.Velocity = GenerateFountainForce(), 
             spawnInterval: 0.02f, 
-            new()
+            new ParticleOptions()
             {
                 Friction = 0.2f, 
                 Gravity = 25f, 
