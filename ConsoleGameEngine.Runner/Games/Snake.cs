@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
@@ -13,7 +12,7 @@ namespace ConsoleGameEngine.Runner.Games;
 public class Snake : ConsoleGameEngineBase
 {
     private const char PlayerHead = '0';
-    private const char PlayerBody = 'O';
+    private const char PlayerBody = '+';
     private const char Pellet = '*';
     private const char Wall = '#';
 
@@ -31,8 +30,8 @@ public class Snake : ConsoleGameEngineBase
 
     private int _level = 1;
     private int _nextLevelGoal = 10;
-    private int _score = 0;
-    private int _highScore = 0;
+    private int _score;
+    private int _highScore;
 
     private readonly Random _rng;
     private readonly GameObject _map;
@@ -99,13 +98,9 @@ public class Snake : ConsoleGameEngineBase
         if (_gameTimer <= 0f)
         {
             // Game ticks faster based on current level
-            _gameTimer = GameTick - _level * 0.02f;
+            _gameTimer = 0f;
 
-            (_input, var score) = DetermineNextDirection(_head);
-            if (score == int.MinValue)
-            {
-                Debugger.Break();
-            }
+            _input = DetermineNextDirection(_head);
             
             _snakeDirection = _input;
             _head += _snakeDirection;
@@ -150,7 +145,7 @@ public class Snake : ConsoleGameEngineBase
                 _body.Insert(0, _body[^1]);
             }
         }
-
+   
         Draw(_food, Pellet, ConsoleColor.Red);
 
         foreach (var piece in _body)
@@ -173,14 +168,11 @@ public class Snake : ConsoleGameEngineBase
         return true;
     }
     
-    private static readonly int LookAheadDepth = 10;
     private readonly Vector[] _directions = { Vector.Left, Vector.Right, Vector.Up, Vector.Down };
-    private Dictionary<(Vector, Vector, int), int> _scoreMemo = new();
     
-    private (Vector direction, int score) DetermineNextDirection(Vector startingPos)
+    private Vector DetermineNextDirection(Vector startingPos)
     {
-        _scoreMemo = new Dictionary<(Vector, Vector, int), int>();
-        var scores = new Dictionary<Vector, int>
+        var scores = new Dictionary<Vector, float>
         {
             [Vector.Left] = 0,
             [Vector.Right] = 0,
@@ -188,48 +180,65 @@ public class Snake : ConsoleGameEngineBase
             [Vector.Down] = 0
         };
     
-        foreach (var direction in scores.Keys)
+        foreach (var direction in _directions)
         {
-            scores[direction] = GetScoreForPosition(startingPos, direction, LookAheadDepth);
+            if (direction == -_snakeDirection)
+            {
+                scores.Remove(direction);
+            }
+            else
+            {
+                scores[direction] = GetScoreForPosition(startingPos, direction);
+            }
         }
         
         var maxScore = scores.Values.Max();
-        var nextDirection = scores.First(kvp => kvp.Value == maxScore).Key;
-        return (nextDirection, maxScore);
+        var potentialDirections = scores.Where(kvp => Math.Abs(kvp.Value - maxScore) < 0.01f).ToList();
+        
+        var randomIndex = _rng.Next(potentialDirections.Count);
+        var nextDirection = potentialDirections[randomIndex].Key;
+        
+        return nextDirection;
     }
     
-    private int GetScoreForPosition(Vector startingPos, Vector direction, int depth)
+    private float GetScoreForPosition(Vector startingPos, Vector direction)
     {
         var nextPosition = startingPos + direction;
-        if (depth == 0) return 0;
         
-        if (_scoreMemo.TryGetValue((nextPosition, direction, depth), out int cachedScore))
+        if (!IsSpaceFree(nextPosition)) 
         {
-            return cachedScore;
+            return float.MinValue;
         }
     
-        if (_body.Any(b => b == nextPosition) || _map.Sprite.GetGlyph((int)(nextPosition.X - _map.Position.X), (int)(nextPosition.Y - _map.Position.Y)) == Wall) 
+        float score = 10000; // base score for non-collision move
+        
+        var pathDistance = CalculatePathLength(nextPosition, _food);
+        if (pathDistance != int.MaxValue)
         {
-            return _scoreMemo[(nextPosition, direction, depth)] = int.MinValue;
+            // Score based on proximity to food.
+            score += 1500;
+            score -= pathDistance * 150;
         }
-    
-        int score = 1000; // base score for non-collision move
+        
+        var openArea = CalculateOpenArea(nextPosition);
+        score += openArea * 100;
+        
+        // var distanceToTail = (nextPosition - _body[0]).Magnitude;
+        // score -= distanceToTail * 100;
+         
+        score += DistanceToWall(nextPosition) * 150;
 
-        // Add to score based on closeness to the food
-        var distanceToFood = (int)(_food - nextPosition).Magnitude;
-        score -= distanceToFood * 10;
+        return score;
+    }
 
-        if (distanceToFood == 0) score += 1000;
+    private float DistanceToWall(Vector nextPosition)
+    {
+        var topWallDistance = nextPosition.Y - _map.Position.Y;
+        var bottomWallDistance = (_map.Position.Y + _map.Bounds.Height) - nextPosition.Y;
+        var leftWallDistance = nextPosition.X - _map.Position.X;
+        var rightWallDistance = (_map.Position.X + _map.Bounds.Width) - nextPosition.X;
 
-        // Add to score based on availability of next potential moves
-        var freedSpacesAfterMove = _directions.Count(dir => IsSpaceFree(nextPosition + dir));
-        score += freedSpacesAfterMove * 500;
-
-        // Other factors could be added here (like distance to tail)
-
-        // Recur for look-ahead depth
-        var futureScores = _directions.Select(dir => GetScoreForPosition(nextPosition, dir, depth - 1)).Max();
-        return _scoreMemo[(nextPosition, direction, depth)] = score + futureScores;
+        return new[] { topWallDistance, bottomWallDistance, leftWallDistance, rightWallDistance }.Min();
     }
 
     private bool IsSpaceFree(Vector pos)
@@ -237,4 +246,85 @@ public class Snake : ConsoleGameEngineBase
         return _body.All(b => b != pos) && _map.Sprite.GetGlyph((int)(pos.X - _map.Position.X), (int)(pos.Y - _map.Position.Y)) != Wall;
     }
 
+    private int CalculatePathLength(Vector start, Vector target)
+    {
+        //from the graph, get the starting node and set it's distance to 0
+        //this node is the closest to the starting node because it IS the starting node.
+        if (start == target) return 0;
+        
+        var visited = new HashSet<Vector>();
+        var distanceMap = new Dictionary<Vector, (int g, float f)>()
+        {
+            {start, (0, ManhattanDistance(start, target)) }
+        };
+        
+        while (true)
+        {
+            var nextUnvisited = distanceMap.Where(kvp => !visited.Contains(kvp.Key)).ToList();
+            if (nextUnvisited.Count == 0)
+            {
+                return int.MaxValue;
+            }
+            
+            var current = nextUnvisited.MinBy(kvp => kvp.Value.f);
+            
+            visited.Add(current.Key);
+            
+            var neighbors = _directions
+                .Select(d => current.Key + d)
+                .Where(IsSpaceFree)
+                .Where(n => !visited.Contains(n));
+            
+            foreach (var neighbor in neighbors)
+            {
+                int tentativeG = distanceMap[current.Key].g + 1;
+                float h = ManhattanDistance(neighbor, target);
+                float tentativeF = tentativeG + h;
+
+                if (distanceMap.ContainsKey(neighbor))
+                {
+                    if (tentativeF < distanceMap[neighbor].f)
+                    {
+                        distanceMap[neighbor] = (tentativeG, tentativeF);
+                    }
+                }
+                else
+                {
+                    distanceMap.Add(neighbor, (tentativeG, tentativeF));
+                }
+
+                if (neighbor == target)
+                {
+                    return tentativeG;
+                }
+            }
+        }
+    }
+
+    private static float ManhattanDistance(Vector start, Vector end)
+    {
+        return Math.Abs(end.X - start.X) + Math.Abs(end.Y - start.Y);
+    }
+
+    private int CalculateOpenArea(Vector pos)
+    {
+        var visited = new HashSet<Vector> { pos };
+        var queue = new Queue<Vector>();
+        queue.Enqueue(pos);
+        int count = 0;
+        while (queue.Count > 0)
+        {
+            var current = queue.Dequeue();
+            count++;
+            foreach (var direction in _directions)
+            {
+                var next = current + direction;
+                if (IsSpaceFree(next) && visited.Add(next))
+                {
+                    queue.Enqueue(next);
+                }
+            }
+        }
+        return count;
+    }
 }
