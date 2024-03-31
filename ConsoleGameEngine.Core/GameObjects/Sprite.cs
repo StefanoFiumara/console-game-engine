@@ -116,12 +116,12 @@ public class Sprite
         }
     }
 
-    public char GetGlyph(Vector pos)
+    private char GetGlyph(Vector pos)
     {
         return GetGlyph((int) pos.X, (int) pos.Y);
     }
     
-    public char GetGlyph(int x, int y)
+    private char GetGlyph(int x, int y)
     {
         if (x < 0 || x >= Width || y < 0 || y >= Height)
             return ' ';
@@ -129,7 +129,7 @@ public class Sprite
         return _glyphs[y * (int)Width + x];
     }
 
-    public char GetGlyph(int index)
+    private char GetGlyph(int index)
     {
         if (index < 0 || index >= _glyphs.Length)
         {
@@ -137,6 +137,24 @@ public class Sprite
         }
 
         return _glyphs[index];
+    }
+
+    public char this[int i]
+    {
+        get => GetGlyph(i);
+        set => SetGlyph(i, value);
+    }
+
+    public char this[int x, int y]
+    {
+        get => GetGlyph(x, y);
+        set => SetGlyph(x, y, value);
+    }
+
+    public char this[Vector pos]
+    {
+        get => GetGlyph(pos);
+        set => SetGlyph(pos, value);
     }
 
     public ConsoleColor GetFgColor(int index)
@@ -175,12 +193,19 @@ public class Sprite
         return _bgColors[y * (int)Width + x];
     }
 
-    public void SetGlyph(Vector pos, char c)
+    private void SetGlyph(int index, char c)
+    {
+        if (index >= 0 && index < _glyphs.Length)
+        {
+            _glyphs[index] = c;
+        }
+    }
+    private void SetGlyph(Vector pos, char c)
     {
         SetGlyph((int)pos.X, (int)pos.Y, c);
     }
 
-    public void SetGlyph(int x, int y, char c)
+    private void SetGlyph(int x, int y, char c)
     {
         if (x < 0 || x >= Width || y < 0 || y >= Height)
         {

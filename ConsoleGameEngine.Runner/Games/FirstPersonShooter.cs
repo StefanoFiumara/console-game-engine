@@ -70,7 +70,7 @@ public class FirstPersonShooter : ConsoleGameEngineBase
         {
             _playerPosition += PlayerFacingAngle * MoveSpeed * elapsedTime;
 
-            if (_map.GetGlyph((int) _playerPosition.Rounded.X, (int) _playerPosition.Rounded.Y) == '#')
+            if (_map[(int) _playerPosition.Rounded.X, (int) _playerPosition.Rounded.Y] == '#')
             {
                 _playerPosition -= PlayerFacingAngle * MoveSpeed * elapsedTime;
             }
@@ -79,7 +79,7 @@ public class FirstPersonShooter : ConsoleGameEngineBase
         if (input.IsKeyHeld(KeyCode.Down))
         {
             _playerPosition -= PlayerFacingAngle * MoveSpeed * elapsedTime;
-            if (_map.GetGlyph((int) _playerPosition.Rounded.X, (int) _playerPosition.Rounded.Y) == '#')
+            if (_map[(int) _playerPosition.Rounded.X, (int) _playerPosition.Rounded.Y] == '#')
             {
                 _playerPosition += PlayerFacingAngle * MoveSpeed * elapsedTime;
             }

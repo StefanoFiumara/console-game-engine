@@ -61,7 +61,7 @@ public static class Raycast
                 rayLength1D.Y += unitStepSize.Y;
             }
 
-            if (map.GetGlyph((int)mapCheck.X, (int)mapCheck.Y) == impassable)
+            if (map[(int)mapCheck.X, (int)mapCheck.Y] == impassable)
             {
                 result.Hit = true;
             }

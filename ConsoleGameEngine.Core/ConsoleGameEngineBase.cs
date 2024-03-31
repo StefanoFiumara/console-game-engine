@@ -280,12 +280,12 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
         {
             for (int x = 0; x < sprite.Width; x++)
             {
-                if (sprite.GetGlyph(x, y) != ' ')
+                if (sprite[x, y] != ' ')
                 {
                     Draw(
                         (int)position.X + x,
                         (int)position.Y + y,
-                        sprite.GetGlyph(x, y),
+                        sprite[x, y],
                         sprite.GetFgColor(x, y),
                         sprite.GetBgColor(x, y));
                 }

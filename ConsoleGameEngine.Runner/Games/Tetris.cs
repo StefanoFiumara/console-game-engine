@@ -338,7 +338,7 @@ public class Tetris : ConsoleGameEngineBase
             for (int x = 1; x < _field.Bounds.Width - 1; x++)
             {
                 var fieldRelativePosition = _currentPiece.Position + new Vector(x, y) - _field.Position;
-                isLine &= _field.Sprite.GetGlyph(x, (int)fieldRelativePosition.Y) == 'X';
+                isLine &= _field.Sprite[x, (int)fieldRelativePosition.Y] == 'X';
             }
 
             if (isLine)
@@ -369,9 +369,9 @@ public class Tetris : ConsoleGameEngineBase
                 {
                     for (int i = line; i > 0; i--)
                     {
-                        var above = _field.Sprite.GetGlyph(x, i - 1);
+                        var above = _field.Sprite[x, i - 1];
                         var aboveColor = _field.Sprite.GetFgColor(x, i - 1);
-                        _field.Sprite.SetGlyph(x, i, above);
+                        _field.Sprite[x, i] = above;
 
                         if (above == 'X')
                         {
@@ -400,9 +400,9 @@ public class Tetris : ConsoleGameEngineBase
                 int pieceIndex = GetRotatedIndex(x, y, _currentRotation);
                 var fieldRelativePosition = _currentPiece.Position + new Vector(x, y) - _field.Position;
 
-                if (_currentPiece.Sprite.GetGlyph(pieceIndex) == 'X')
+                if (_currentPiece.Sprite[pieceIndex] == 'X')
                 {
-                    _field.Sprite.SetGlyph(fieldRelativePosition, 'X');
+                    _field.Sprite[fieldRelativePosition] = 'X';
                     _field.Sprite.SetFgColor(fieldRelativePosition, _lockGray ? ConsoleColor.DarkGray : _currentPiece.Sprite.GetFgColor(pieceIndex));
                     _field.Sprite.SetBgColor(fieldRelativePosition, _lockGray ? ConsoleColor.DarkGray : _currentPiece.Sprite.GetFgColor(pieceIndex));
                 }
@@ -473,7 +473,7 @@ public class Tetris : ConsoleGameEngineBase
                 int pieceIndex = GetRotatedIndex(x, y, rotation);
                 var fieldRelativePosition = newPosition + new Vector(x, y) - _field.Position;
 
-                if (piece.Sprite.GetGlyph(pieceIndex) == 'X' && _field.Sprite.GetGlyph(fieldRelativePosition) != ' ')
+                if (piece.Sprite[pieceIndex] == 'X' && _field.Sprite[fieldRelativePosition] != ' ')
                 {
                     return false;
                 }
@@ -490,12 +490,12 @@ public class Tetris : ConsoleGameEngineBase
             for (int x = 0; x < piece.Bounds.Width; x++)
             {
                 var index = GetRotatedIndex(x, y, rotation);
-                if (piece.Sprite.GetGlyph(index) != ' ')
+                if (piece.Sprite[index] != ' ')
                 {
                     Draw(
                         (int)piece.Position.X + x, 
                         (int)piece.Position.Y + y, 
-                        piece.Sprite.GetGlyph(index), 
+                        piece.Sprite[index], 
                         piece.Sprite.GetFgColor(x, y),
                         piece.Sprite.GetBgColor(x, y));
                 }

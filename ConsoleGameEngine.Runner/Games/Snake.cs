@@ -12,7 +12,7 @@ namespace ConsoleGameEngine.Runner.Games;
 public class Snake : ConsoleGameEngineBase
 {
     private const char PlayerHead = '0';
-    private const char PlayerBody = '+';
+    private const char PlayerBody = 'O';
     private const char Pellet = '*';
     private const char Wall = '#';
 
@@ -100,6 +100,7 @@ public class Snake : ConsoleGameEngineBase
             // Game ticks faster based on current level
             _gameTimer = 0f;
 
+            // Snake Movement
             _input = DetermineNextDirection(_head);
             
             _snakeDirection = _input;
@@ -117,11 +118,12 @@ public class Snake : ConsoleGameEngineBase
             }
 
             // Collision check against the game bounds.
-            if (_map.Sprite.GetGlyph((int) (_head.X - _map.Position.X), (int) (_head.Y - _map.Position.Y)) == Wall)
+            if (_map.Sprite[(int) (_head.X - _map.Position.X), (int) (_head.Y - _map.Position.Y)] == Wall)
             {
                 return Create(); // Reset Game
             }
 
+            // Collision Check against Food pellet
             if (_head.Rounded == _food.Rounded)
             {
                 _score++;
@@ -146,6 +148,7 @@ public class Snake : ConsoleGameEngineBase
             }
         }
    
+        // Render
         Draw(_food, Pellet, ConsoleColor.Red);
 
         foreach (var piece in _body)
@@ -154,9 +157,7 @@ public class Snake : ConsoleGameEngineBase
             Draw(piece, gfx, ConsoleColor.Green);
         }
 
-        var title = $"SNAKE";
-
-        DrawString(ScreenWidth / 2, 1, title, alignment: TextAlignment.Centered);
+        DrawString(ScreenWidth / 2, 1, "SNAKE", alignment: TextAlignment.Centered);
         DrawString(1,5, "Arrow Keys: Move");
         DrawString(1,7, "ESC: Exit");
         DrawString(1,10, $"High Score: {_highScore}");
@@ -220,12 +221,7 @@ public class Snake : ConsoleGameEngineBase
             score -= pathDistance * 150;
         }
         
-        var openArea = CalculateOpenArea(nextPosition);
-        score += openArea * 100;
-        
-        // var distanceToTail = (nextPosition - _body[0]).Magnitude;
-        // score -= distanceToTail * 100;
-         
+        score += CalculateOpenArea(nextPosition) * 100;
         score += DistanceToWall(nextPosition) * 150;
 
         return score;
@@ -243,7 +239,7 @@ public class Snake : ConsoleGameEngineBase
 
     private bool IsSpaceFree(Vector pos)
     {
-        return _body.All(b => b != pos) && _map.Sprite.GetGlyph((int)(pos.X - _map.Position.X), (int)(pos.Y - _map.Position.Y)) != Wall;
+        return _body.All(b => b != pos) && _map.Sprite[(int)(pos.X - _map.Position.X), (int)(pos.Y - _map.Position.Y)] != Wall;
     }
 
     private int CalculatePathLength(Vector start, Vector target)
