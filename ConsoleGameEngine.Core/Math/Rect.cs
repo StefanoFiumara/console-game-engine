@@ -1,6 +1,8 @@
+using System;
+
 namespace ConsoleGameEngine.Core.Math;
 
-public struct Rect
+public struct Rect : IEquatable<Rect>
 {
     public Vector Position { get; set; }
     public Vector Size { get; set; }
@@ -36,5 +38,20 @@ public struct Rect
     public override string ToString()
     {
         return $"Position: {Position}, Size: {Size}";
+    }
+
+    public bool Equals(Rect other)
+    {
+        return Position.Equals(other.Position) && Size.Equals(other.Size);
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is Rect other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Position, Size);
     }
 }

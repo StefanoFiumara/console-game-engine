@@ -98,7 +98,9 @@ public class Snake : ConsoleGameEngineBase
         if (_gameTimer <= 0f)
         {
             // Game ticks faster based on current level
+            // TEMP: Testing fast AI speed
             _gameTimer = 0f;
+            // _gameTimer = GameTick - _level * 0.02f;
 
             // Snake Movement
             _input = DetermineNextDirection(_head);
@@ -239,7 +241,19 @@ public class Snake : ConsoleGameEngineBase
 
     private bool IsSpaceFree(Vector pos)
     {
-        return _body.All(b => b != pos) && _map.Sprite[(int)(pos.X - _map.Position.X), (int)(pos.Y - _map.Position.Y)] != Wall;
+        var isMapSpaceFree = _map.Sprite[(int)(pos.X - _map.Position.X), (int)(pos.Y - _map.Position.Y)] != Wall;
+        bool isBodyHit = false;
+        
+        for (int i = 0; i < _body.Count; i++)
+        {
+            if (pos == _body[i])
+            {
+                isBodyHit = true;
+                break;
+            }
+        }
+
+        return isMapSpaceFree && !isBodyHit;
     }
 
     private int CalculatePathLength(Vector start, Vector target)

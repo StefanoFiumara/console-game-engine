@@ -14,7 +14,6 @@ public class Sprite
     private readonly ConsoleColor[] _fgColors;
     private readonly ConsoleColor[] _bgColors;
 
-    
     public Vector Size { get; }
 
     public float Width => Size.X;
