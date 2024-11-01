@@ -258,7 +258,7 @@ public class Snake : ConsoleGameEngineBase
 
     private int CalculatePathLength(Vector start, Vector target)
     {
-        //from the graph, get the starting node and set it's distance to 0
+        //from the graph, get the starting node and set its distance to 0
         //this node is the closest to the starting node because it IS the starting node.
         if (start == target) return 0;
         

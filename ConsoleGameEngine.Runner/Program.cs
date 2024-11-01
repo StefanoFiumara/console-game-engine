@@ -57,7 +57,7 @@ public static class Program
 
         Console.SetWindowSize(40, 40);
         Console.SetBufferSize(40, 40);
-        ConsoleGameEngineWin32.SetCurrentFont("Modern DOS 8x8", 14);
+        ConsoleGameEngineWin32.SetCurrentFont("Modern DOS 8x8", 12);
         Console.Clear();
     }
 }
