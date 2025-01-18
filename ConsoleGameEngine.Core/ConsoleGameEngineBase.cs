@@ -30,19 +30,9 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
     
     private readonly string _name;
     
-    /// <summary>
-    /// Shortcut to grab the Screen Width
-    /// </summary>
     protected int ScreenWidth => (int)ScreenRect.Size.X;
-
-    /// <summary>
-    /// Shortcut to grab the Screen Height
-    /// </summary>
     protected int ScreenHeight => (int)ScreenRect.Size.Y;
-
-    /// <summary>
-    /// The bounds of the screen
-    /// </summary>
+    
     protected Rect ScreenRect { get; private set; }
 
     protected int PixelSize { get; private set; }
@@ -50,9 +40,10 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
     /// <summary>
     /// Enabling performance mode allows the game loop to run as fast as possible
     /// instead of suspending the game loop thread to hit the target framerate.
-    /// This uses a lot more CPU.
     /// </summary>
     protected bool PerformanceModeEnabled { get; init; }
+    
+    // TODO: Add flag for 24-bit color mode (or does that belong to the renderer?
 
     protected ConsoleGameEngineBase()
     {
@@ -61,7 +52,7 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
         _name = GetType().Name;
 
     }
-        
+    
     /// <summary>
     /// Initializes the Console to the specified size, must be called before Start()
     /// </summary>
@@ -69,7 +60,7 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
     /// <param name="height">The desired Height of the console in rows (not pixels)</param>
     /// <param name="pixelSize">The size of each cell in pixels</param>
     /// <param name="targetFps">The target framerate the application should aim to achieve</param>
-    protected void InitConsole(int width, int height, short pixelSize = 8, int targetFps = 60 )
+    protected void InitConsole(int width, int height, short pixelSize = 8, int targetFps = 60)
     {
         if (!_isInit)
         {
@@ -96,11 +87,12 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
             }
 
             ScreenRect = new Rect(Vector.Zero, new Vector(width, height));
-
             _screenBuffer = new CharInfo[width * height];
 
+#pragma warning disable CA1416
             Console.SetWindowSize(width, height);
             Console.SetBufferSize(width, height);
+#pragma warning restore CA1416
 
             _targetFps = targetFps;
             if (_targetFps < 30) _targetFps = 30;
@@ -189,75 +181,48 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
     /// <param name="input">The keyboard input state for the current frame</param>
     protected abstract bool Update(float elapsedTime, PlayerInput input);
 
+    // TODO: Pull out all the Draw methods into a renderer component 
     /// <summary>
     /// Draws a character to the screen at the given position.
     /// </summary>
-    protected void Draw(Vector position, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+    protected void Draw(Vector position, char c) => Draw(position, c, Color24.White, Color24.Black);
+    protected void Draw(Vector position, char c, Color24 fgColor) => Draw(position, c, fgColor, Color24.Black);
+    protected void Draw(Vector position, char c, Color24 fgColor, Color24 bgColor) => Draw((int)position.X, (int)position.Y, c, fgColor, bgColor);
+    protected void Draw(int x, int y, char c, Color24 fgColor) => Draw(x, y, c, fgColor, Color24.Black);
+    protected void Draw(int x, int y, char c) => Draw(x, y, c, Color24.White, Color24.Black);
+    protected void Draw(int x, int y, char c, Color24 fgColor, Color24 bgColor)
     {
-        Draw((int)position.X, (int)position.Y, c, fgColor, bgColor);
-    }
-
-    /// <summary>
-    /// Draws a character to the screen at the given position.
-    /// </summary>
-    protected void Draw(int x, int y, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
-    {
-        if (x >= ScreenWidth  || x < 0 ||
+        if (x >= ScreenWidth || x < 0 ||
             y >= ScreenHeight || y < 0)
         {
             return;
         }
-
+    
+        // TODO: write to buffer using Color24 when 24-bit color mode is enabled
+        
+        // Convert Color24 to 16-bit color
+        ConsoleColor fgConsoleColor = fgColor;
+        ConsoleColor bgConsoleColor = bgColor;
+    
+        // Compute the attributes as a short value
+        var color = (short)((int)fgConsoleColor + ((int)bgConsoleColor << 4));
+    
+        // Update the screen buffer
         var index = y * ScreenWidth + x;
-        var color = (short)((int)fgColor + ((int)bgColor << 4));
-
         _screenBuffer[index].Attributes = color;
         _screenBuffer[index].Char.UnicodeChar = c;
     }
-
+    
     /// <summary>
     /// Draws a rectangle to the screen.
     /// </summary>
-    protected void Fill(Rect rect, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
-    {
-        Fill(rect.Position, rect.Size, c, fgColor, bgColor);
-    }
-
-    private void Fill(Vector position, Vector size, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
-    {
-        Fill((int)position.X,
-            (int)position.Y,
-            (int)(size.X + position.X),
-            (int)(size.Y + position.Y),
-            c, fgColor, bgColor);
-    }
-
-    protected void DrawBorder(Rect rect, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
-    {
-        var borderPos = new Vector(rect.Position.X - 1, rect.Position.Y - 1);
-        var borderSize = new Vector(rect.Width + 1, rect.Height + 1);
-            
-        DrawBox(borderPos, borderSize, c, fgColor, bgColor);
-    }
-    protected void DrawBox(Rect rect, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
-    {
-        DrawBox(rect.Position, rect.Size, c, fgColor, bgColor);
-    }
-        
-    protected void DrawBox(Vector position, Vector size, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
-    {
-        var topLeft = position;
-        var topRight = position + Vector.Right * size.X;
-        var bottomLeft = position + Vector.Down * size.Y;
-        var bottomRight = position + size;
-            
-        DrawLine(topLeft, topRight, c, fgColor, bgColor);
-        DrawLine(bottomLeft, bottomRight, c, fgColor, bgColor);
-        DrawLine(topLeft, bottomLeft, c, fgColor, bgColor);
-        DrawLine(topRight, bottomRight, c, fgColor, bgColor);
-    }
-
-    private void Fill(int x1, int y1, int x2, int y2, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+    protected void Fill(Rect rect, char c) => Fill(rect, c, Color24.White, Color24.Black);
+    protected void Fill(Rect rect, char c, Color24 fgColor) => Fill(rect.Position, rect.Size, c, fgColor, Color24.Black);
+    protected void Fill(Rect rect, char c, Color24 fgColor, Color24 bgColor) => Fill(rect.Position, rect.Size, c, fgColor, bgColor);
+    protected void Fill(Vector position, Vector size, char c) => Fill(position, size, c, Color24.White, Color24.Black);
+    protected void Fill(Vector position, Vector size, char c, Color24 fgColor) => Fill(position, size, c, fgColor, Color24.Black);
+    protected void Fill(Vector position, Vector size, char c, Color24 fgColor, Color24 bgColor) => Fill((int)position.X, (int)position.Y, (int)(size.X + position.X), (int)(size.Y + position.Y), c, fgColor, bgColor);
+    protected void Fill(int x1, int y1, int x2, int y2, char c, Color24 fgColor, Color24 bgColor)
     {
         Clip(ref x1, ref y1);
         Clip(ref x2, ref y2);
@@ -269,6 +234,34 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
                 Draw(x, y, c, fgColor, bgColor);
             }
         }
+    }
+
+    protected void DrawBorder(Rect rect, char c) => DrawBorder(rect, c, Color24.White, Color24.Black);
+    protected void DrawBorder(Rect rect, char c, Color24 fgColor) => DrawBorder(rect, c, fgColor, Color24.Black);
+    protected void DrawBorder(Rect rect, char c, Color24 fgColor, Color24 bgColor)
+    {
+        var borderPos = new Vector(rect.Position.X - 1, rect.Position.Y - 1);
+        var borderSize = new Vector(rect.Width + 1, rect.Height + 1);
+            
+        DrawBox(borderPos, borderSize, c, fgColor, bgColor);
+    }
+
+    protected void DrawBox(Rect rect, char c) => DrawBox(rect, c, Color24.White, Color24.Black);
+    protected void DrawBox(Rect rect, char c, Color24 fgColor) => DrawBox(rect, c, fgColor, Color24.Black);
+    protected void DrawBox(Rect rect, char c, Color24 fgColor, Color24 bgColor) => DrawBox(rect.Position, rect.Size, c, fgColor, bgColor);
+    protected void DrawBox(Vector position, Vector size, char c, Color24 fgColor) => DrawBox(position, size, c, fgColor, Color24.Black);
+    protected void DrawBox(Vector position, Vector size, char c) => DrawBox(position, size, c, Color24.White, Color24.Black);
+    protected void DrawBox(Vector position, Vector size, char c, Color24 fgColor, Color24 bgColor)
+    {
+        var topLeft = position;
+        var topRight = position + Vector.Right * size.X;
+        var bottomLeft = position + Vector.Down * size.Y;
+        var bottomRight = position + size;
+            
+        DrawLine(topLeft, topRight, c, fgColor, bgColor);
+        DrawLine(bottomLeft, bottomRight, c, fgColor, bgColor);
+        DrawLine(topLeft, bottomLeft, c, fgColor, bgColor);
+        DrawLine(topRight, bottomRight, c, fgColor, bgColor);
     }
 
     /// <summary>
@@ -294,7 +287,7 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
     }
         
     /// <summary>
-    /// Draws a game object to the screen using the object's sprite and position position.
+    /// Draws a game object to the screen using the object's sprite and position.
     /// </summary>
     protected void DrawObject(GameObject obj) 
     {
@@ -304,18 +297,10 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
     /// <summary>
     /// Draws a line from the starting point to the ending point.
     /// </summary>
-    protected void DrawLine(Vector start, Vector end, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
-    {
-        DrawLine(
-            (int) start.X, (int) start.Y,
-            (int) end.X, (int) end.Y,
-            c, fgColor, bgColor);
-    }
-
-    /// <summary>
-    /// Draws a line from the starting point to the ending point.
-    /// </summary>
-    private void DrawLine(int x1, int y1, int x2, int y2, char c, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+    protected void DrawLine(Vector start, Vector end, char c) => DrawLine(start, end, c, Color24.White, Color24.Black);
+    protected void DrawLine(Vector start, Vector end, char c, Color24 fgColor) => DrawLine(start, end, c, fgColor, Color24.Black);
+    protected void DrawLine(Vector start, Vector end, char c, Color24 fgColor, Color24 bgColor) => DrawLine((int) start.X, (int) start.Y, (int) end.X, (int) end.Y, c, fgColor, bgColor);
+    protected void DrawLine(int x1, int y1, int x2, int y2, char c, Color24 fgColor, Color24 bgColor)
     {
         int x;
         int y;
@@ -417,21 +402,11 @@ public abstract class ConsoleGameEngineBase : ConsoleGameEngineWin32
     /// <summary>
     /// Draws a string of text to the screen at the given coordinates.
     /// </summary>
-    protected void DrawString(Vector position, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black, TextAlignment alignment = TextAlignment.Left)
-    {
-        DrawString(
-            (int) position.X,
-            (int) position.Y,
-            msg,
-            fgColor,
-            bgColor,
-            alignment);
-    }
-
-    /// <summary>
-    /// Draws a string of text to the screen at the given coordinates.
-    /// </summary>
-    protected void DrawString(int x, int y, string msg, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black, TextAlignment alignment = TextAlignment.Left)
+    protected void DrawString(Vector position, string msg, TextAlignment alignment = TextAlignment.Left) => DrawString(position, msg, Color24.White, Color24.Black, alignment);
+    protected void DrawString(Vector position, string msg, Color24 fgColor, TextAlignment alignment = TextAlignment.Left) => DrawString((int) position.X, (int) position.Y, msg, fgColor, Color24.Black, alignment);
+    protected void DrawString(Vector position, string msg, Color24 fgColor, Color24 bgColor, TextAlignment alignment = TextAlignment.Left) => DrawString((int) position.X, (int) position.Y, msg, fgColor, bgColor, alignment);
+    protected void DrawString(int x, int y, string msg, TextAlignment alignment = TextAlignment.Left) => DrawString(x,y, msg, Color24.White, Color24.Black, alignment);
+    protected void DrawString(int x, int y, string msg, Color24 fgColor, Color24 bgColor, TextAlignment alignment = TextAlignment.Left)
     {
         if (alignment == TextAlignment.Centered)
         {

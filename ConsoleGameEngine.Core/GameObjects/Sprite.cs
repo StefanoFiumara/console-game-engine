@@ -11,8 +11,8 @@ public class Sprite
     public const char SolidPixel = '\xDB';
     
     private readonly char[] _glyphs;
-    private readonly ConsoleColor[] _fgColors;
-    private readonly ConsoleColor[] _bgColors;
+    private readonly Color24[] _fgColors;
+    private readonly Color24[] _bgColors;
 
     public Vector Size { get; }
 
@@ -21,7 +21,9 @@ public class Sprite
     
     public Rect Bounds => new(Vector.Zero, Size);
 
-    public Sprite(string gfx, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+    public Sprite(string gfx) : this(gfx, Color24.White, Color24.Black) { }
+    public Sprite(string gfx, Color24 fgColor) : this(gfx, fgColor, Color24.Black) { }
+    public Sprite(string gfx, Color24 fgColor, Color24 bgColor)
     {
         var splitGfx = gfx.Split('\n', StringSplitOptions.RemoveEmptyEntries);
         var width = splitGfx.Max(c => c.Length);
@@ -48,14 +50,14 @@ public class Sprite
             }
         }
         
-        _fgColors = new ConsoleColor[_glyphs.Length];
-        _bgColors = new ConsoleColor[_glyphs.Length];
+        _fgColors = new Color24[_glyphs.Length];
+        _bgColors = new Color24[_glyphs.Length];
         
         SetSpriteBackground(bgColor);
         SetSpriteColor(fgColor);
     }
 
-    public static Sprite CreateSolid(int width, int height, ConsoleColor color)
+    public static Sprite CreateSolid(int width, int height, Color24 color)
     {
         var sb = new StringBuilder();
         for (int w = 0; w < width; w++)
@@ -71,7 +73,9 @@ public class Sprite
         return new Sprite(sb.ToString(), color);
     }
 
-    public static Sprite Create(string spr, ConsoleColor fgColor = ConsoleColor.White, ConsoleColor bgColor = ConsoleColor.Black)
+    public static Sprite Create(string spr) => Create(spr, Color24.White, Color24.Black);
+    public static Sprite Create(string spr, Color24 fgColor) => Create(spr, fgColor, Color24.Black);
+    public static Sprite Create(string spr, Color24 fgColor, Color24 bgColor)
     {
         return new Sprite(spr, fgColor, bgColor);
     }
@@ -81,8 +85,8 @@ public class Sprite
         Size = spr.Size;
         
         _glyphs = new char[spr._glyphs.Length];
-        _fgColors = new ConsoleColor[_glyphs.Length];
-        _bgColors = new ConsoleColor[_glyphs.Length];
+        _fgColors = new Color24[_glyphs.Length];
+        _bgColors = new Color24[_glyphs.Length];
         
         for (int i = 0; i < spr.Height; i++)
         {
@@ -95,7 +99,7 @@ public class Sprite
         }
     }
     
-    public void SetSpriteColor(ConsoleColor color)
+    public void SetSpriteColor(Color24 color)
     {
         for (int i = 0; i < _fgColors.Length; i++)
         {
@@ -107,7 +111,7 @@ public class Sprite
         }
     }
     
-    public void SetSpriteBackground(ConsoleColor color)
+    public void SetSpriteBackground(Color24 color)
     {
         for (int i = 0; i < _fgColors.Length; i++)
         {
@@ -156,38 +160,38 @@ public class Sprite
         set => SetGlyph(pos, value);
     }
 
-    public ConsoleColor GetFgColor(int index)
+    public Color24 GetFgColor(int index)
     {
         if (index < 0 || index >= _fgColors.Length)
         {
-            return ConsoleColor.Black;
+            return Color24.Black;
         }
 
         return _fgColors[index];
     }
     
-    public ConsoleColor GetBgColor(int index)
+    public Color24 GetBgColor(int index)
     {
         if (index < 0 || index >= _bgColors.Length)
         {
-            return ConsoleColor.Black;
+            return Color24.Black;
         }
 
         return _bgColors[index];
     }
     
-    public ConsoleColor GetFgColor(int x, int y)
+    public Color24 GetFgColor(int x, int y)
     {
         if (x < 0 || x >= Width || y < 0 || y >= Height)
-            return ConsoleColor.Black;
+            return Color24.Black;
         
         return _fgColors[y * (int)Width + x];
     }
     
-    public ConsoleColor GetBgColor(int x, int y)
+    public Color24 GetBgColor(int x, int y)
     {
         if (x < 0 || x >= Width || y < 0 || y >= Height)
-            return ConsoleColor.Black;
+            return Color24.Black;
         
         return _bgColors[y * (int)Width + x];
     }
@@ -214,12 +218,12 @@ public class Sprite
         _glyphs[y * (int) Width + x] = c;
     }
 
-    public void SetFgColor(Vector pos, ConsoleColor c)
+    public void SetFgColor(Vector pos, Color24 c)
     {
         SetFgColor((int)pos.X, (int)pos.Y, c);
     }
     
-    public void SetFgColor(int x, int y, ConsoleColor c)
+    public void SetFgColor(int x, int y, Color24 c)
     {
         if (x < 0 || x >= Width || y < 0 || y >= Height)
         {
@@ -234,12 +238,12 @@ public class Sprite
         }
     }
 
-    public void SetBgColor(Vector pos, ConsoleColor c)
+    public void SetBgColor(Vector pos, Color24 c)
     {
         SetBgColor((int)pos.X, (int)pos.Y, c);
     }
     
-    public void SetBgColor(int x, int y, ConsoleColor c)
+    public void SetBgColor(int x, int y, Color24 c)
     {
         if (x < 0 || x >= Width || y < 0 || y >= Height)
         {

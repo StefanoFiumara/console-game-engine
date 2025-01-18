@@ -37,11 +37,11 @@ public class Particles : ConsoleGameEngineBase
 
         var fountainSprites = new[]
         {
-            new Sprite("*", ConsoleColor.Blue),
-            new Sprite("*", ConsoleColor.DarkBlue),
-            new Sprite("*", ConsoleColor.Cyan),
-            new Sprite("*", ConsoleColor.DarkCyan),
-            new Sprite("*", ConsoleColor.White),
+            new Sprite("*", Color24.Blue),
+            new Sprite("*", Color24.DarkBlue),
+            new Sprite("*", Color24.Cyan),
+            new Sprite("*", Color24.DarkCyan),
+            new Sprite("*", Color24.White),
         };
 
         _spiralParticles = new ParticleSystem(

@@ -151,12 +151,12 @@ public class Snake : ConsoleGameEngineBase
         }
    
         // Render
-        Draw(_food, Pellet, ConsoleColor.Red);
+        Draw(_food, Pellet, Color24.Red);
 
         foreach (var piece in _body)
         {
             var gfx = piece == _head ? PlayerHead : PlayerBody;
-            Draw(piece, gfx, ConsoleColor.Green);
+            Draw(piece, gfx, Color24.Green);
         }
 
         DrawString(ScreenWidth / 2, 1, "SNAKE", alignment: TextAlignment.Centered);

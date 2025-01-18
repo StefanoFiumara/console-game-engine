@@ -105,7 +105,7 @@ public class FirstPersonShooter : ConsoleGameEngineBase
             {
                 if (y < ceiling)
                 {
-                    Draw(x, y, ' ', bgColor: ConsoleColor.Cyan);
+                    Draw(x, y, ' ', Color24.White, Color24.Cyan);
                 }
                 else if (y >= ceiling && y <= floor)
                 {
@@ -125,7 +125,7 @@ public class FirstPersonShooter : ConsoleGameEngineBase
         // Draw HUD
         DrawSprite(_map, _miniMapPosition);
         DrawString(ScreenWidth, (int)_miniMapPosition.Y - 1, $"Boundary Tol: {BoundaryTolerance}", alignment: TextAlignment.Right);
-        Draw(_miniMapPosition + _playerPosition.Rounded, 'X', ConsoleColor.Red);
+        Draw(_miniMapPosition + _playerPosition.Rounded, 'X', Color24.Red, Color24.Black);
 
         return !input.IsKeyDown(KeyCode.Esc);
     }
@@ -145,26 +145,26 @@ public class FirstPersonShooter : ConsoleGameEngineBase
         
     private static readonly List<Shade> WallShades = new()
     {
-        new(Raycast.MaxRaycastDepth / 4f, Shade.MediumShade, ConsoleColor.Gray,     ConsoleColor.White),
-        new(Raycast.MaxRaycastDepth / 3f, Shade.DarkShade,   ConsoleColor.Gray,     ConsoleColor.White),
-        new(Raycast.MaxRaycastDepth / 2f, Shade.LightShade,  ConsoleColor.DarkGray, ConsoleColor.Gray),
-        new(Raycast.MaxRaycastDepth / 1f, Shade.MediumShade, ConsoleColor.White, ConsoleColor.DarkGray)
+        new(Raycast.MaxRaycastDepth / 4f, Shade.MediumShade, Color24.Gray,     Color24.White),
+        new(Raycast.MaxRaycastDepth / 3f, Shade.DarkShade,   Color24.Gray,     Color24.White),
+        new(Raycast.MaxRaycastDepth / 2f, Shade.LightShade,  Color24.DarkGray, Color24.Gray),
+        new(Raycast.MaxRaycastDepth / 1f, Shade.MediumShade, Color24.White, Color24.DarkGray)
     };
         
     private static readonly List<Shade> GroundShades = new()
     {
-        new(0.25f, Shade.FullShade,   ConsoleColor.Green,     ConsoleColor.Green),
-        new(0.5f,  Shade.DarkShade,   ConsoleColor.DarkGreen, ConsoleColor.Green),
-        new(0.75f, Shade.MediumShade, ConsoleColor.Black,     ConsoleColor.DarkGreen),
-        new(0.9f,  Shade.LightShade,  ConsoleColor.DarkGreen, ConsoleColor.Black)
+        new(0.25f, Shade.FullShade,   Color24.Green,     Color24.Green),
+        new(0.5f,  Shade.DarkShade,   Color24.DarkGreen, Color24.Green),
+        new(0.75f, Shade.MediumShade, Color24.Black,     Color24.DarkGreen),
+        new(0.9f,  Shade.LightShade,  Color24.DarkGreen, Color24.Black)
     };
 
     private Vector _miniMapPosition;
 
     private class Shade
     {
-        public static readonly Shade Default = new(0, '#', ConsoleColor.Magenta, ConsoleColor.DarkMagenta);
-        public static readonly Shade Black = new(0, ' ', ConsoleColor.Black, ConsoleColor.Black);
+        public static readonly Shade Default = new(0, '#', Color24.Magenta, Color24.DarkMagenta);
+        public static readonly Shade Black = new(0, ' ', Color24.Black, Color24.Black);
             
         public const char FullShade = ' ';
         public const char DarkShade = '-';
@@ -173,10 +173,10 @@ public class FirstPersonShooter : ConsoleGameEngineBase
 
         public float DistanceThreshold { get; }
         public char Character { get; }
-        public ConsoleColor ForegroundColor { get; }
-        public ConsoleColor BackgroundColor { get; }
+        public Color24 ForegroundColor { get; }
+        public Color24 BackgroundColor { get; }
 
-        public Shade(float distanceThreshold, char character, ConsoleColor foregroundColor, ConsoleColor backgroundColor)
+        public Shade(float distanceThreshold, char character, Color24 foregroundColor, Color24 backgroundColor)
         {
             DistanceThreshold = distanceThreshold;
             Character = character;

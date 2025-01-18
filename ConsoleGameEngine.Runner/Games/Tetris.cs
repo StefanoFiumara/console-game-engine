@@ -94,13 +94,13 @@ public class Tetris : ConsoleGameEngineBase
 
         var colors = new[]
         {
-            ConsoleColor.Cyan, 
-            ConsoleColor.Green, 
-            ConsoleColor.Red, 
-            ConsoleColor.Magenta, 
-            ConsoleColor.Blue, 
-            ConsoleColor.DarkYellow, 
-            ConsoleColor.Yellow
+            Color24.Cyan, 
+            Color24.Green, 
+            Color24.Red, 
+            Color24.Magenta, 
+            Color24.Blue, 
+            Color24.DarkYellow, 
+            Color24.Yellow
         };
             
         _tetrominos = new List<Sprite>();
@@ -229,7 +229,7 @@ public class Tetris : ConsoleGameEngineBase
             
         _currentPiece.Position = _field.Bounds.Center + Vector.Up * _field.Bounds.Height / 2 + Vector.Left * _currentPiece.Bounds.Width / 2;
         _ghostPiece = new GameObject(_currentPiece.Sprite);
-        _ghostPiece.Sprite.SetSpriteBackground(ConsoleColor.Black);
+        _ghostPiece.Sprite.SetSpriteBackground(Color24.Black);
         _currentRotation = 0;
             
         if (!DoesPieceFit(_currentPiece, _currentRotation, _currentPiece.Position))
@@ -375,13 +375,13 @@ public class Tetris : ConsoleGameEngineBase
 
                         if (above == 'X')
                         {
-                            _field.Sprite.SetFgColor(x, i, _lockGray ? ConsoleColor.DarkGray : aboveColor);
-                            _field.Sprite.SetBgColor(x, i, _lockGray ? ConsoleColor.DarkGray : aboveColor);
+                            _field.Sprite.SetFgColor(x, i, _lockGray ? Color24.DarkGray : aboveColor);
+                            _field.Sprite.SetBgColor(x, i, _lockGray ? Color24.DarkGray : aboveColor);
                         }
                         else
                         {
-                            _field.Sprite.SetFgColor(x, i, ConsoleColor.Black);
-                            _field.Sprite.SetBgColor(x, i, ConsoleColor.Black);
+                            _field.Sprite.SetFgColor(x, i, Color24.Black);
+                            _field.Sprite.SetBgColor(x, i, Color24.Black);
                         }
                     }
                 }
@@ -403,8 +403,8 @@ public class Tetris : ConsoleGameEngineBase
                 if (_currentPiece.Sprite[pieceIndex] == 'X')
                 {
                     _field.Sprite[fieldRelativePosition] = 'X';
-                    _field.Sprite.SetFgColor(fieldRelativePosition, _lockGray ? ConsoleColor.DarkGray : _currentPiece.Sprite.GetFgColor(pieceIndex));
-                    _field.Sprite.SetBgColor(fieldRelativePosition, _lockGray ? ConsoleColor.DarkGray : _currentPiece.Sprite.GetFgColor(pieceIndex));
+                    _field.Sprite.SetFgColor(fieldRelativePosition, _lockGray ? Color24.DarkGray : _currentPiece.Sprite.GetFgColor(pieceIndex));
+                    _field.Sprite.SetBgColor(fieldRelativePosition, _lockGray ? Color24.DarkGray : _currentPiece.Sprite.GetFgColor(pieceIndex));
                 }
             }
         }

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
@@ -20,10 +19,9 @@ public class Physics : ConsoleGameEngineBase
 
     private const int MaxTrailCount = 40;
     private const float TrailResetTime = 0.02f;
-
-    private const ConsoleColor BgColor = ConsoleColor.Black;
-    private const ConsoleColor PlayerColor = ConsoleColor.White;
-    private const ConsoleColor TrailColor = ConsoleColor.Red;
+    
+    private static readonly Color24 PlayerColor = Color24.White;
+    private static readonly Color24 TrailColor = Color24.Red;
         
     private PhysicsObject _player;
 
@@ -49,7 +47,7 @@ public class Physics : ConsoleGameEngineBase
     protected override bool Update(float elapsedTime, PlayerInput input)
     {
         // Clear the screen each frame
-        Fill(ScreenRect, ' ', bgColor: BgColor);
+        Fill(ScreenRect, ' ');
             
         if(input.IsKeyHeld(KeyCode.Esc)) 
         {
@@ -142,16 +140,16 @@ public class Physics : ConsoleGameEngineBase
         {
             var (x, y) = ((int)_trail[i].X, (int)_trail[i].Y);
                 
-            Draw(x, y, '*', TrailColor, BgColor);
+            Draw(x, y, '*', Color24.Red, Color24.Black);
         }
             
         DrawObject(_player);
 
         // HUD
-        DrawString(1,1, "INSTRUCTIONS", bgColor: BgColor);
-        DrawString(1,3, "  LEFT/RIGHT: Move Player", bgColor: BgColor);
-        DrawString(1,5, "  SPACE: Jump", bgColor: BgColor);
-        DrawString(1,7, "  ESC: Exit Game", bgColor: BgColor);
+        DrawString(1,1, "INSTRUCTIONS");
+        DrawString(1,3, "  LEFT/RIGHT: Move Player");
+        DrawString(1,5, "  SPACE: Jump");
+        DrawString(1,7, "  ESC: Exit Game");
 
         return true;
     }

@@ -41,10 +41,10 @@ public class SpriteEditor : ConsoleGameEngineBase
         _palette = CreatePalette();
 
         _primaryColor = new GameObject(
-            Sprite.CreateSolid(4,4, ConsoleColor.Red),
+            Sprite.CreateSolid(4,4, Color24.Red),
             new Vector(_palette[0].Position.X, _palette[^1].Bounds.Bottom + 4));
             
-        _secondaryColor = new GameObject(Sprite.CreateSolid(4,4, ConsoleColor.Blue),
+        _secondaryColor = new GameObject(Sprite.CreateSolid(4,4, Color24.Blue),
             new Vector(_primaryColor.Position.X, _primaryColor.Bounds.Bottom + 1));
 
         return true;
@@ -52,7 +52,7 @@ public class SpriteEditor : ConsoleGameEngineBase
 
     private GameObject CreateCanvas(int width, int height)
     {
-        var canvas = Sprite.CreateSolid(width, height, ConsoleColor.Gray);
+        var canvas = Sprite.CreateSolid(width, height, Color24.Gray);
         var pos = (ScreenRect.Center - canvas.Size * 0.5f).Rounded;
         return new GameObject(canvas, pos);
     }
@@ -174,8 +174,8 @@ public class SpriteEditor : ConsoleGameEngineBase
         }
             
         var selectedBorder = new Rect(_primaryColor.Position, new Vector(4, 9));
-        DrawBorder(selectedBorder, '*', ConsoleColor.Gray);
-        DrawString((int)_secondaryColor.Position.X, (int)_secondaryColor.Position.Y - 1, "****", ConsoleColor.Gray);
+        DrawBorder(selectedBorder, '*', Color24.Gray);
+        DrawString((int)_secondaryColor.Position.X, (int)_secondaryColor.Position.Y - 1, "****", Color24.Gray, Color24.Black);
 
         DrawObject(_primaryColor);
         DrawObject(_secondaryColor);
