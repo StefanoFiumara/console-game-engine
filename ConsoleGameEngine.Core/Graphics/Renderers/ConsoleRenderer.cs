@@ -125,7 +125,7 @@ public class ConsoleRenderer : IRenderer
         return new Vector(rect.Left, rect.Top);
     }
     
-    private static void SetCurrentFont(string font, short fontSize = 0)
+    public static void SetCurrentFont(string font, short fontSize = 0)
     {
         var before = new FontInfo
         {
