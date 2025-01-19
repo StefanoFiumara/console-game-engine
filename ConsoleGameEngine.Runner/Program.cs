@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
 using ConsoleGameEngine.Core;
-using ConsoleGameEngine.Core.Win32;
 
 namespace ConsoleGameEngine.Runner;
 

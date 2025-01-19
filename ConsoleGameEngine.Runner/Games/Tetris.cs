@@ -4,6 +4,7 @@ using System.Linq;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Graphics;
+using ConsoleGameEngine.Core.Graphics.Renderers;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 
@@ -116,8 +117,7 @@ public class Tetris : ConsoleGame
     private List<Sprite> GetRandomTetrominoBag()
     {
         var result = _tetrominos.Select(t => new Sprite(t)).ToList();
-
-        result.Shuffle(_rng);
+        _rng.Shuffle(result);
         return result;
     }
         

@@ -62,28 +62,22 @@ public readonly record struct Color24(byte R, byte G, byte B)
         { Yellow, ConsoleColor.Yellow },
         { White, ConsoleColor.White }
     };
-
-    // Convert to ConsoleColor (approximation)
-    public static implicit operator ConsoleColor(Color24 color) => RgbToConsoleColor(color);
-    public static implicit operator Color24(ConsoleColor consoleColor) => ConsoleColorToRgb(consoleColor);
-
-    // Override ToString for easy display
-    public override string ToString() => $"RGB({R}, {G}, {B})";
-
-    private static readonly Dictionary<Color24, ConsoleColor> ColorMappingCache = new();
-    private static Color24 ConsoleColorToRgb(ConsoleColor color) => ConsoleColorToColor24.GetValueOrDefault(color);
     
-    private static ConsoleColor RgbToConsoleColor(Color24 color)
+    private static readonly Dictionary<Color24, ConsoleColor> ColorMappingCache = new();
+    
+    public static implicit operator Color24(ConsoleColor color) => ConsoleColorToColor24.GetValueOrDefault(color);
+    public static implicit operator ConsoleColor(Color24 color)
     {
         if(Color24ToConsoleColor.TryGetValue(color, out var consoleColor)) return consoleColor;
         if(ColorMappingCache.TryGetValue(color, out consoleColor)) return consoleColor;
         
+        // Calculate and map to the closest ConsoleColor
         var minDistance = double.MaxValue;
         var closestColor = ConsoleColor.Black;
         
         foreach (var kvp in ConsoleColorToColor24)
         {
-            double distance = CalculateColorDistance(color, kvp.Value);
+            var distance = CalculateColorDistance(color, kvp.Value);
             if (distance < minDistance)
             {
                 minDistance = distance;
@@ -102,4 +96,6 @@ public readonly record struct Color24(byte R, byte G, byte B)
         int bDiff = color1.B - color2.B;
         return System.Math.Sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
     }
+
+    public override string ToString() => $"RGB({R}, {G}, {B})";
 }

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using ConsoleGameEngine.Core.Math;
 
-namespace ConsoleGameEngine.Core;
+namespace ConsoleGameEngine.Runner;
 
-public static class Extensions
+public static class RngExtensions
 {
     public static Vector NextVector(this Random rng, Rect bounds)
     {
@@ -14,7 +14,7 @@ public static class Extensions
         );
     }
         
-    public static void Shuffle<T>(this List<T> items, Random rng)
+    public static void Shuffle<T>(this Random rng, List<T> items)
     {
         for (int i = items.Count - 1; i >= 1; i--)
         {
