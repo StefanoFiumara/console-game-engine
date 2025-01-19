@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Graphics;
+using ConsoleGameEngine.Core.Graphics.Renderers;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Runner.Games;
 
 // ReSharper disable once UnusedType.Global
-public class Snake : ConsoleGameEngineBase
+public class Snake : ConsoleGame
 {
     private const char PlayerHead = '0';
     private const char PlayerBody = 'O';
@@ -38,9 +40,8 @@ public class Snake : ConsoleGameEngineBase
 
     private float _gameTimer;
 
-    public Snake()
+    public Snake() : base(new ConsoleRenderer(width: 50, height: 50, pixelSize: 14))
     {
-        InitConsole(50, 50, 14);
         _rng = new Random();
 
         // Create a 32x32 map with WALL chars along the edges.
@@ -50,13 +51,14 @@ public class Snake : ConsoleGameEngineBase
             map += "#                              #\n";
         }
         map += "################################\n";
-            
+        
         _map = new GameObject(Sprite.Create(map));
-        _map.Position = ScreenRect.Center - _map.Bounds.Size * 0.5f + 7 * Vector.Down;
     }
 
-    protected override bool Create()
+    protected override bool Create(IRenderer renderer)
     {
+        _map.Position = renderer.Screen.Center - _map.Bounds.Size * 0.5f + 7 * Vector.Down;
+        
         _score = 0;
         _input = Vector.Right;
         _level = 1;
@@ -77,14 +79,14 @@ public class Snake : ConsoleGameEngineBase
         return true;
     }
 
-    protected override bool Update(float elapsedTime, PlayerInput input)
+    protected override bool Update(float elapsedTime, IRenderer renderer, PlayerInput input)
     {
         if (input.IsKeyDown(KeyCode.Esc))
         {
             return false;
         }
 
-        Fill(ScreenRect, ' ');
+        renderer.Fill(' ');
 
         // TODO: create a toggle for different control methods (AI vs manual)
         // Handle Input
@@ -115,14 +117,14 @@ public class Snake : ConsoleGameEngineBase
             {
                 if (_body[i] == _head)
                 {
-                    return Create(); // Reset game.
+                    return Create(renderer); // Reset game.
                 }
             }
 
             // Collision check against the game bounds.
             if (_map.Sprite[(int) (_head.X - _map.Position.X), (int) (_head.Y - _map.Position.Y)] == Wall)
             {
-                return Create(); // Reset Game
+                return Create(renderer); // Reset Game
             }
 
             // Collision Check against Food pellet
@@ -151,22 +153,22 @@ public class Snake : ConsoleGameEngineBase
         }
    
         // Render
-        Draw(_food, Pellet, ConsoleColor.Red);
+        renderer.Draw(_food, Pellet, Color24.Red);
 
         foreach (var piece in _body)
         {
             var gfx = piece == _head ? PlayerHead : PlayerBody;
-            Draw(piece, gfx, ConsoleColor.Green);
+            renderer.Draw(piece, gfx, Color24.Green);
         }
 
-        DrawString(ScreenWidth / 2, 1, "SNAKE", alignment: TextAlignment.Centered);
-        DrawString(1,5, "Arrow Keys: Move");
-        DrawString(1,7, "ESC: Exit");
-        DrawString(1,10, $"High Score: {_highScore}");
-        DrawString(1,12, $"Score: {_score}");
-        DrawString(1,14, $"Level: {_level}");
+        renderer.DrawString(renderer.ScreenWidth / 2, 1, "SNAKE", alignment: TextAlignment.Centered);
+        renderer.DrawString(1,5, "Arrow Keys: Move");
+        renderer.DrawString(1,7, "ESC: Exit");
+        renderer.DrawString(1,10, $"High Score: {_highScore}");
+        renderer.DrawString(1,12, $"Score: {_score}");
+        renderer.DrawString(1,14, $"Level: {_level}");
 
-        DrawObject(_map);
+        renderer.DrawObject(_map);
 
         return true;
     }

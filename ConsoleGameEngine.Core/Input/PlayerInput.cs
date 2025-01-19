@@ -26,8 +26,8 @@ public class PlayerInput
     // Point that will be updated by the function with the current mouse coordinates
     private Point _pointRef;
     private Vector _mousePosition;
-        
-    public Vector MousePosition => (_mousePosition / _pixelSize).Rounded;
+
+    public Vector MousePosition => (_mousePosition / _pixelSize);
         
     internal PlayerInput(short pixelSize)
     {

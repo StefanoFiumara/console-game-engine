@@ -1,14 +1,15 @@
-using System;
 using System.Collections.Generic;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Graphics;
+using ConsoleGameEngine.Core.Graphics.Renderers;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Runner.Games;
 
 // ReSharper disable once UnusedType.Global
-public class Physics : ConsoleGameEngineBase
+public class Physics() : ConsoleGame(new ConsoleRenderer(width: 160, height: 120))
 {
     private const float Gravity = 25f;
     private const float TerminalVelocity = 55f;
@@ -20,36 +21,29 @@ public class Physics : ConsoleGameEngineBase
 
     private const int MaxTrailCount = 40;
     private const float TrailResetTime = 0.02f;
-
-    private const ConsoleColor BgColor = ConsoleColor.Black;
-    private const ConsoleColor PlayerColor = ConsoleColor.White;
-    private const ConsoleColor TrailColor = ConsoleColor.Red;
+    
+    private static readonly Color24 PlayerColor = Color24.White;
+    private static readonly Color24 TrailColor = Color24.Red;
         
     private PhysicsObject _player;
 
     private List<Vector> _trail;
     private float _trailCooldown;
 
-    public Physics()
-    {
-        InitConsole(160, 120);
-        PerformanceModeEnabled = true;
-    }
-        
-    protected override bool Create()
+    protected override bool Create(IRenderer renderer)
     {
         // TODO: Upgrade to use physics Engine
-        _player = new PhysicsObject(Sprite.CreateSolid(3,3, PlayerColor), ScreenRect.Center);
+        _player = new PhysicsObject(Sprite.CreateSolid(3,3, PlayerColor), renderer.Screen.Center);
         _trail = new List<Vector>(MaxTrailCount);
         _trailCooldown = TrailResetTime;
             
         return true;
     }
 
-    protected override bool Update(float elapsedTime, PlayerInput input)
+    protected override bool Update(float elapsedTime, IRenderer renderer, PlayerInput input)
     {
         // Clear the screen each frame
-        Fill(ScreenRect, ' ', bgColor: BgColor);
+        renderer.Fill(' ');
             
         if(input.IsKeyHeld(KeyCode.Esc)) 
         {
@@ -106,9 +100,9 @@ public class Physics : ConsoleGameEngineBase
         _player.Position += _player.Velocity * elapsedTime;
             
         // Check for Collisions
-        if ((int)_player.Position.Y + _player.Bounds.Height > ScreenHeight+1)
+        if ((int)_player.Position.Y + _player.Bounds.Height > renderer.ScreenHeight+1)
         {
-            _player.Position = new Vector(_player.Position.X, ScreenHeight - _player.Bounds.Height);
+            _player.Position = new Vector(_player.Position.X, renderer.ScreenHeight - _player.Bounds.Height);
             _player.Velocity = new Vector(_player.Velocity.X, -_player.Velocity.Y * 0.9f);
         }
 
@@ -117,9 +111,9 @@ public class Physics : ConsoleGameEngineBase
             _player.Position = new Vector(0, _player.Position.Y);
             _player.Velocity = new Vector(-_player.Velocity.X, _player.Velocity.Y);
         }
-        else if ((int)_player.Position.X + _player.Bounds.Width > ScreenWidth)
+        else if ((int)_player.Position.X + _player.Bounds.Width > renderer.ScreenWidth)
         {
-            _player.Position = new Vector(ScreenWidth - _player.Bounds.Width, _player.Position.Y);
+            _player.Position = new Vector(renderer.ScreenWidth - _player.Bounds.Width, _player.Position.Y);
             _player.Velocity = new Vector(-_player.Velocity.X, _player.Velocity.Y);
         }
             
@@ -142,16 +136,16 @@ public class Physics : ConsoleGameEngineBase
         {
             var (x, y) = ((int)_trail[i].X, (int)_trail[i].Y);
                 
-            Draw(x, y, '*', TrailColor, BgColor);
+            renderer.Draw(x, y, '*', TrailColor);
         }
             
-        DrawObject(_player);
+        renderer.DrawObject(_player);
 
         // HUD
-        DrawString(1,1, "INSTRUCTIONS", bgColor: BgColor);
-        DrawString(1,3, "  LEFT/RIGHT: Move Player", bgColor: BgColor);
-        DrawString(1,5, "  SPACE: Jump", bgColor: BgColor);
-        DrawString(1,7, "  ESC: Exit Game", bgColor: BgColor);
+        renderer.DrawString(1,1, "INSTRUCTIONS");
+        renderer.DrawString(1,3, "  LEFT/RIGHT: Move Player");
+        renderer.DrawString(1,5, "  SPACE: Jump");
+        renderer.DrawString(1,7, "  ESC: Exit Game");
 
         return true;
     }

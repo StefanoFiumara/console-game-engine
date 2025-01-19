@@ -2,8 +2,9 @@
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
+using System.Text;
 using ConsoleGameEngine.Core;
-using ConsoleGameEngine.Core.Win32;
+using ConsoleGameEngine.Core.Graphics.Renderers;
 
 namespace ConsoleGameEngine.Runner;
 
@@ -15,12 +16,13 @@ public static class Program
         var games = 
             Assembly.GetExecutingAssembly()
                 .GetTypes()
-                .Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(ConsoleGameEngineBase)))
+                .Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(ConsoleGame)))
                 .ToList();
 
         int choice;
         do
         {
+            Console.OutputEncoding = Encoding.UTF8;
             InitConsoleDefaults();
 
             Console.WriteLine("\n Choose an application to run:\n");
@@ -41,7 +43,7 @@ public static class Program
                 choice--;
                 if (choice >= 0 && choice < games.Count)
                 {
-                    var game = (ConsoleGameEngineBase) Activator.CreateInstance(games[choice]);
+                    var game = (ConsoleGame) Activator.CreateInstance(games[choice]);
                     Console.Clear();
                     game?.Start();
                 }
@@ -57,7 +59,7 @@ public static class Program
 
         Console.SetWindowSize(40, 40);
         Console.SetBufferSize(40, 40);
-        ConsoleGameEngineWin32.SetCurrentFont("Modern DOS 8x8", 12);
+        ConsoleRenderer.SetCurrentFont("Modern DOS 8x8", 12);
         Console.Clear();
     }
 }

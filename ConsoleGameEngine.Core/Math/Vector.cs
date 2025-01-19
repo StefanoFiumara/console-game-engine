@@ -44,7 +44,7 @@ public struct Vector : IEquatable<Vector>
 
     public override string ToString()
     {
-        return $"(X: {X}, Y: {Y})";
+        return $"(X: {X:F4}, Y: {Y:F4})";
     }
 
     public static Vector operator *(Vector v, float scalar)

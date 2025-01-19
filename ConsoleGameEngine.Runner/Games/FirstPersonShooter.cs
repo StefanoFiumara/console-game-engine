@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Graphics;
+using ConsoleGameEngine.Core.Graphics.Renderers;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 using ConsoleGameEngine.Core.Physics;
@@ -11,7 +13,7 @@ namespace ConsoleGameEngine.Runner.Games;
 using static Math;
 
 // ReSharper disable once UnusedType.Global
-public class FirstPersonShooter : ConsoleGameEngineBase
+public class FirstPersonShooter() : ConsoleGame(new ConsoleRenderer(width: 240, height: 135, pixelSize: 6, true), targetFps: 120)
 {
     private const float TurnSpeed = 1.2f;
     private const float MoveSpeed = 3.0f;
@@ -27,13 +29,7 @@ public class FirstPersonShooter : ConsoleGameEngineBase
 
     private Sprite _map;
 
-    public FirstPersonShooter()
-    {
-        PerformanceModeEnabled = true;
-        InitConsole(240, 135, 6);
-    }
-
-    protected override bool Create()
+    protected override bool Create(IRenderer renderer)
     {
         var map = "";
         map += "################\n";
@@ -54,13 +50,13 @@ public class FirstPersonShooter : ConsoleGameEngineBase
         map += "################\n";
 
         _map = new Sprite(map);
-        _miniMapPosition = new Vector(ScreenWidth - _map.Width, ScreenHeight - _map.Height);
+        _miniMapPosition = new Vector(renderer.ScreenWidth - _map.Width, renderer.ScreenHeight - _map.Height);
         _playerPosition = new Vector(8, 8);
         _playerAngle = 0f;
         return true;
     }
 
-    protected override bool Update(float elapsedTime, PlayerInput input)
+    protected override bool Update(float elapsedTime, IRenderer renderer, PlayerInput input)
     {
         // handle input
         if (input.IsKeyHeld(KeyCode.Left))  _playerAngle -= TurnSpeed * elapsedTime;
@@ -86,46 +82,46 @@ public class FirstPersonShooter : ConsoleGameEngineBase
         }
             
         // Basic raycast algorithm for each column on the screen
-        for (int x = 0; x < ScreenWidth; x++)
+        for (int x = 0; x < renderer.ScreenWidth; x++)
         {
             // Create ray vector
-            double rayAngle = (_playerAngle - FieldOfView / 2.0d) + ((x / (double) ScreenWidth) * FieldOfView);
+            double rayAngle = (_playerAngle - FieldOfView / 2.0d) + ((x / (double) renderer.ScreenWidth) * FieldOfView);
             var direction = new Vector((float) Sin(rayAngle), (float) Cos(rayAngle));
 
             var ray = Raycast.Send(_map, _playerPosition, direction, '#', BoundaryTolerance);
 
             // Use distance to wall to determine ceiling and floor height for this column
             // From the midpoint (height / 2), subtract an amount proportional to the distance of the wall
-            int ceiling = (int) (ScreenHeight / 2f - ScreenHeight / ray.Distance);
+            int ceiling = (int) (renderer.ScreenHeight / 2f - renderer.ScreenHeight / ray.Distance);
             // Floor is mirror of ceiling
-            int floor = ScreenHeight - ceiling;
+            int floor = renderer.ScreenHeight - ceiling;
 
             // Render column based on ceiling and floor values
-            for (int y = 0; y < ScreenHeight; y++)
+            for (int y = 0; y < renderer.ScreenHeight; y++)
             {
                 if (y < ceiling)
                 {
-                    Draw(x, y, ' ', bgColor: ConsoleColor.Cyan);
+                    renderer.Draw(x, y, ' ', Color24.White, Color24.Cyan);
                 }
                 else if (y >= ceiling && y <= floor)
                 {
                     var shade = ray.HitBoundary ? Shade.Black : CalculateShade(WallShades, ray.Distance);
-                    Draw(x, y, shade.Character, shade.ForegroundColor, shade.BackgroundColor);
+                    renderer.Draw(x, y, shade.Character, shade.ForegroundColor, shade.BackgroundColor);
                 }
                 else
                 {
-                    var groundDistance = 1.0f - (y - ScreenHeight / 2.0f) / (ScreenHeight / 2.0f);
+                    var groundDistance = 1.0f - (y - renderer.ScreenHeight / 2.0f) / (renderer.ScreenHeight / 2.0f);
                         
                     var shade = CalculateShade(GroundShades, groundDistance);
-                    Draw(x, y, shade.Character, shade.ForegroundColor, shade.BackgroundColor);
+                    renderer.Draw(x, y, shade.Character, shade.ForegroundColor, shade.BackgroundColor);
                 }
             }
         }
 
         // Draw HUD
-        DrawSprite(_map, _miniMapPosition);
-        DrawString(ScreenWidth, (int)_miniMapPosition.Y - 1, $"Boundary Tol: {BoundaryTolerance}", alignment: TextAlignment.Right);
-        Draw(_miniMapPosition + _playerPosition.Rounded, 'X', ConsoleColor.Red);
+        renderer.DrawSprite(_map, _miniMapPosition);
+        renderer.DrawString(renderer.ScreenWidth, (int)_miniMapPosition.Y - 1, $"Boundary Tol: {BoundaryTolerance}", alignment: TextAlignment.Right);
+        renderer.Draw(_miniMapPosition + _playerPosition.Rounded, 'X', Color24.Red, Color24.Black);
 
         return !input.IsKeyDown(KeyCode.Esc);
     }
@@ -145,26 +141,26 @@ public class FirstPersonShooter : ConsoleGameEngineBase
         
     private static readonly List<Shade> WallShades = new()
     {
-        new(Raycast.MaxRaycastDepth / 4f, Shade.MediumShade, ConsoleColor.Gray,     ConsoleColor.White),
-        new(Raycast.MaxRaycastDepth / 3f, Shade.DarkShade,   ConsoleColor.Gray,     ConsoleColor.White),
-        new(Raycast.MaxRaycastDepth / 2f, Shade.LightShade,  ConsoleColor.DarkGray, ConsoleColor.Gray),
-        new(Raycast.MaxRaycastDepth / 1f, Shade.MediumShade, ConsoleColor.White, ConsoleColor.DarkGray)
+        new(Raycast.MaxRaycastDepth / 4f, Shade.MediumShade, Color24.Gray,     Color24.White),
+        new(Raycast.MaxRaycastDepth / 3f, Shade.DarkShade,   Color24.Gray,     Color24.White),
+        new(Raycast.MaxRaycastDepth / 2f, Shade.LightShade,  Color24.DarkGray, Color24.Gray),
+        new(Raycast.MaxRaycastDepth / 1f, Shade.MediumShade, Color24.White, Color24.DarkGray)
     };
         
     private static readonly List<Shade> GroundShades = new()
     {
-        new(0.25f, Shade.FullShade,   ConsoleColor.Green,     ConsoleColor.Green),
-        new(0.5f,  Shade.DarkShade,   ConsoleColor.DarkGreen, ConsoleColor.Green),
-        new(0.75f, Shade.MediumShade, ConsoleColor.Black,     ConsoleColor.DarkGreen),
-        new(0.9f,  Shade.LightShade,  ConsoleColor.DarkGreen, ConsoleColor.Black)
+        new(0.25f, Shade.FullShade,   Color24.Green,     Color24.Green),
+        new(0.5f,  Shade.DarkShade,   Color24.DarkGreen, Color24.Green),
+        new(0.75f, Shade.MediumShade, Color24.Black,     Color24.DarkGreen),
+        new(0.9f,  Shade.LightShade,  Color24.DarkGreen, Color24.Black)
     };
 
     private Vector _miniMapPosition;
 
     private class Shade
     {
-        public static readonly Shade Default = new(0, '#', ConsoleColor.Magenta, ConsoleColor.DarkMagenta);
-        public static readonly Shade Black = new(0, ' ', ConsoleColor.Black, ConsoleColor.Black);
+        public static readonly Shade Default = new(0, '#', Color24.Magenta, Color24.DarkMagenta);
+        public static readonly Shade Black = new(0, ' ', Color24.Black, Color24.Black);
             
         public const char FullShade = ' ';
         public const char DarkShade = '-';
@@ -173,10 +169,10 @@ public class FirstPersonShooter : ConsoleGameEngineBase
 
         public float DistanceThreshold { get; }
         public char Character { get; }
-        public ConsoleColor ForegroundColor { get; }
-        public ConsoleColor BackgroundColor { get; }
+        public Color24 ForegroundColor { get; }
+        public Color24 BackgroundColor { get; }
 
-        public Shade(float distanceThreshold, char character, ConsoleColor foregroundColor, ConsoleColor backgroundColor)
+        public Shade(float distanceThreshold, char character, Color24 foregroundColor, Color24 backgroundColor)
         {
             DistanceThreshold = distanceThreshold;
             Character = character;
