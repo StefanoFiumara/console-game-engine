@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
+using System.Text;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.Graphics.Renderers;
 
@@ -21,6 +22,7 @@ public static class Program
         int choice;
         do
         {
+            Console.OutputEncoding = Encoding.UTF8;
             InitConsoleDefaults();
 
             Console.WriteLine("\n Choose an application to run:\n");

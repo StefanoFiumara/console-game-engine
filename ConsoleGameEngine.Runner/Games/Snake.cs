@@ -51,7 +51,7 @@ public class Snake : ConsoleGame
             map += "#                              #\n";
         }
         map += "################################\n";
-            
+        
         _map = new GameObject(Sprite.Create(map));
     }
 

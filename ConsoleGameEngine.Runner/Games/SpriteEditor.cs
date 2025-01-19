@@ -9,7 +9,7 @@ using ConsoleGameEngine.Core.Math;
 namespace ConsoleGameEngine.Runner.Games;
 
 // ReSharper disable once UnusedType.Global
-public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 96, height: 64, pixelSize: 16), targetFps: 120)
+public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 96, height: 64, pixelSize: 16, true), targetFps: 120)
 {
     private GameObject _canvas;
         
@@ -116,7 +116,6 @@ public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 96, height:
             }
         }
             
-            
         // Select new colors from palette
         if (input.IsKeyUp(KeyCode.LeftMouse))
         {
@@ -143,6 +142,7 @@ public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 96, height:
             
         // Draw HUD
         renderer.DrawString((int) renderer.Screen.Center.X, 3, "SPRITE EDITOR", alignment: TextAlignment.Centered);
+        renderer.DrawString(0,2, $"{input.MousePosition}");
 
         renderer.DrawBorder(_canvas.Bounds, '*');
         renderer.DrawObject(_canvas);
