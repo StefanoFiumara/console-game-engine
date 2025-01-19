@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Runner.Games;
 
 // ReSharper disable once UnusedType.Global
-public class Tetris : ConsoleGameEngineBase
+public class Tetris : ConsoleGame
 {
     private readonly Random _rng;
         
@@ -49,10 +50,8 @@ public class Tetris : ConsoleGameEngineBase
 
     private List<Sprite> _randomizerBag;
         
-    public Tetris()
+    public Tetris() : base(new ConsoleRenderer(width: 32, height: 40, pixelSize: 16))
     {
-        InitConsole(32, 40, 16);
-
         _rng = new Random();
 
         var shapes = new string[7];
@@ -122,7 +121,7 @@ public class Tetris : ConsoleGameEngineBase
         return result;
     }
         
-    protected override bool Create()
+    protected override bool Create(IRenderer renderer)
     {
         _gameOver = false;
         _level = 0;
@@ -141,7 +140,7 @@ public class Tetris : ConsoleGameEngineBase
         }
         fieldLayout += "############\n";
         _field = new GameObject(Sprite.Create(fieldLayout));
-        _field.Position = ScreenRect.Center - _field.Bounds.Size * 0.5f + 7 * Vector.Down;
+        _field.Position = renderer.Screen.Center - _field.Bounds.Size * 0.5f + 7 * Vector.Down;
             
         _clearedLines = new List<int>();
 
@@ -150,7 +149,7 @@ public class Tetris : ConsoleGameEngineBase
         return true;
     }
 
-    protected override bool Update(float elapsedTime, PlayerInput input)
+    protected override bool Update(float elapsedTime, IRenderer renderer, PlayerInput input)
     {
         if (input.IsKeyDown(KeyCode.Esc))
         {
@@ -159,16 +158,16 @@ public class Tetris : ConsoleGameEngineBase
 
         if (_gameOver)
         {
-            Fill(ScreenRect, ' ');
-            DrawString(ScreenRect.Center, "GAME OVER", alignment: TextAlignment.Centered);
-            DrawString(ScreenRect.Center + 2 * Vector.Down, $"Score: {_score}", alignment: TextAlignment.Centered);
-            DrawString(ScreenRect.Center + 4 * Vector.Down, $"Level: {_level}", alignment: TextAlignment.Centered);
-            DrawString(ScreenRect.Center + 6 * Vector.Down, $"Lines: {_lineCount}", alignment: TextAlignment.Centered);
-            DrawString(ScreenRect.Center + 8 * Vector.Down, $"Press ENTER to restart", alignment: TextAlignment.Centered);
+            renderer.Fill(' ');
+            renderer.DrawString(renderer.Screen.Center, "GAME OVER", alignment: TextAlignment.Centered);
+            renderer.DrawString(renderer.Screen.Center + 2 * Vector.Down, $"Score: {_score}", alignment: TextAlignment.Centered);
+            renderer.DrawString(renderer.Screen.Center + 4 * Vector.Down, $"Level: {_level}", alignment: TextAlignment.Centered);
+            renderer.DrawString(renderer.Screen.Center + 6 * Vector.Down, $"Lines: {_lineCount}", alignment: TextAlignment.Centered);
+            renderer.DrawString(renderer.Screen.Center + 8 * Vector.Down, $"Press ENTER to restart", alignment: TextAlignment.Centered);
 
             if (input.IsKeyDown(KeyCode.Enter))
             {
-                return Create();
+                return Create(renderer);
             }
             return true;
         }
@@ -180,7 +179,7 @@ public class Tetris : ConsoleGameEngineBase
         if (_gameTimer <= 0f)
         {
             // TICK
-            Fill(ScreenRect, ' ');
+            renderer.Fill(' ');
                 
             _gameTimer = GameTick;
             _speedCounter++;
@@ -199,11 +198,11 @@ public class Tetris : ConsoleGameEngineBase
                 _forceDown = false;
             }
                 
-            DrawGhostPiece();
-            DrawRotatedPiece(_currentPiece, _currentRotation);
-            DrawObject(_field);
+            DrawGhostPiece(renderer);
+            DrawRotatedPiece(renderer, _currentPiece, _currentRotation);
+            renderer.DrawObject(_field);
                 
-            DrawHud();
+            DrawHud(renderer);
         }
             
         return true;
@@ -288,7 +287,7 @@ public class Tetris : ConsoleGameEngineBase
         }
     }
 
-    private void DrawGhostPiece()
+    private void DrawGhostPiece(IRenderer renderer)
     {
         _ghostPiece.Position = _currentPiece.Position;
         while (DoesPieceFit(_ghostPiece, _currentRotation, _ghostPiece.Position + Vector.Down))
@@ -296,7 +295,7 @@ public class Tetris : ConsoleGameEngineBase
             MovePiece(_ghostPiece, _currentRotation, Vector.Down);
         }
             
-        DrawRotatedPiece(_ghostPiece, _currentRotation);
+        DrawRotatedPiece(renderer, _ghostPiece, _currentRotation);
     }
 
     private void HardDropPiece()
@@ -309,24 +308,24 @@ public class Tetris : ConsoleGameEngineBase
         LockPiece();
     }
 
-    private void DrawHud()
+    private void DrawHud(IRenderer renderer)
     {
-        DrawString(Vector.Down + Vector.Right * ScreenWidth / 2, "TETRIS", alignment: TextAlignment.Centered);
-        DrawString(4 * Vector.Down, $"Score: {_score}");
-        DrawString(6 * Vector.Down, $"Level: {_level}");
-        DrawString(8 * Vector.Down, $"Lines: {_lineCount}");
+        renderer.DrawString(Vector.Down + Vector.Right * renderer.ScreenWidth / 2, "TETRIS", alignment: TextAlignment.Centered);
+        renderer.DrawString(4 * Vector.Down, $"Score: {_score}");
+        renderer.DrawString(6 * Vector.Down, $"Level: {_level}");
+        renderer.DrawString(8 * Vector.Down, $"Lines: {_lineCount}");
             
-        DrawString(new Vector(5, 15), $"HOLD");
+        renderer.DrawString(new Vector(5, 15), $"HOLD");
         if (_heldPiece != null)
         {
-            DrawSprite(_heldPiece, _heldPiecePosition);
+            renderer.DrawSprite(_heldPiece, _heldPiecePosition);
         }
             
-        DrawString(new Vector(23, 15), "NEXT");
+        renderer.DrawString(new Vector(23, 15), "NEXT");
 
         for (int i = 0; i < 4; i++)
         {
-            DrawSprite(_randomizerBag[i], new Vector(23, 16 + 4 * i));
+            renderer.DrawSprite(_randomizerBag[i], new Vector(23, 16 + 4 * i));
         }
     }
 
@@ -483,7 +482,7 @@ public class Tetris : ConsoleGameEngineBase
         return true;
     }
 
-    private void DrawRotatedPiece(GameObject piece, int rotation)
+    private void DrawRotatedPiece(IRenderer renderer, GameObject piece, int rotation)
     {
         for (var y = 0; y < piece.Bounds.Height; y++)
         {
@@ -492,7 +491,7 @@ public class Tetris : ConsoleGameEngineBase
                 var index = GetRotatedIndex(x, y, rotation);
                 if (piece.Sprite[index] != ' ')
                 {
-                    Draw(
+                    renderer.Draw(
                         (int)piece.Position.X + x, 
                         (int)piece.Position.Y + y, 
                         piece.Sprite[index], 

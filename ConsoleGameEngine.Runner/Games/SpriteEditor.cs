@@ -1,13 +1,14 @@
 using System;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Runner.Games;
 
 // ReSharper disable once UnusedType.Global
-public class SpriteEditor : ConsoleGameEngineBase
+public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 96, height: 64, pixelSize: 16), targetFps: 120)
 {
     private GameObject _canvas;
         
@@ -18,12 +19,7 @@ public class SpriteEditor : ConsoleGameEngineBase
 
     private ConsoleColor Primary => _primaryColor.Sprite.GetFgColor(0);
     private ConsoleColor Secondary => _secondaryColor.Sprite.GetFgColor(0);
-        
-    public SpriteEditor()
-    {
-        InitConsole(96, 64, 16, targetFps: 120);
-    }
-        
+
     /*
      * TODO: Sprite Editor Features
      * 1. Draw Brush
@@ -35,10 +31,10 @@ public class SpriteEditor : ConsoleGameEngineBase
      * 7. Load sprite in editor from file in working directory (show file list?)
      */
         
-    protected override bool Create()
+    protected override bool Create(IRenderer renderer)
     {
-        _canvas = CreateCanvas(32, 32);
-        _palette = CreatePalette();
+        _canvas = CreateCanvas(renderer, 32, 32);
+        _palette = CreatePalette(renderer);
 
         _primaryColor = new GameObject(
             Sprite.CreateSolid(4,4, Color24.Red),
@@ -50,14 +46,14 @@ public class SpriteEditor : ConsoleGameEngineBase
         return true;
     }
 
-    private GameObject CreateCanvas(int width, int height)
+    private GameObject CreateCanvas(IRenderer renderer, int width, int height)
     {
         var canvas = Sprite.CreateSolid(width, height, Color24.Gray);
-        var pos = (ScreenRect.Center - canvas.Size * 0.5f).Rounded;
+        var pos = (renderer.Screen.Center - canvas.Size * 0.5f).Rounded;
         return new GameObject(canvas, pos);
     }
 
-    private GameObject[] CreatePalette()
+    private GameObject[] CreatePalette(IRenderer renderer)
     {
         var colors = Enum.GetValues<ConsoleColor>();
         var palette = new GameObject[colors.Length];
@@ -69,7 +65,7 @@ public class SpriteEditor : ConsoleGameEngineBase
         }
 
         // assign positions
-        var yStart = (int) (ScreenHeight * 0.5f - palette.Length);
+        var yStart = (int) (renderer.ScreenHeight * 0.5f - palette.Length);
         var xStart = (int) _canvas.Bounds.Right + 4;
         for (int i = 0; i < palette.Length; i++)
         {
@@ -86,11 +82,11 @@ public class SpriteEditor : ConsoleGameEngineBase
         return palette;
     }
 
-    protected override bool Update(float elapsedTime, PlayerInput input)
+    protected override bool Update(float elapsedTime, IRenderer renderer, PlayerInput input)
     {
         if (input.IsKeyUp(KeyCode.Esc)) return false;
             
-        Fill(ScreenRect, ' ');
+        renderer.Fill(' ');
 
         // Check input
         var canvasPos = input.MousePosition - _canvas.Position;
@@ -110,7 +106,7 @@ public class SpriteEditor : ConsoleGameEngineBase
         {
             if (color.Bounds.Contains(input.MousePosition))
             {
-                DrawString(
+                renderer.DrawString(
                     (int)(_canvas.Position.X + _canvas.Bounds.Width), 
                     (int)_canvas.Position.Y - 4, 
                     color.Sprite.GetFgColor(0).ToString(),
@@ -145,43 +141,43 @@ public class SpriteEditor : ConsoleGameEngineBase
         }
             
         // Draw HUD
-        DrawString((int) ScreenRect.Center.X, 3, "SPRITE EDITOR", alignment: TextAlignment.Centered);
+        renderer.DrawString((int) renderer.Screen.Center.X, 3, "SPRITE EDITOR", alignment: TextAlignment.Centered);
 
-        DrawBorder(_canvas.Bounds, '*');
-        DrawObject(_canvas);
+        renderer.DrawBorder(_canvas.Bounds, '*');
+        renderer.DrawObject(_canvas);
             
         // On Canvas Hover
         if (_canvas.Bounds.Contains(input.MousePosition))
         {
             // Show canvas position
-            DrawString(
+            renderer.DrawString(
                 (int)(_canvas.Position.X + _canvas.Bounds.Width), 
                 (int)_canvas.Position.Y - 2, 
                 canvasPos.ToString(),
                 alignment: TextAlignment.Right);
                 
             // Show Brush
-            Draw(input.MousePosition, Sprite.SolidPixel, Primary, Primary);
+            renderer.Draw(input.MousePosition, Sprite.SolidPixel, Primary, Primary);
         }
             
         // Draw Palette
         var paletteBorder = new Rect(_palette[0].Position, new Vector(4, _palette.Length));
-        DrawBorder(paletteBorder, '*');
+        renderer.DrawBorder(paletteBorder, '*');
             
         foreach (var color in _palette)
         {
-            DrawObject(color);
+            renderer.DrawObject(color);
         }
             
         var selectedBorder = new Rect(_primaryColor.Position, new Vector(4, 9));
-        DrawBorder(selectedBorder, '*', Color24.Gray);
-        DrawString((int)_secondaryColor.Position.X, (int)_secondaryColor.Position.Y - 1, "****", Color24.Gray, Color24.Black);
+        renderer.DrawBorder(selectedBorder, '*', Color24.Gray);
+        renderer.DrawString((int)_secondaryColor.Position.X, (int)_secondaryColor.Position.Y - 1, "****", Color24.Gray, Color24.Black);
 
-        DrawObject(_primaryColor);
-        DrawObject(_secondaryColor);
+        renderer.DrawObject(_primaryColor);
+        renderer.DrawObject(_secondaryColor);
 
-        DrawString((int)_primaryColor.Bounds.Right + 2, (int)_primaryColor.Position.Y + 1, $"1: {Primary}");
-        DrawString((int)_secondaryColor.Bounds.Right + 2, (int)_secondaryColor.Position.Y + 1, $"2: {Secondary}");
+        renderer.DrawString((int)_primaryColor.Bounds.Right + 2, (int)_primaryColor.Position.Y + 1, $"1: {Primary}");
+        renderer.DrawString((int)_secondaryColor.Bounds.Right + 2, (int)_secondaryColor.Position.Y + 1, $"2: {Secondary}");
         return true;
     }
 }

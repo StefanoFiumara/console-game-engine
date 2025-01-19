@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Text;
+using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Core.GameObjects;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 using ConsoleGameEngine.Core.Physics;
@@ -11,7 +12,7 @@ namespace ConsoleGameEngine.Runner.Games;
 using static Math;
 
 // ReSharper disable once UnusedType.Global
-public class FirstPersonShooter : ConsoleGameEngineBase
+public class FirstPersonShooter() : ConsoleGame(new ConsoleRenderer(width: 240, height: 135, pixelSize: 6), targetFps: 120)
 {
     private const float TurnSpeed = 1.2f;
     private const float MoveSpeed = 3.0f;
@@ -27,13 +28,7 @@ public class FirstPersonShooter : ConsoleGameEngineBase
 
     private Sprite _map;
 
-    public FirstPersonShooter()
-    {
-        PerformanceModeEnabled = true;
-        InitConsole(240, 135, 6);
-    }
-
-    protected override bool Create()
+    protected override bool Create(IRenderer renderer)
     {
         var map = "";
         map += "################\n";
@@ -54,13 +49,13 @@ public class FirstPersonShooter : ConsoleGameEngineBase
         map += "################\n";
 
         _map = new Sprite(map);
-        _miniMapPosition = new Vector(ScreenWidth - _map.Width, ScreenHeight - _map.Height);
+        _miniMapPosition = new Vector(renderer.ScreenWidth - _map.Width, renderer.ScreenHeight - _map.Height);
         _playerPosition = new Vector(8, 8);
         _playerAngle = 0f;
         return true;
     }
 
-    protected override bool Update(float elapsedTime, PlayerInput input)
+    protected override bool Update(float elapsedTime, IRenderer renderer, PlayerInput input)
     {
         // handle input
         if (input.IsKeyHeld(KeyCode.Left))  _playerAngle -= TurnSpeed * elapsedTime;
@@ -86,46 +81,46 @@ public class FirstPersonShooter : ConsoleGameEngineBase
         }
             
         // Basic raycast algorithm for each column on the screen
-        for (int x = 0; x < ScreenWidth; x++)
+        for (int x = 0; x < renderer.ScreenWidth; x++)
         {
             // Create ray vector
-            double rayAngle = (_playerAngle - FieldOfView / 2.0d) + ((x / (double) ScreenWidth) * FieldOfView);
+            double rayAngle = (_playerAngle - FieldOfView / 2.0d) + ((x / (double) renderer.ScreenWidth) * FieldOfView);
             var direction = new Vector((float) Sin(rayAngle), (float) Cos(rayAngle));
 
             var ray = Raycast.Send(_map, _playerPosition, direction, '#', BoundaryTolerance);
 
             // Use distance to wall to determine ceiling and floor height for this column
             // From the midpoint (height / 2), subtract an amount proportional to the distance of the wall
-            int ceiling = (int) (ScreenHeight / 2f - ScreenHeight / ray.Distance);
+            int ceiling = (int) (renderer.ScreenHeight / 2f - renderer.ScreenHeight / ray.Distance);
             // Floor is mirror of ceiling
-            int floor = ScreenHeight - ceiling;
+            int floor = renderer.ScreenHeight - ceiling;
 
             // Render column based on ceiling and floor values
-            for (int y = 0; y < ScreenHeight; y++)
+            for (int y = 0; y < renderer.ScreenHeight; y++)
             {
                 if (y < ceiling)
                 {
-                    Draw(x, y, ' ', Color24.White, Color24.Cyan);
+                    renderer.Draw(x, y, ' ', Color24.White, Color24.Cyan);
                 }
                 else if (y >= ceiling && y <= floor)
                 {
                     var shade = ray.HitBoundary ? Shade.Black : CalculateShade(WallShades, ray.Distance);
-                    Draw(x, y, shade.Character, shade.ForegroundColor, shade.BackgroundColor);
+                    renderer.Draw(x, y, shade.Character, shade.ForegroundColor, shade.BackgroundColor);
                 }
                 else
                 {
-                    var groundDistance = 1.0f - (y - ScreenHeight / 2.0f) / (ScreenHeight / 2.0f);
+                    var groundDistance = 1.0f - (y - renderer.ScreenHeight / 2.0f) / (renderer.ScreenHeight / 2.0f);
                         
                     var shade = CalculateShade(GroundShades, groundDistance);
-                    Draw(x, y, shade.Character, shade.ForegroundColor, shade.BackgroundColor);
+                    renderer.Draw(x, y, shade.Character, shade.ForegroundColor, shade.BackgroundColor);
                 }
             }
         }
 
         // Draw HUD
-        DrawSprite(_map, _miniMapPosition);
-        DrawString(ScreenWidth, (int)_miniMapPosition.Y - 1, $"Boundary Tol: {BoundaryTolerance}", alignment: TextAlignment.Right);
-        Draw(_miniMapPosition + _playerPosition.Rounded, 'X', Color24.Red, Color24.Black);
+        renderer.DrawSprite(_map, _miniMapPosition);
+        renderer.DrawString(renderer.ScreenWidth, (int)_miniMapPosition.Y - 1, $"Boundary Tol: {BoundaryTolerance}", alignment: TextAlignment.Right);
+        renderer.Draw(_miniMapPosition + _playerPosition.Rounded, 'X', Color24.Red, Color24.Black);
 
         return !input.IsKeyDown(KeyCode.Esc);
     }

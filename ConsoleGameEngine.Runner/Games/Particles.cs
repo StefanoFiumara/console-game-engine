@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 using ConsoleGameEngine.Core.Physics;
@@ -9,7 +10,7 @@ using ConsoleGameEngine.Core.Physics;
 namespace ConsoleGameEngine.Runner.Games;
 
 // ReSharper disable once UnusedType.Global
-public class Particles : ConsoleGameEngineBase
+public class Particles() : ConsoleGame(new ConsoleRenderer(width: 160, height: 120))
 {
     private Vector _spiralPosition;
     private ParticleSystem _spiralParticles;
@@ -18,17 +19,11 @@ public class Particles : ConsoleGameEngineBase
     private ParticleSystem _fountainParticles;
 
     private Random _rng;
-    
-    public Particles()
+
+    protected override bool Create(IRenderer renderer)
     {
-        InitConsole(160, 120);
-        PerformanceModeEnabled = true;
-    }
-    
-    protected override bool Create()
-    {
-        _spiralPosition = ScreenRect.Center + Vector.Down * 5 + Vector.Left * 30;
-        _fountainPosition = ScreenRect.Center + Vector.Down * 5 + Vector.Right * 30;
+        _spiralPosition = renderer.Screen.Center + Vector.Down * 5 + Vector.Left * 30;
+        _fountainPosition = renderer.Screen.Center + Vector.Down * 5 + Vector.Right * 30;
         _rng = new Random();
         
         var spiralSprites = Enum.GetValues<ConsoleColor>()
@@ -97,25 +92,25 @@ public class Particles : ConsoleGameEngineBase
         return new Vector(x, y).Normalized * _rng.Next(120, 150);
     }
     
-    protected override bool Update(float elapsedTime, PlayerInput input)
+    protected override bool Update(float elapsedTime, IRenderer renderer, PlayerInput input)
     {
         if(input.IsKeyHeld(KeyCode.Esc)) 
         {
             return false;
         }
-        Fill(ScreenRect, ' ');
+        renderer.Fill(' ');
         
         _spiralParticles.Update(elapsedTime);
         _fountainParticles.Update(elapsedTime);
 
         foreach (var particle in _spiralParticles.ActiveParticles)
         {
-            DrawObject(particle); 
+            renderer.DrawObject(particle); 
         }
         
         foreach (var particle in _fountainParticles.ActiveParticles)
         {
-            DrawObject(particle); 
+            renderer.DrawObject(particle); 
         }
         
         return true;

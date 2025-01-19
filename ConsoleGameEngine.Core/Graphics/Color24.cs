@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ConsoleGameEngine.Core;
+namespace ConsoleGameEngine.Core.Graphics;
 
 public readonly record struct Color24(byte R, byte G, byte B)
 {
