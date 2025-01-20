@@ -120,8 +120,8 @@ public class ConsoleRenderer : IRenderer
     {
         var sb = new StringBuilder();
 
-        var currentFgColor = Color24.White;
-        var currentBgColor = Color24.Black;
+        Color24? currentFgColor = null;
+        Color24? currentBgColor = null;
         
         for (int i = 0; i < buffer.Length; i++)
         {
@@ -166,13 +166,14 @@ public class ConsoleRenderer : IRenderer
 
         var index = y * ScreenWidth + x;
         
+        // TODO: only mark dirty if the replaced character in the buffer differs from this one
+        _isDirty = true;
+        
         if (_enable24BitColorMode)
         {
-            // pack RGB info into int
             _screenBuffer24[index].Char = c;
             _screenBuffer24[index].Foreground = fgColor;
             _screenBuffer24[index].Background = bgColor;
-            _isDirty = true;
         }
         else
         {
@@ -185,7 +186,6 @@ public class ConsoleRenderer : IRenderer
     
             _screenBuffer[index].Char.UnicodeChar = c;
             _screenBuffer[index].Attributes = color;
-            _isDirty = true;
         }
     }
     
