@@ -89,6 +89,29 @@ public readonly record struct Color24(byte R, byte G, byte B)
         return closestColor;
     }
     
+    public static Color24 FromHsv(float hue, float saturation, float value)
+    {
+        int hi = (int)(hue / 60) % 6;
+        float f = (hue / 60) - hi;
+
+        float p = value * (1 - saturation);
+        float q = value * (1 - f * saturation);
+        float t = value * (1 - (1 - f) * saturation);
+
+        float r = 0, g = 0, b = 0;
+        switch (hi)
+        {
+            case 0: r = value; g = t; b = p; break;
+            case 1: r = q; g = value; b = p; break;
+            case 2: r = p; g = value; b = t; break;
+            case 3: r = p; g = q; b = value; break;
+            case 4: r = t; g = p; b = value; break;
+            case 5: r = value; g = p; b = q; break;
+        }
+
+        return new Color24((byte)(r * 255), (byte)(g * 255), (byte)(b * 255));
+    }
+    
     private static double CalculateColorDistance(Color24 color1, Color24 color2)
     {
         int rDiff = color1.R - color2.R;
