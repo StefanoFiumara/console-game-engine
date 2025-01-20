@@ -172,13 +172,9 @@ public static class RendererExtensions
     public static void DrawString(this IRenderer renderer, int x, int y, string msg, Color24 fgColor, Color24 bgColor, TextAlignment alignment = TextAlignment.Left)
     {
         if (alignment == TextAlignment.Centered)
-        {
             x -= msg.Length / 2;
-        }
-        else if (alignment == TextAlignment.Right)
-        {
+        else if (alignment == TextAlignment.Right) 
             x -= msg.Length;
-        }
 
         for (int i = 0; i < msg.Length; i++)
         {
