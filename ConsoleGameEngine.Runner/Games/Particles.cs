@@ -11,7 +11,7 @@ using ConsoleGameEngine.Core.Physics;
 namespace ConsoleGameEngine.Runner.Games;
 
 // ReSharper disable once UnusedType.Global
-public class Particles() : ConsoleGame(new ConsoleRenderer(width: 160, height: 120))
+public class Particles() : ConsoleGame(new ConsoleRenderer(width: 160, height: 120, enable24BitColorMode: true))
 {
     private Vector _spiralPosition;
     private ParticleSystem _spiralParticles;
@@ -23,22 +23,21 @@ public class Particles() : ConsoleGame(new ConsoleRenderer(width: 160, height: 1
 
     protected override bool Create(IRenderer renderer)
     {
-        _spiralPosition = renderer.Screen.Center + Vector.Down * 5 + Vector.Left * 30;
-        _fountainPosition = renderer.Screen.Center + Vector.Down * 5 + Vector.Right * 30;
         _rng = new Random();
         
-        var spiralSprites = Enum.GetValues<ConsoleColor>()
-            .Select(c => new Sprite("*", c))
-            .ToArray();
+        _spiralPosition = renderer.Screen.Center + Vector.Down * 5 + Vector.Left * 30;
+        _fountainPosition = renderer.Screen.Center + Vector.Down * 5 + Vector.Right * 30;
 
-        var fountainSprites = new[]
-        {
-            new Sprite("*", Color24.Blue),
-            new Sprite("*", Color24.DarkBlue),
-            new Sprite("*", Color24.Cyan),
-            new Sprite("*", Color24.DarkCyan),
-            new Sprite("*", Color24.White),
-        };
+        int spiralParticleCount = 30;
+        var spiralSprites = Enumerable.Range(0, spiralParticleCount)
+            .Select(i => new Sprite("*", Color24.FromHsv( (float)i/spiralParticleCount * 360f, 1f, 1f)))
+            .ToArray();
+        
+        _rng.Shuffle(spiralSprites);
+
+        var waterGradient = Color24.CreateGradient(50, Color24.Cyan, Color24.Blue, Color24.DarkBlue, Color24.White);
+        _rng.Shuffle(waterGradient);
+        var fountainSprites = waterGradient.Select(c => new Sprite("*", c)).ToArray();
 
         _spiralParticles = new ParticleSystem(
             _spiralPosition,

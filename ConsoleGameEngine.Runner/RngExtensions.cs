@@ -14,7 +14,7 @@ public static class RngExtensions
         );
     }
         
-    public static void Shuffle<T>(this Random rng, List<T> items)
+    public static void Shuffle<T>(this Random rng, IList<T> items)
     {
         for (int i = items.Count - 1; i >= 1; i--)
         {

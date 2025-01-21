@@ -60,9 +60,9 @@ public class FirstPersonShooter() : ConsoleGame(new ConsoleRenderer(width: 320, 
         _playerPosition = new Vector(8, 8);
         _playerAngle = 0f;
         
-        _skyGradient = Color24.CreateGradient(Color24.Cyan, Color24.DarkCyan, (renderer.ScreenHeight / 2));
-        _grassGradient = Color24.CreateGradient(new Color24(100, 20, 0), new Color24(223,161, 0), (renderer.ScreenHeight / 2));
-        _wallGradient = Color24.CreateGradient(Color24.White, Color24.Black, (renderer.ScreenWidth / 2));
+        _skyGradient = Color24.CreateGradient((renderer.ScreenHeight / 2), Color24.Cyan, Color24.DarkCyan);
+        _grassGradient = Color24.CreateGradient((renderer.ScreenHeight / 2), new Color24(100, 20, 0), new Color24(223,161, 0));
+        _wallGradient = Color24.CreateGradient((renderer.ScreenWidth / 2), Color24.White, Color24.Black);
         return true;
     }
 

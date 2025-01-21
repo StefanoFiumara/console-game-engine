@@ -120,27 +120,44 @@ public readonly record struct Color24(byte R, byte G, byte B)
         return System.Math.Sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
     }
     
-    public static Color24[] CreateGradient(Color24 start, Color24 end, int steps)
+    public static Color24[] CreateGradient(int steps, params Color24[] colors)
     {
+        if (colors == null || colors.Length < 2)
+            throw new ArgumentException("At least two colors are required.", nameof(colors));
+
         if (steps < 2)
-            return [start, end];
-
+            return [colors[0], colors[1]];
+        
         var gradient = new Color24[steps];
+        int segments = colors.Length - 1; // Number of segments between colors
+        int stepsPerSegment = steps / segments; // Steps per segment (rounded down)
+        int extraSteps = steps % segments; // Remaining steps to distribute
 
-        for (int i = 0; i < steps; i++)
+        int index = 0;
+        for (int segment = 0; segment < segments; segment++)
         {
-            float t = (float)i / (steps - 1); // Normalized position in the gradient (0.0 to 1.0)
+            Color24 start = colors[segment];
+            Color24 end = colors[segment + 1];
+            int segmentSteps = stepsPerSegment + (segment < extraSteps ? 1 : 0);
 
-            // Interpolate each color channel
-            byte r = (byte)(start.R + t * (end.R - start.R));
-            byte g = (byte)(start.G + t * (end.G - start.G));
-            byte b = (byte)(start.B + t * (end.B - start.B));
+            for (int i = 0; i < segmentSteps; i++)
+            {
+                float t = (float)i / (segmentSteps - 1); // Normalized position within the segment
 
-            gradient[i] = new Color24(r, g, b);
+                // Interpolate each color channel
+                byte r = (byte)(start.R + t * (end.R - start.R));
+                byte g = (byte)(start.G + t * (end.G - start.G));
+                byte b = (byte)(start.B + t * (end.B - start.B));
+
+                gradient[index++] = new Color24(r, g, b);
+            }
         }
+
+        // Ensure the last color is explicitly set to avoid rounding issues
+        gradient[steps - 1] = colors[^1];
 
         return gradient;
     }
-
+    
     public override string ToString() => $"RGB({R}, {G}, {B})";
 }
