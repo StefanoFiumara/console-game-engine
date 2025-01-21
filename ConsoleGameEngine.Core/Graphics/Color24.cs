@@ -119,6 +119,28 @@ public readonly record struct Color24(byte R, byte G, byte B)
         int bDiff = color1.B - color2.B;
         return System.Math.Sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
     }
+    
+    public static Color24[] CreateGradient(Color24 start, Color24 end, int steps)
+    {
+        if (steps < 2)
+            return [start, end];
+
+        var gradient = new Color24[steps];
+
+        for (int i = 0; i < steps; i++)
+        {
+            float t = (float)i / (steps - 1); // Normalized position in the gradient (0.0 to 1.0)
+
+            // Interpolate each color channel
+            byte r = (byte)(start.R + t * (end.R - start.R));
+            byte g = (byte)(start.G + t * (end.G - start.G));
+            byte b = (byte)(start.B + t * (end.B - start.B));
+
+            gradient[i] = new Color24(r, g, b);
+        }
+
+        return gradient;
+    }
 
     public override string ToString() => $"RGB({R}, {G}, {B})";
 }
