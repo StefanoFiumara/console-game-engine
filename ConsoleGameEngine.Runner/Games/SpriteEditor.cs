@@ -9,7 +9,7 @@ using ConsoleGameEngine.Core.Math;
 namespace ConsoleGameEngine.Runner.Games;
 
 // ReSharper disable once UnusedType.Global
-public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height: 128, pixelSize: 8, enable24BitColorMode: true), targetFps: 120)
+public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height: 128, pixelSize: 8), targetFps: 120)
 {
     private const int CanvasSize = 64;
     private const int PaletteSize = 50;

@@ -12,18 +12,16 @@ public class Sprite
     public const char SolidPixel = '\u2588';
           
     private readonly char[] _glyphs;
-    private readonly Color24[] _fgColors;
-    private readonly Color24[] _bgColors;
+    private readonly Color24[] _fg;
+    private readonly Color24[] _bg;
 
     public Vector Size { get; }
-
     public float Width => Size.X;
     public float Height => Size.Y;
     
-    public Rect Bounds => new(Vector.Zero, Size);
-    
     public Sprite(int width, int height) : this(width, height, Color24.White, Color24.Black) { }
     public Sprite(int width, int height, Color24 fgColor) : this(width, height, fgColor, Color24.Black) { }
+    public Sprite(int size, Color24 fgColor) : this(size, size, fgColor, Color24.Black) { }
     public Sprite(int size, Color24 fgColor, Color24 bgColor) : this(size, size, fgColor, bgColor) { }
     public Sprite(int width, int height, Color24 fgColor, Color24 bgColor)
     {
@@ -33,8 +31,8 @@ public class Sprite
         for (int i = 0; i < _glyphs.Length; i++)
             _glyphs[i] = ' ';
         
-        _fgColors = new Color24[_glyphs.Length];
-        _bgColors = new Color24[_glyphs.Length];
+        _fg = new Color24[_glyphs.Length];
+        _bg = new Color24[_glyphs.Length];
         
         SetSpriteBackground(bgColor);
         SetSpriteColor(fgColor);
@@ -45,9 +43,12 @@ public class Sprite
     public Sprite(string gfx, Color24 fgColor, Color24 bgColor)
     {
         var splitGfx = gfx.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+        
         var width = splitGfx.Max(c => c.Length);
         var height = splitGfx.Length;
+        Size = new Vector(width, height);
 
+        // Set up glyphs
         // Ensure rectangular dimensions by padding width where applicable.
         for (var i = 0; i < splitGfx.Length; i++)
         {
@@ -56,11 +57,9 @@ public class Sprite
                 splitGfx[i] = splitGfx[i].PadRight(width);
             }
         }
-
-        Size = new Vector(width, height);
-                    
+            
+        // Map splitGfx into _glyphs
         _glyphs = new char[width * height];
-        
         for (int i = 0; i < splitGfx.Length; i++)
         {
             for (int j = 0; j < splitGfx[i].Length; j++)
@@ -69,8 +68,8 @@ public class Sprite
             }
         }
         
-        _fgColors = new Color24[_glyphs.Length];
-        _bgColors = new Color24[_glyphs.Length];
+        _fg = new Color24[_glyphs.Length];
+        _bg = new Color24[_glyphs.Length];
         
         SetSpriteBackground(bgColor);
         SetSpriteColor(fgColor);
@@ -94,46 +93,43 @@ public class Sprite
 
     public static Sprite Create(string spr) => Create(spr, Color24.White, Color24.Black);
     public static Sprite Create(string spr, Color24 fgColor) => Create(spr, fgColor, Color24.Black);
-    public static Sprite Create(string spr, Color24 fgColor, Color24 bgColor)
-    {
-        return new Sprite(spr, fgColor, bgColor);
-    }
-    
+    public static Sprite Create(string spr, Color24 fgColor, Color24 bgColor) => new(spr, fgColor, bgColor);
+
     public Sprite(Sprite spr)
     {
         Size = spr.Size;
         
         _glyphs = new char[spr._glyphs.Length];
-        _fgColors = new Color24[_glyphs.Length];
-        _bgColors = new Color24[_glyphs.Length];
+        _fg = new Color24[_glyphs.Length];
+        _bg = new Color24[_glyphs.Length];
         
         for (int i = 0; i < spr.Height; i++)
         {
             for (int j = 0; j < spr.Width; j++)
             {
                 _glyphs[i * (int)Size.X + j] = spr.GetGlyph(j, i);
-                _fgColors[i * (int)Size.X + j] = spr.GetFgColor(j, i);
-                _bgColors[i * (int)Size.X + j] = spr.GetBgColor(j, i);
+                _fg[i * (int)Size.X + j] = spr.GetFgColor(j, i);
+                _bg[i * (int)Size.X + j] = spr.GetBgColor(j, i);
             }
         }
     }
     
     public void SetSpriteColor(Color24 color)
     {
-        for (int i = 0; i < _fgColors.Length; i++)
+        for (int i = 0; i < _fg.Length; i++)
         {
-            _fgColors[i] = color;
+            _fg[i] = color;
             if (_glyphs[i] == SolidPixel)
             {
-                _bgColors[i] = color;
+                _bg[i] = color;
             }
         }
     }
     
     public void SetSpriteBackground(Color24 color)
     {
-        for (int i = 0; i < _fgColors.Length; i++) 
-            _bgColors[i] = color;
+        for (int i = 0; i < _fg.Length; i++) 
+            _bg[i] = color;
     }
 
     private char GetGlyph(Vector pos)
@@ -179,22 +175,22 @@ public class Sprite
 
     public Color24 GetFgColor(int index)
     {
-        if (index < 0 || index >= _fgColors.Length)
+        if (index < 0 || index >= _fg.Length)
         {
             return Color24.Black;
         }
 
-        return _fgColors[index];
+        return _fg[index];
     }
     
     public Color24 GetBgColor(int index)
     {
-        if (index < 0 || index >= _bgColors.Length)
+        if (index < 0 || index >= _bg.Length)
         {
             return Color24.Black;
         }
 
-        return _bgColors[index];
+        return _bg[index];
     }
     
     public Color24 GetFgColor(int x, int y)
@@ -202,7 +198,7 @@ public class Sprite
         if (x < 0 || x >= Width || y < 0 || y >= Height)
             return Color24.Black;
         
-        return _fgColors[y * (int)Width + x];
+        return _fg[y * (int)Width + x];
     }
     
     public Color24 GetBgColor(int x, int y)
@@ -210,7 +206,7 @@ public class Sprite
         if (x < 0 || x >= Width || y < 0 || y >= Height)
             return Color24.Black;
         
-        return _bgColors[y * (int)Width + x];
+        return _bg[y * (int)Width + x];
     }
 
     private void SetGlyph(int index, char c)
@@ -220,6 +216,7 @@ public class Sprite
             _glyphs[index] = c;
         }
     }
+
     private void SetGlyph(Vector pos, char c)
     {
         SetGlyph((int)pos.X, (int)pos.Y, c);
@@ -228,9 +225,7 @@ public class Sprite
     private void SetGlyph(int x, int y, char c)
     {
         if (x < 0 || x >= Width || y < 0 || y >= Height)
-        {
             return;
-        }
 
         _glyphs[y * (int) Width + x] = c;
     }
@@ -247,11 +242,11 @@ public class Sprite
             return;
         }
 
-        _fgColors[y * (int) Width + x] = c;
+        _fg[y * (int) Width + x] = c;
         
         if (GetGlyph(x,y) == SolidPixel)
         {
-            _bgColors[y * (int) Width + x] = c;
+            _bg[y * (int) Width + x] = c;
         }
     }
 
@@ -267,11 +262,11 @@ public class Sprite
             return;
         }
 
-        _bgColors[y * (int) Width + x] = c;
+        _bg[y * (int) Width + x] = c;
         
         if (GetGlyph(x,y) == SolidPixel)
         {
-            _fgColors[y * (int) Width + x] = c;
+            _fg[y * (int) Width + x] = c;
         }
     }
 }

@@ -109,8 +109,6 @@ public static class RendererExtensions
 
             renderer.Draw(x, y, c, fgColor, bgColor);
 
-            
-            //for (var i = 0; x < xe; i++)
             while(x < xe)
             {
                 x += 1;
@@ -152,7 +150,6 @@ public static class RendererExtensions
 
             renderer.Draw(x, y, c, fgColor, bgColor);
 
-            // for (var i = 0; y < ye; i++)
             while(y < ye)
             {
                 y += 1;

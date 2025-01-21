@@ -1,14 +1,19 @@
 using System;
-using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Math;
-using Microsoft.Win32.SafeHandles;
 
 namespace ConsoleGameEngine.Core.Graphics.Renderers;
 
-public class ConsoleRenderer : IRenderer
+public struct PixelInfo
+{
+    public char Char;
+    public Color24 Foreground;
+    public Color24 Background;
+}
+
+public partial class ConsoleRenderer : IRenderer
 {
     private const uint EnableEditModeFlag = 0x0040;
     private const int EnableVirtualTerminalProcessingFlag = 0x0004;
@@ -21,30 +26,20 @@ public class ConsoleRenderer : IRenderer
     private const int ScMaximize = 0xF030;
     private const int ScSize = 0xF000;
     
-    
     private static readonly IntPtr ConsoleOutputHandle = GetStdHandle(StdOutputHandle);
     private const int FixedWidthTrueType = 54;
-    private readonly SafeFileHandle _consoleHandle;
     
-    private readonly CharInfo[] _screenBuffer;
-    private readonly CharInfo24[] _screenBuffer24;
-    private readonly bool _enable24BitColorMode;
+    private readonly PixelInfo[] _screenBuffer;
+    private bool _isDirty = true;
     
     public int ScreenWidth => (int)Screen.Size.X;
     public int ScreenHeight => (int)Screen.Size.Y;
-    public short PixelSize { get; private set; }
+    public short PixelSize { get; }
     
     public Rect Screen { get; }
     
-    public ConsoleRenderer(int width, int height, short pixelSize = 8, bool enable24BitColorMode = false)
+    public ConsoleRenderer(int width, int height, short pixelSize = 8)
     {
-        _enable24BitColorMode = enable24BitColorMode;
-        _consoleHandle = CreateFile("CONOUT$", 0x40000000, 2, IntPtr.Zero, FileMode.Open, 0, IntPtr.Zero);
-        if (_consoleHandle.IsInvalid)
-        {
-            throw new Exception("Console handle is invalid!");
-        }
-        
         Console.CursorVisible = false;
         DisableResize();
         DisableMouseInput();
@@ -70,54 +65,28 @@ public class ConsoleRenderer : IRenderer
         }
 
         Screen = new Rect(Vector.Zero, new Vector(width, height));
-        if (_enable24BitColorMode)
-        {
-            EnableVirtualTerminalProcessing();
-            _screenBuffer24 = new CharInfo24[width * height];
-        }
-        else
-        {
-            _screenBuffer = new CharInfo[width * height];
-        }
+        
+        EnableVirtualTerminalProcessing();
+        _screenBuffer = new PixelInfo[width * height];
         
         #pragma warning disable CA1416
         Console.SetWindowSize(width, height);
         Console.SetBufferSize(width, height);
         #pragma warning restore CA1416
     }
-
-    private bool _isDirty = true;
+    
     public void Render()
     {
         if (!_isDirty) return;
         
-        if (_enable24BitColorMode)
-        {
-            var ansiSequence = GenerateAnsiSequence(_screenBuffer24);
-            byte[] buffer = Encoding.ASCII.GetBytes(ansiSequence);
+        var ansiSequence = GenerateAnsiSequence(_screenBuffer);
+        byte[] buffer = Encoding.ASCII.GetBytes(ansiSequence);
 
-            WriteFile(ConsoleOutputHandle, buffer, (uint)buffer.Length, out _, IntPtr.Zero);
-            _isDirty = false;
-        }
-        else
-        {
-            var boundsRect = new SmallRect 
-            { 
-                Left = 0, 
-                Top = 0, 
-                Right = (short)ScreenWidth, 
-                Bottom = (short)ScreenHeight
-            };
-            
-            WriteConsoleOutput(_consoleHandle, _screenBuffer,
-                new Coord((short)ScreenWidth, (short)ScreenHeight),
-                new Coord(0,0),
-                ref boundsRect);
-            _isDirty = false;
-        }
+        WriteFile(ConsoleOutputHandle, buffer, (uint)buffer.Length, out _, IntPtr.Zero);
+        _isDirty = false;
     }
     
-    private string GenerateAnsiSequence(CharInfo24[] buffer)
+    private string GenerateAnsiSequence(PixelInfo[] buffer)
     {
         var sb = new StringBuilder();
 
@@ -155,39 +124,20 @@ public class ConsoleRenderer : IRenderer
 
         return sb.ToString();
     }
-
     
     public void Draw(int x, int y, char c, Color24 fgColor, Color24 bgColor)
     {
-        if (x >= ScreenWidth || x < 0 ||
-            y >= ScreenHeight || y < 0)
-        {
+        if (x >= ScreenWidth || x < 0 || y >= ScreenHeight || y < 0)
             return;
-        }
 
         var index = y * ScreenWidth + x;
         
         // TODO: only mark dirty if the replaced character in the buffer differs from this one
         _isDirty = true;
-        
-        if (_enable24BitColorMode)
-        {
-            _screenBuffer24[index].Char = c;
-            _screenBuffer24[index].Foreground = fgColor;
-            _screenBuffer24[index].Background = c == Sprite.SolidPixel ? fgColor : bgColor;
-        }
-        else
-        {
-            // Convert Color24 to ConsoleColor
-            ConsoleColor fgConsoleColor = fgColor;
-            ConsoleColor bgConsoleColor = c == Sprite.SolidPixel ? fgColor : bgColor;
-    
-            // Compute the color info
-            var color = (short)((int)fgConsoleColor + ((int)bgConsoleColor << 4));
-    
-            _screenBuffer[index].Char.UnicodeChar = c;
-            _screenBuffer[index].Attributes = color;
-        }
+
+        _screenBuffer[index].Char = c;
+        _screenBuffer[index].Foreground = fgColor;
+        _screenBuffer[index].Background = c == Sprite.SolidPixel ? fgColor : bgColor;
     }
     
     public Vector GetWindowPosition()
@@ -211,7 +161,6 @@ public class ConsoleRenderer : IRenderer
 
         if (GetCurrentConsoleFontEx(ConsoleOutputHandle, false, ref before))
         {
-
             var set = new FontInfo
             {
                 cbSize = Marshal.SizeOf<FontInfo>(),
@@ -269,7 +218,7 @@ public class ConsoleRenderer : IRenderer
         }
     }
     
-    public static void EnableVirtualTerminalProcessing()
+    private static void EnableVirtualTerminalProcessing()
     { 
         if (!GetConsoleMode(ConsoleOutputHandle, out var mode))
         {
@@ -295,26 +244,8 @@ public class ConsoleRenderer : IRenderer
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     private static extern bool SetCurrentConsoleFontEx(IntPtr hConsoleOutput, bool maximumWindow, ref FontInfo consoleCurrentFontEx);
     
-    [DllImport("kernel32.dll", SetLastError = true)]
-    static extern bool WriteConsoleOutput(
-        SafeFileHandle hConsoleOutput, 
-        CharInfo[] lpBuffer, 
-        Coord dwBufferSize, 
-        Coord dwBufferCoord, 
-        ref SmallRect lpWriteRegion);
-    
     [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
     static extern bool WriteFile(IntPtr hFile, byte[] lpBuffer, uint nNumberOfBytesToWrite, out uint lpNumberOfBytesWritten, IntPtr lpOverlapped);
-    
-    [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
-    static extern SafeFileHandle CreateFile(
-        string fileName,
-        [MarshalAs(UnmanagedType.U4)] uint fileAccess,
-        [MarshalAs(UnmanagedType.U4)] uint fileShare,
-        IntPtr securityAttributes,
-        [MarshalAs(UnmanagedType.U4)] FileMode creationDisposition,
-        [MarshalAs(UnmanagedType.U4)] int flags,
-        IntPtr template);
     
     [DllImport("kernel32.dll")]
     private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
@@ -331,64 +262,18 @@ public class ConsoleRenderer : IRenderer
     [DllImport("kernel32.dll", ExactSpelling = true)]
     private static extern IntPtr GetConsoleWindow();
         
-    [DllImport(@"user32.dll", SetLastError = true)]
+    [LibraryImport(@"user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetWindowRect(IntPtr hWnd, out IntRect lpRect);
-}
-
-[StructLayout(LayoutKind.Sequential)]
-public struct Coord
-{
-    public short X;
-    public short Y;
-
-    public Coord(short x, short y)
-    {
-        X = x;
-        Y = y;
-    }
-};
-
-[StructLayout(LayoutKind.Explicit)]
-public struct CharUnion
-{
-    [FieldOffset(0)] public char UnicodeChar;
-    [FieldOffset(0)] public byte AsciiChar;
-}
-
-[StructLayout(LayoutKind.Explicit)]
-public struct CharInfo
-{
-    [FieldOffset(0)] public CharUnion Char;
-    [FieldOffset(2)] public short Attributes;
-}
-
-public struct CharInfo24
-{
-    public char Char;
-    public Color24 Foreground;
-    public Color24 Background;
-}
-
-[StructLayout(LayoutKind.Sequential)]
-public struct SmallRect
-{
-    public short Left;
-    public short Top;
-    public short Right;
-    public short Bottom;
+    private static partial bool GetWindowRect(IntPtr hWnd, out IntRect lpRect);
 }
     
 [StructLayout(LayoutKind.Sequential)]
-struct IntRect
+internal struct IntRect
 {
     public int Left;
     public int Top;
     public int Right;
     public int Bottom;
-
-    public int Width => Right - Left;
-    public int Height => Bottom - Top;
 }
     
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
