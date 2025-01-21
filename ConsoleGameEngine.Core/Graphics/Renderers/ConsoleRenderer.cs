@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Math;
 using Microsoft.Win32.SafeHandles;
 
@@ -173,13 +174,13 @@ public class ConsoleRenderer : IRenderer
         {
             _screenBuffer24[index].Char = c;
             _screenBuffer24[index].Foreground = fgColor;
-            _screenBuffer24[index].Background = bgColor;
+            _screenBuffer24[index].Background = c == Sprite.SolidPixel ? fgColor : bgColor;
         }
         else
         {
             // Convert Color24 to ConsoleColor
             ConsoleColor fgConsoleColor = fgColor;
-            ConsoleColor bgConsoleColor = bgColor;
+            ConsoleColor bgConsoleColor = c == Sprite.SolidPixel ? fgColor : bgColor;
     
             // Compute the color info
             var color = (short)((int)fgConsoleColor + ((int)bgConsoleColor << 4));

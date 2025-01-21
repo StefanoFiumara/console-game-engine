@@ -9,176 +9,158 @@ using ConsoleGameEngine.Core.Math;
 namespace ConsoleGameEngine.Runner.Games;
 
 // ReSharper disable once UnusedType.Global
-public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 96, height: 64, pixelSize: 16, true), targetFps: 120)
+public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height: 128, pixelSize: 8, enable24BitColorMode: true), targetFps: 120)
 {
+    private const int CanvasSize = 64;
+    private const int PaletteSize = 50;
     private GameObject _canvas;
+    private GameObject _palette;
+    private GameObject _colorPreview;
+    private GameObject _primaryPreview;
+    private GameObject _secondaryPreview;
         
-    private GameObject[] _palette;
-        
-    private GameObject _primaryColor;
-    private GameObject _secondaryColor;
+    private Color24 _primary = Color24.Red;
+    private Color24 _secondary = Color24.Blue;
 
-    private ConsoleColor Primary => _primaryColor.Sprite.GetFgColor(0);
-    private ConsoleColor Secondary => _secondaryColor.Sprite.GetFgColor(0);
+    private float _saturation = 1f;
 
     /*
      * TODO: Sprite Editor Features
-     * 1. Draw Brush
-     * 2. Adjustable Brush Size
-     * 3. Adjustable Canvas Size
-     * 4. Transparency
-     * 5. Save sprite to file (allow to name file?)
-     * 6. Update Sprite class to be able to load from file
-     * 7. Load sprite in editor from file in working directory (show file list?)
+        * Adjustable Brush Size
+        * Adjustable Canvas Size
+        * Transparency
+        * Save sprite to file (name file?)
+        * Load sprite from file
      */
         
     protected override bool Create(IRenderer renderer)
     {
-        _canvas = CreateCanvas(renderer, 32, 32);
-        _palette = CreatePalette(renderer);
-
-        _primaryColor = new GameObject(
-            Sprite.CreateSolid(4,4, Color24.Red),
-            new Vector(_palette[0].Position.X, _palette[^1].Bounds.Bottom + 4));
-            
-        _secondaryColor = new GameObject(Sprite.CreateSolid(4,4, Color24.Blue),
-            new Vector(_primaryColor.Position.X, _primaryColor.Bounds.Bottom + 1));
-
+        var canvasSpr = Sprite.CreateSolid(CanvasSize, CanvasSize, Color24.White); 
+        var canvasPos = (renderer.Screen.Center - canvasSpr.Size * 0.5f).Rounded;
+        _canvas = new GameObject(canvasSpr, canvasPos);
+        
+        var paletteSpr = CreateColorPalette(size: PaletteSize, _saturation);
+        var palettePos = _canvas.Bounds.TopRight + Vector.Right * 4;
+        _palette = new GameObject(paletteSpr, palettePos);
+        
+        var previewSpr = Sprite.CreateSolid(8, 8, Color24.Black);
+        var previewPos = _palette.Bounds.TopRight + Vector.Up * 10 + Vector.Left * 8;
+        _colorPreview = new GameObject(previewSpr, previewPos);
+        
+        var primarySpr = Sprite.CreateSolid(8, 8, _primary);
+        var primaryPos = _palette.Bounds.BottomLeft + Vector.Down * 2;
+        _primaryPreview = new GameObject(primarySpr, primaryPos);
+        
+        var secondarySpr = Sprite.CreateSolid(8, 8, _secondary);
+        var secondaryPos = _primaryPreview.Bounds.TopRight + Vector.Right * 4;
+        _secondaryPreview = new GameObject(secondarySpr, secondaryPos);
+        
         return true;
-    }
-
-    private GameObject CreateCanvas(IRenderer renderer, int width, int height)
-    {
-        var canvas = Sprite.CreateSolid(width, height, Color24.Gray);
-        var pos = (renderer.Screen.Center - canvas.Size * 0.5f).Rounded;
-        return new GameObject(canvas, pos);
-    }
-
-    private GameObject[] CreatePalette(IRenderer renderer)
-    {
-        var colors = Enum.GetValues<ConsoleColor>();
-        var palette = new GameObject[colors.Length];
-
-        // Create the sprites to render the palette colors on the screen
-        for (var i = 0; i < colors.Length; i++)
-        {
-            palette[i] = new GameObject(Sprite.CreateSolid(2, 2, colors[i]));
-        }
-
-        // assign positions
-        var yStart = (int) (renderer.ScreenHeight * 0.5f - palette.Length);
-        var xStart = (int) _canvas.Bounds.Right + 4;
-        for (int i = 0; i < palette.Length; i++)
-        {
-            palette[i].Position = new Vector(xStart, yStart);
-            xStart += 2;
-            yStart += i % 2 == 1 ? 2 : 0;
-
-            if (i % 2 == 1)
-            {
-                xStart -= 4;
-            }
-        }
-
-        return palette;
     }
 
     protected override bool Update(float elapsedTime, IRenderer renderer, PlayerInput input)
     {
         if (input.IsKeyUp(KeyCode.Esc)) return false;
-            
+        
         renderer.Fill(' ');
-
-        // Check input
-        var canvasPos = input.MousePosition - _canvas.Position;
-            
-        // Paint selected color to canvas
-        if (input.IsKeyHeld(KeyCode.LeftMouse))
-        {
-            _canvas.Sprite.SetFgColor(canvasPos, Primary);
-        }
-        else if (input.IsKeyHeld(KeyCode.RightMouse))
-        {
-            _canvas.Sprite.SetFgColor(canvasPos, Secondary);
-        }
-
-        // Show color name on palette hover
-        foreach (var color in _palette)
-        {
-            if (color.Bounds.Contains(input.MousePosition))
-            {
-                renderer.DrawString(
-                    (int)(_canvas.Position.X + _canvas.Bounds.Width), 
-                    (int)_canvas.Position.Y - 4, 
-                    color.Sprite.GetFgColor(0).ToString(),
-                    alignment: TextAlignment.Right);
-                break;
-            }
-        }
-            
-        // Select new colors from palette
-        if (input.IsKeyUp(KeyCode.LeftMouse))
-        {
-            foreach (var color in _palette)
-            {
-                if (color.Bounds.Contains(input.MousePosition))
-                {
-                    _primaryColor.Sprite.SetSpriteColor(color.Sprite.GetFgColor(0));
-                    break;
-                }
-            }
-        }
-        else if (input.IsKeyUp(KeyCode.RightMouse))
-        {
-            foreach (var color in _palette)
-            {
-                if (color.Bounds.Contains(input.MousePosition))
-                {
-                    _secondaryColor.Sprite.SetSpriteColor(color.Sprite.GetFgColor(0));
-                    break;
-                }
-            }
-        }
-            
-        // Draw HUD
         renderer.DrawString((int) renderer.Screen.Center.X, 3, "SPRITE EDITOR", alignment: TextAlignment.Centered);
-        renderer.DrawString(0,2, $"{input.MousePosition}");
-
-        renderer.DrawBorder(_canvas.Bounds, '*');
+        
+        renderer.DrawString(10, (int)_canvas.Position.Y + 1, "CANVAS");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 4, "Left Click: Draw Primary Color");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 6, "Right Click: Draw Secondary Color");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 10, "PALETTE");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 13, "Left Click: Set Primary Color");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 15, "Right Click: Set Secondary Color");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 17, "Up Arrow: Increase Saturation");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 19, "Down Arrow: Decrease Saturation");
+        
         renderer.DrawObject(_canvas);
-            
-        // On Canvas Hover
+        renderer.DrawBorder(_canvas.Bounds);
+        
+        // Canvas
         if (_canvas.Bounds.Contains(input.MousePosition))
         {
+            var canvasPos = (input.MousePosition - _canvas.Position).Rounded;
+
             // Show canvas position
-            renderer.DrawString(
-                (int)(_canvas.Position.X + _canvas.Bounds.Width), 
-                (int)_canvas.Position.Y - 2, 
-                canvasPos.ToString(),
-                alignment: TextAlignment.Right);
-                
-            // Show Brush
-            renderer.Draw(input.MousePosition, Sprite.SolidPixel, Primary, Primary);
+            renderer.DrawString(_canvas.Bounds.TopRight  + Vector.Up * 3, canvasPos.ToString(), alignment: TextAlignment.Right);
+            
+            // Show Preview Brush
+            renderer.Draw(input.MousePosition, Sprite.SolidPixel, _primary);
+            
+            // Draw selected color onto canvas
+            if (input.IsKeyHeld(KeyCode.LeftMouse))
+                _canvas.Sprite.SetFgColor(canvasPos, _primary);
+            else if (input.IsKeyHeld(KeyCode.RightMouse)) 
+                _canvas.Sprite.SetFgColor(canvasPos, _secondary);
         }
-            
-        // Draw Palette
-        var paletteBorder = new Rect(_palette[0].Position, new Vector(4, _palette.Length));
-        renderer.DrawBorder(paletteBorder, '*');
-            
-        foreach (var color in _palette)
+        
+        // Palette Saturation Control
+        if (input.IsKeyHeld(KeyCode.Up))
         {
-            renderer.DrawObject(color);
-        }
+            _saturation = MathF.Min(_saturation + elapsedTime, 1f);
+            _palette.Sprite = CreateColorPalette(PaletteSize, _saturation);
             
-        var selectedBorder = new Rect(_primaryColor.Position, new Vector(4, 9));
-        renderer.DrawBorder(selectedBorder, '*', Color24.Gray);
-        renderer.DrawString((int)_secondaryColor.Position.X, (int)_secondaryColor.Position.Y - 1, "****", Color24.Gray, Color24.Black);
+        }
+        else if (input.IsKeyHeld(KeyCode.Down))
+        {
+            _saturation = MathF.Max(_saturation - elapsedTime, 0f);
+            _palette.Sprite = CreateColorPalette(PaletteSize, _saturation);
+        }
+        
+        // Palette
+        renderer.DrawObject(_palette);
+        renderer.DrawBorder(_palette.Bounds);
+        
+        // Palette Interaction
+        if (_palette.Bounds.Contains(input.MousePosition))
+        {
+            var palettePos = (input.MousePosition - _palette.Position).Rounded;
+            var color = _palette.Sprite.GetFgColor((int)palettePos.X, (int)palettePos.Y);
+            
+            _colorPreview.Sprite.SetSpriteColor(color);
+            renderer.DrawString(_colorPreview.Bounds.BottomLeft + Vector.Left + Vector.Up * 3, $"R {color.R.ToString(),3}", alignment: TextAlignment.Right);
+            renderer.DrawString(_colorPreview.Bounds.BottomLeft + Vector.Left + Vector.Up * 2, $"G {color.G.ToString(),3}", alignment: TextAlignment.Right);
+            renderer.DrawString(_colorPreview.Bounds.BottomLeft + Vector.Left + Vector.Up * 1, $"B {color.B.ToString(),3}", alignment: TextAlignment.Right);
 
-        renderer.DrawObject(_primaryColor);
-        renderer.DrawObject(_secondaryColor);
-
-        renderer.DrawString((int)_primaryColor.Bounds.Right + 2, (int)_primaryColor.Position.Y + 1, $"1: {Primary}");
-        renderer.DrawString((int)_secondaryColor.Bounds.Right + 2, (int)_secondaryColor.Position.Y + 1, $"2: {Secondary}");
+            if (input.IsKeyUp(KeyCode.LeftMouse))
+            {
+                _primary = color;
+                _primaryPreview.Sprite.SetSpriteColor(_primary);
+            }
+            else if (input.IsKeyUp(KeyCode.RightMouse))
+            {
+                _secondary = color;
+                _secondaryPreview.Sprite.SetSpriteColor(_secondary);
+            }
+            
+            renderer.DrawObject(_colorPreview);
+            renderer.DrawBorder(_colorPreview.Bounds);
+        }
+        
+        // Selected colors
+        renderer.DrawObject(_primaryPreview);
+        renderer.DrawBorder(_primaryPreview.Bounds);
+        
+        renderer.DrawObject(_secondaryPreview);
+        renderer.DrawBorder(_secondaryPreview.Bounds);
         return true;
+    }
+
+    private static Sprite CreateColorPalette(int size, float saturation)
+    {
+        var result = new Sprite(size, size);
+
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                var color = Color24.FromHsv((float)x / size * 360, saturation, 1 - (float)y / (size - 1));
+                result[x, y] = Sprite.SolidPixel;
+                result.SetFgColor(x, y, color);
+            }
+        }
+
+        return result;
     }
 }

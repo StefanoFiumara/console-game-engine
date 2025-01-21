@@ -51,14 +51,27 @@ public static class RendererExtensions
         renderer.DrawLine(topRight, bottomRight, c, fgColor, bgColor);
     }
     
-    public static void DrawBorder(this IRenderer renderer, Rect rect, char c) => DrawBorder(renderer, rect, c, Color24.White, Color24.Black);
-    public static void DrawBorder(this IRenderer renderer, Rect rect, char c, Color24 fgColor) => DrawBorder(renderer, rect, c, fgColor, Color24.Black);
-    public static void DrawBorder(this IRenderer renderer, Rect rect, char c, Color24 fgColor, Color24 bgColor)
+    public static void DrawBorder(this IRenderer renderer, Rect rect) => DrawBorder(renderer, rect, Color24.White, Color24.Black);
+    public static void DrawBorder(this IRenderer renderer, Rect rect, Color24 fgColor) => DrawBorder(renderer, rect, fgColor, Color24.Black);
+    public static void DrawBorder(this IRenderer renderer, Rect rect, Color24 fgColor, Color24 bgColor)
     {
-        var borderPos = new Vector(rect.Position.X - 1, rect.Position.Y - 1);
-        var borderSize = new Vector(rect.Width + 1, rect.Height + 1);
+        var position = new Vector(rect.Position.X - 1, rect.Position.Y - 1);
+        var size = new Vector(rect.Width + 1, rect.Height + 1);
             
-        renderer.DrawBox(borderPos, borderSize, c, fgColor, bgColor);
+        var topLeft = position;
+        var topRight = position + Vector.Right * size.X;
+        var bottomLeft = position + Vector.Down * size.Y;
+        var bottomRight = position + size;
+        
+        renderer.DrawLine(topLeft, topRight, '-', fgColor, bgColor);
+        renderer.DrawLine(bottomLeft, bottomRight, '-', fgColor, bgColor);
+        renderer.DrawLine(topLeft, bottomLeft, '|', fgColor, bgColor);
+        renderer.DrawLine(topRight, bottomRight, '|', fgColor, bgColor);
+        
+        renderer.Draw(topLeft, '+', fgColor, bgColor);
+        renderer.Draw(topRight, '+', fgColor, bgColor);
+        renderer.Draw(bottomLeft, '+', fgColor, bgColor);
+        renderer.Draw(bottomRight, '+', fgColor, bgColor);
     }
     
     public static void DrawLine(this IRenderer renderer, Vector start, Vector end, char c) => DrawLine(renderer, start, end, c, Color24.White, Color24.Black);

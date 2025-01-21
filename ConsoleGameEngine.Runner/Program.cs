@@ -54,12 +54,13 @@ public static class Program
     private static void InitConsoleDefaults()
     {
         Console.ForegroundColor = ConsoleColor.White;
+        Console.BackgroundColor = ConsoleColor.Black;
         Console.Title = "Main Menu";
         Console.CursorVisible = true;
 
         Console.SetWindowSize(40, 40);
         Console.SetBufferSize(40, 40);
-        ConsoleRenderer.SetCurrentFont("Modern DOS 8x8", 12);
+        ConsoleRenderer.SetCurrentFont("Modern DOS 8x8", 10);
         Console.Clear();
     }
 }

@@ -5,7 +5,6 @@ namespace ConsoleGameEngine.Core.GameObjects;
 public class GameObject
 {
     public Vector Position { get; set; }
-        
     public Sprite Sprite { get; set; }
         
     public Rect Bounds => new(Position, Sprite.Size);

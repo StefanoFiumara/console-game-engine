@@ -11,6 +11,11 @@ public struct Rect : IEquatable<Rect>
     public float Width => Size.X;
     public float Height => Size.Y;
 
+    public Vector TopLeft => Position;
+    public Vector TopRight => Position with { X = Position.X + Width };
+    public Vector BottomLeft => Position with { Y = Position.Y + Height };
+    public Vector BottomRight => Position + Size;
+    
     public float Left => Position.X;
     public float Top => Position.Y;
     public float Right => Left + Size.X;

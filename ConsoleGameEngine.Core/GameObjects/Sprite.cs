@@ -9,8 +9,8 @@ namespace ConsoleGameEngine.Core.GameObjects;
 // TODO: Animated Sprite
 public class Sprite
 {
-    public const char SolidPixel = '\xDB';
-    
+    public const char SolidPixel = '\u2588';
+          
     private readonly char[] _glyphs;
     private readonly Color24[] _fgColors;
     private readonly Color24[] _bgColors;
@@ -21,6 +21,24 @@ public class Sprite
     public float Height => Size.Y;
     
     public Rect Bounds => new(Vector.Zero, Size);
+    
+    public Sprite(int width, int height) : this(width, height, Color24.White, Color24.Black) { }
+    public Sprite(int width, int height, Color24 fgColor) : this(width, height, fgColor, Color24.Black) { }
+    public Sprite(int size, Color24 fgColor, Color24 bgColor) : this(size, size, fgColor, bgColor) { }
+    public Sprite(int width, int height, Color24 fgColor, Color24 bgColor)
+    {
+        Size = new(width, height);
+        _glyphs = new char[width * height];
+        
+        for (int i = 0; i < _glyphs.Length; i++)
+            _glyphs[i] = ' ';
+        
+        _fgColors = new Color24[_glyphs.Length];
+        _bgColors = new Color24[_glyphs.Length];
+        
+        SetSpriteBackground(bgColor);
+        SetSpriteColor(fgColor);
+    }
 
     public Sprite(string gfx) : this(gfx, Color24.White, Color24.Black) { }
     public Sprite(string gfx, Color24 fgColor) : this(gfx, fgColor, Color24.Black) { }
@@ -114,10 +132,8 @@ public class Sprite
     
     public void SetSpriteBackground(Color24 color)
     {
-        for (int i = 0; i < _fgColors.Length; i++)
-        {
+        for (int i = 0; i < _fgColors.Length; i++) 
             _bgColors[i] = color;
-        }
     }
 
     private char GetGlyph(Vector pos)
