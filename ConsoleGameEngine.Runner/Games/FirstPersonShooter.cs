@@ -23,11 +23,17 @@ public class FirstPersonShooter() : ConsoleGame(new ConsoleRenderer(width: 240, 
     private Vector _playerPosition;
     private float _playerAngle;
 
+    private Vector _miniMapPosition;
+    private Color24[] _skyGradient;
+    private Color24[] _grassGradient;
+    private Color24[] _wallGradient;
+    
     private Vector PlayerFacingAngle => new(
         (float) Sin(_playerAngle),
         (float) Cos(_playerAngle));
 
     private Sprite _map;
+    
 
     protected override bool Create(IRenderer renderer)
     {
@@ -53,6 +59,10 @@ public class FirstPersonShooter() : ConsoleGame(new ConsoleRenderer(width: 240, 
         _miniMapPosition = new Vector(renderer.ScreenWidth - _map.Width, renderer.ScreenHeight - _map.Height);
         _playerPosition = new Vector(8, 8);
         _playerAngle = 0f;
+        
+        _skyGradient = Color24.CreateGradient(Color24.Cyan, Color24.DarkCyan, (renderer.ScreenHeight / 2));
+        _grassGradient = Color24.CreateGradient(new Color24(100, 20, 0), new Color24(223,161, 0), (renderer.ScreenHeight / 2));
+        _wallGradient = Color24.CreateGradient(Color24.White, Color24.Black, (renderer.ScreenWidth / 2));
         return true;
     }
 
@@ -101,19 +111,16 @@ public class FirstPersonShooter() : ConsoleGame(new ConsoleRenderer(width: 240, 
             {
                 if (y < ceiling)
                 {
-                    renderer.Draw(x, y, ' ', Color24.White, Color24.Cyan);
+                    renderer.Draw(x, y, Sprite.SolidPixel, _skyGradient[y]);
                 }
                 else if (y >= ceiling && y <= floor)
                 {
-                    var shade = ray.HitBoundary ? Shade.Black : CalculateShade(WallShades, ray.Distance);
-                    renderer.Draw(x, y, shade.Character, shade.ForegroundColor, shade.BackgroundColor);
+                    int wallIndex = (int)((_wallGradient.Length - 1) * ray.Distance / Raycast.MaxRaycastDepth);
+                    renderer.Draw(x, y, Sprite.SolidPixel, ray.HitBoundary ? Color24.Black : _wallGradient[wallIndex]);
                 }
                 else
                 {
-                    var groundDistance = 1.0f - (y - renderer.ScreenHeight / 2.0f) / (renderer.ScreenHeight / 2.0f);
-                        
-                    var shade = CalculateShade(GroundShades, groundDistance);
-                    renderer.Draw(x, y, shade.Character, shade.ForegroundColor, shade.BackgroundColor);
+                    renderer.Draw(x, y, Sprite.SolidPixel, _grassGradient[y - floor]);
                 }
             }
         }
@@ -124,60 +131,5 @@ public class FirstPersonShooter() : ConsoleGame(new ConsoleRenderer(width: 240, 
         renderer.Draw(_miniMapPosition + _playerPosition.Rounded, 'X', Color24.Red, Color24.Black);
 
         return !input.IsKeyDown(KeyCode.Esc);
-    }
-        
-    private static Shade CalculateShade(IEnumerable<Shade> shades, float groundDistance)
-    {
-        foreach (var shade in shades)
-        {
-            if (groundDistance <= shade.DistanceThreshold)
-            {
-                return shade;
-            }
-        }
-
-        return Shade.Default;
-    }
-        
-    private static readonly List<Shade> WallShades = new()
-    {
-        new(Raycast.MaxRaycastDepth / 4f, Shade.MediumShade, Color24.Gray,     Color24.White),
-        new(Raycast.MaxRaycastDepth / 3f, Shade.DarkShade,   Color24.Gray,     Color24.White),
-        new(Raycast.MaxRaycastDepth / 2f, Shade.LightShade,  Color24.DarkGray, Color24.Gray),
-        new(Raycast.MaxRaycastDepth / 1f, Shade.MediumShade, Color24.White, Color24.DarkGray)
-    };
-        
-    private static readonly List<Shade> GroundShades = new()
-    {
-        new(0.25f, Shade.FullShade,   Color24.Green,     Color24.Green),
-        new(0.5f,  Shade.DarkShade,   Color24.DarkGreen, Color24.Green),
-        new(0.75f, Shade.MediumShade, Color24.Black,     Color24.DarkGreen),
-        new(0.9f,  Shade.LightShade,  Color24.DarkGreen, Color24.Black)
-    };
-
-    private Vector _miniMapPosition;
-
-    private class Shade
-    {
-        public static readonly Shade Default = new(0, '#', Color24.Magenta, Color24.DarkMagenta);
-        public static readonly Shade Black = new(0, ' ', Color24.Black, Color24.Black);
-            
-        public const char FullShade = ' ';
-        public const char DarkShade = '-';
-        public const char MediumShade = '.';
-        public const char LightShade = 'X';
-
-        public float DistanceThreshold { get; }
-        public char Character { get; }
-        public Color24 ForegroundColor { get; }
-        public Color24 BackgroundColor { get; }
-
-        public Shade(float distanceThreshold, char character, Color24 foregroundColor, Color24 backgroundColor)
-        {
-            DistanceThreshold = distanceThreshold;
-            Character = character;
-            ForegroundColor = foregroundColor;
-            BackgroundColor = backgroundColor;
-        }
     }
 }
