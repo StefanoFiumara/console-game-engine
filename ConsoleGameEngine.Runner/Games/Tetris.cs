@@ -37,9 +37,7 @@ public class Tetris : ConsoleGame
     private bool _inputHeld;
     private bool _forceDown;
     private bool _gameOver;
-
-    private bool _lockGray = true;
-        
+    
     private int _lineCount;
     private int _score;
         
@@ -97,9 +95,9 @@ public class Tetris : ConsoleGame
             Color24.Cyan, 
             Color24.Green, 
             Color24.Red, 
-            Color24.Magenta, 
+            Color24.DarkMagenta, 
             Color24.Blue, 
-            Color24.DarkYellow, 
+            new Color24(255, 127, 0), // Orange 
             Color24.Yellow
         };
             
@@ -374,8 +372,8 @@ public class Tetris : ConsoleGame
 
                         if (above == 'X')
                         {
-                            _field.Sprite.SetFgColor(x, i, _lockGray ? Color24.DarkGray : aboveColor);
-                            _field.Sprite.SetBgColor(x, i, _lockGray ? Color24.DarkGray : aboveColor);
+                            _field.Sprite.SetFgColor(x, i, aboveColor);
+                            _field.Sprite.SetBgColor(x, i, aboveColor);
                         }
                         else
                         {
@@ -402,8 +400,8 @@ public class Tetris : ConsoleGame
                 if (_currentPiece.Sprite[pieceIndex] == 'X')
                 {
                     _field.Sprite[fieldRelativePosition] = 'X';
-                    _field.Sprite.SetFgColor(fieldRelativePosition, _lockGray ? Color24.DarkGray : _currentPiece.Sprite.GetFgColor(pieceIndex));
-                    _field.Sprite.SetBgColor(fieldRelativePosition, _lockGray ? Color24.DarkGray : _currentPiece.Sprite.GetFgColor(pieceIndex));
+                    _field.Sprite.SetFgColor(fieldRelativePosition, _currentPiece.Sprite.GetFgColor(pieceIndex));
+                    _field.Sprite.SetBgColor(fieldRelativePosition, _currentPiece.Sprite.GetFgColor(pieceIndex));
                 }
             }
         }
