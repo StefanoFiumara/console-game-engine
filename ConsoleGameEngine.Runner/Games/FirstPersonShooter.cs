@@ -13,7 +13,7 @@ namespace ConsoleGameEngine.Runner.Games;
 using static Math;
 
 // ReSharper disable once UnusedType.Global
-public class FirstPersonShooter() : ConsoleGame(new ConsoleRenderer(width: 320, height: 170, pixelSize: 4), targetFps: 120)
+public class FirstPersonShooter() : ConsoleGame(new ConsoleRenderer(width: 240, height: 135, pixelSize: 4), targetFps: 120)
 {
     private const float TurnSpeed = 1.2f;
     private const float MoveSpeed = 3.0f;

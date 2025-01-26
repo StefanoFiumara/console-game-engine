@@ -221,16 +221,12 @@ public partial class ConsoleRenderer : IRenderer
     private static void EnableVirtualTerminalProcessing()
     { 
         if (!GetConsoleMode(ConsoleOutputHandle, out var mode))
-        {
             throw new InvalidOperationException("Failed to get console mode.");
-        }
 
         mode |= EnableVirtualTerminalProcessingFlag;
 
         if (!SetConsoleMode(ConsoleOutputHandle, mode))
-        {
             throw new InvalidOperationException("Failed to set console mode.");
-        }
     }
     
     [DllImport("kernel32.dll", SetLastError = true)]
@@ -262,9 +258,9 @@ public partial class ConsoleRenderer : IRenderer
     [DllImport("kernel32.dll", ExactSpelling = true)]
     private static extern IntPtr GetConsoleWindow();
         
-    [LibraryImport(@"user32.dll", SetLastError = true)]
+    [DllImport(@"user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static partial bool GetWindowRect(IntPtr hWnd, out IntRect lpRect);
+    private static extern bool GetWindowRect(IntPtr hWnd, out IntRect lpRect);
 }
     
 [StructLayout(LayoutKind.Sequential)]
