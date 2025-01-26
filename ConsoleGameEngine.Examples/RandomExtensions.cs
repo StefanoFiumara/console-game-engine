@@ -4,7 +4,7 @@ using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Runner;
 
-public static class RngExtensions
+public static class RandomExtensions
 {
     public static Vector NextVector(this Random rng, Rect bounds)
     {

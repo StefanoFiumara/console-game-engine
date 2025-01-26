@@ -5,6 +5,7 @@
         <TargetFramework>net9.0</TargetFramework>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
+        <RootNamespace>ConsoleGameEngine.Runner</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

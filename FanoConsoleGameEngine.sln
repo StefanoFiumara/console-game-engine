@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleGameEngine.Core", "ConsoleGameEngine.Core\ConsoleGameEngine.Core.csproj", "{DE910C89-C624-4361-98D9-8C1A542F5C4E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleGameEngine.Runner", "ConsoleGameEngine.Runner\ConsoleGameEngine.Runner.csproj", "{063ACB5B-3AD8-444A-962C-84951B26A5A6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleGameEngine.Examples", "ConsoleGameEngine.Examples\ConsoleGameEngine.Examples.csproj", "{063ACB5B-3AD8-444A-962C-84951B26A5A6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
