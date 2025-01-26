@@ -100,7 +100,7 @@ public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height
             
             // TODO: Possible state machine to handle input modes on the canvas?
             // Check Start drag
-            if (input.IsKeyDown(KeyCode.LeftMouse) && input.IsKeyHeld(KeyCode.Shift))
+            if(input.IsCommandPressed(KeyCode.Shift, KeyCode.LeftMouse))
             {
                 _isDragging = true;
                 _dragStart = canvasPos;
@@ -120,7 +120,7 @@ public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height
             }
             
             // Check Flood Fill
-            if (input.IsKeyHeld(KeyCode.Control) && input.IsKeyDown(KeyCode.LeftMouse))
+            if(input.IsCommandPressed(KeyCode.Control, KeyCode.LeftMouse))
             {
                 var targetColor = _canvas.Sprite.GetFgColor(canvasPos);
                 if (targetColor != _primary)
@@ -212,31 +212,6 @@ public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height
         renderer.DrawObject(_secondaryPreview);
         renderer.DrawBorder(_secondaryPreview.Bounds);
         return true;
-    }
-
-    /*
- function getConstrainedPoint(start, current) {
-    const dx = Math.abs(current.x - start.x);
-    const dy = Math.abs(current.y - start.y);
-
-    if (dx > dy) {
-        // Constrain to horizontal line
-        return { x: current.x, y: start.y };
-    } else if (dy > dx) {
-        // Constrain to vertical line
-        return { x: start.x, y: current.y };
-    } else {
-        // Constrain to diagonal line
-        return { x: current.x, y: current.y };
-    }
-}
- */
-    private static Vector GetConstrainedPoint(Vector initial, Vector current)
-    {
-        var direction = current - initial;
-        if(direction.X > direction.Y) return new Vector(current.X, initial.Y);
-        else if (direction.Y > direction.X) return new Vector(initial.X, current.Y);
-        else return current;
     }
     
     private static Sprite CreateColorPalette(int size, float saturation)
