@@ -53,6 +53,10 @@ public class PlayerInput
     /// </summary>
     public bool IsKeyHeld(KeyCode k) => _keyStates[(int) k].IsHeld;
 
+    /// <summary>
+    /// Returns true if the given key combination is pressed in the current frame.
+    /// A key combination is considered "pressed" during the KeyDown event of the last key in the list if the first n - 1 keys are being held 
+    /// </summary>
     public bool IsCommandPressed(params KeyCode[] keys)
     {
         if (keys == null || keys.Length == 0)
