@@ -101,8 +101,8 @@ public class Snake : ConsoleGame
         {
             // Game ticks faster based on current level
             // TEMP: Testing fast AI speed
-            _gameTimer = 0f;
-            // _gameTimer = GameTick - _level * 0.02f;
+            // _gameTimer = 0f;
+            _gameTimer = GameTick - _level * 0.02f;
 
             // Snake Movement
             _input = DetermineNextDirection(_head);
