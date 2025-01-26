@@ -89,6 +89,27 @@ public readonly record struct Color24(byte R, byte G, byte B)
         return closestColor;
     }
     
+    public static Color24 FromHex(string hex)
+    {
+        if (string.IsNullOrWhiteSpace(hex))
+            throw new ArgumentException("Hex code cannot be null or empty.", nameof(hex));
+
+        // Remove '#' if present
+        if (hex.StartsWith("#"))
+            hex = hex[1..];
+
+        // Ensure valid length
+        if (hex.Length != 6)
+            throw new ArgumentException("Hex code must be 6 characters long.", nameof(hex));
+
+        // Parse the hex code into RGB components
+        byte r = Convert.ToByte(hex.Substring(0, 2), 16);
+        byte g = Convert.ToByte(hex.Substring(2, 2), 16);
+        byte b = Convert.ToByte(hex.Substring(4, 2), 16);
+
+        return new Color24(r, g, b);
+    }
+    
     public static Color24 FromHsv(float hue, float saturation, float value)
     {
         int hi = (int)(hue / 60) % 6;
