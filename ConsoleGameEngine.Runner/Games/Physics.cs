@@ -132,11 +132,12 @@ public class Physics() : ConsoleGame(new ConsoleRenderer(width: 160, height: 120
             
         ////////////////////////
         // Draw trail and player
+        var trailGradient = Color24.CreateGradient(_trail.Count, Color24.Black, TrailColor);
         for (int i = 0; i < _trail.Count; i++)
         {
             var (x, y) = ((int)_trail[i].X, (int)_trail[i].Y);
                 
-            renderer.Draw(x, y, '*', TrailColor);
+            renderer.Draw(x, y, '*', trailGradient[i]);
         }
             
         renderer.DrawObject(_player);
