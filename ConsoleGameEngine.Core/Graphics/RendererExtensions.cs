@@ -187,6 +187,7 @@ public static class RendererExtensions
         else if (alignment == TextAlignment.Right) 
             x -= msg.Length;
 
+        // TODO: handle multi-line strings?
         for (int i = 0; i < msg.Length; i++)
         {
             renderer.Draw(x + i, y, msg[i], fgColor, bgColor);
