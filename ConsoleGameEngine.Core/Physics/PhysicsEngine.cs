@@ -6,30 +6,23 @@ using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Core.Physics;
 
-public class PhysicsEngine
+public class PhysicsEngine(List<PhysicsObject> objects)
 {
     /*TODO:
         * Collisions 
      */
+    public List<PhysicsObject> Objects { get; } = objects;
     
     public float Gravity { get; set; } = 25f;
     public float TerminalVelocity { get; set; } = 55f;
     public float FrictionCoefficient { get; set; } = 0.2f;
 
-    public List<PhysicsObject> Objects { get; }
-
-    private readonly ParallelOptions _parallelOptions;
-
-    public PhysicsEngine() : this(new List<PhysicsObject>()) { }
-    
-    public PhysicsEngine(List<PhysicsObject> objects)
+    private readonly ParallelOptions _parallelOptions = new()
     {
-        Objects = objects;
-        _parallelOptions = new ParallelOptions
-        {
-            MaxDegreeOfParallelism = Environment.ProcessorCount
-        };
-    }
+        MaxDegreeOfParallelism = Environment.ProcessorCount
+    };
+
+    public PhysicsEngine() : this([]) { }
 
     public void Update(float elapsedTime)
     {
@@ -52,15 +45,11 @@ public class PhysicsEngine
         obj.Velocity += obj.Acceleration * elapsedTime;
 
         // Apply terminal velocity
-        if (obj.Velocity.Y > TerminalVelocity)
-        {
+        if (obj.Velocity.Y > TerminalVelocity) 
             obj.Velocity = new Vector(obj.Velocity.X, TerminalVelocity);
-        }
 
-        if (obj.Velocity.Magnitude < 0.01f)
-        {
+        if (obj.Velocity.Magnitude < 0.01f) 
             obj.Velocity = Vector.Zero;
-        }
 
         // Calculate position based on velocity
         obj.Position += obj.Velocity * elapsedTime;

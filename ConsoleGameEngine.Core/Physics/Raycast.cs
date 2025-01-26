@@ -86,7 +86,6 @@ public static class Raycast
 
         // Test each corner of hit tile, storing the distance from
         // the player, and the calculated dot product of the two rays
-        int idx = 0;
         for (int cornerX = 0; cornerX < 2; cornerX++)
         {
             for (int cornerY = 0; cornerY < 2; cornerY++)
@@ -117,14 +116,23 @@ public static class Raycast
 
 public struct RaycastInfo
 {
-    // Whether or not the raycast hit an object
+    /// <summary>
+    /// True if the raycast hit an object, false otherwise
+    /// </summary>
     public bool Hit { get; set; }
-        
-    // Whether or not we hit a tile boundary
+    
+    /// <summary>
+    /// True if the raycast hit a tile boundary, false otherwise
+    /// </summary>
     public bool HitBoundary { get; set; }
-        
-    // Distance between start and end of raycast
+    
+    /// <summary>
+    /// Distance between start and end of raycast
+    /// </summary>
     public float Distance { get; set; }
         
+    /// <summary>
+    /// Point of collision
+    /// </summary>
     public Vector Intersection { get; set; }
 }

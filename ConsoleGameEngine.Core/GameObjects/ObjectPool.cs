@@ -3,16 +3,10 @@ using System.Collections.Concurrent;
 
 namespace ConsoleGameEngine.Core.GameObjects;
 
-public class ObjectPool<T>
+public class ObjectPool<T>(Func<T> objectFactory)
 {
-    private readonly ConcurrentBag<T> _objects;
-    private readonly Func<T> _objectGenerator;
-
-    public ObjectPool(Func<T> objectFactory)
-    {
-        _objectGenerator = objectFactory ?? throw new ArgumentNullException(nameof(objectFactory));
-        _objects = new ConcurrentBag<T>();
-    }
+    private readonly ConcurrentBag<T> _objects = [];
+    private readonly Func<T> _objectGenerator = objectFactory ?? throw new ArgumentNullException(nameof(objectFactory));
 
     public T Get()
     {

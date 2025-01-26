@@ -73,7 +73,7 @@ public class PlayerInput
         // Update Mouse Position
         GetCursorPos(ref _pointRef);
         _mousePosition.X = _pointRef.X - windowPos.X - 8; // TODO: not sure why this is needed but the point ref and window pos values are slightly off
-        _mousePosition.Y = _pointRef.Y - windowPos.Y - 30; // TODO: is there a programmatic way to measure the title bar?
+        _mousePosition.Y = _pointRef.Y - windowPos.Y - 30; // TODO: is there a programmatic way to measure the title bar height?
             
         // Loop through supported Keycodes
         for (int i = 0; i < _keys.Length; i++)

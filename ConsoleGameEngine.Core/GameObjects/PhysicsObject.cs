@@ -2,18 +2,13 @@
 
 namespace ConsoleGameEngine.Core.GameObjects;
 
-public class PhysicsObject : GameObject
+public class PhysicsObject(Sprite sprite, Vector position) : GameObject(sprite, position)
 {
     public Vector Velocity { get; set; }
-    
     public Vector Acceleration { get; set; }
 
+    // IDEA: Calculate Mass based on sprite size?
     public float Mass { get; set; } = 0.1f;
-        
-    public PhysicsObject(Sprite sprite, Vector position) : base(sprite, position)
-    {
-        // IDEA: Calculate Mass based on sprite size?
-    }
 
     public void ApplyForce(Vector force)
     {

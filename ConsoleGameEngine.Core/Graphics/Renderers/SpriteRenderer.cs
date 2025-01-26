@@ -6,11 +6,9 @@ namespace ConsoleGameEngine.Core.Graphics.Renderers;
 // helper class allowing us to treat a sprite as a rendering target and call the various Draw methods on it
 public class SpriteRenderer(Sprite target) : IRenderer
 {
-    private readonly Sprite _target = target;
-    
-    public int ScreenWidth => (int)_target.Width;
-    public int ScreenHeight => (int)_target.Height;
-    public Rect Screen => new(Vector.Zero, _target.Size);
+    public int ScreenWidth => (int)target.Width;
+    public int ScreenHeight => (int)target.Height;
+    public Rect Screen => new(Vector.Zero, target.Size);
     public short PixelSize => 1;
 
     public Vector GetWindowPosition() => Vector.Zero;
@@ -22,8 +20,8 @@ public class SpriteRenderer(Sprite target) : IRenderer
         if (x >= ScreenWidth || x < 0 || y >= ScreenHeight || y < 0)
             return;
         
-        _target[x, y] = c;
-        _target.SetFgColor(x, y, fgColor);
-        _target.SetBgColor(x, y, c == Sprite.SolidPixel ? fgColor : bgColor);
+        target[x, y] = c;
+        target.SetFgColor(x, y, fgColor);
+        target.SetBgColor(x, y, c == Sprite.SolidPixel ? fgColor : bgColor);
     }
 }

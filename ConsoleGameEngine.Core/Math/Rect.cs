@@ -2,11 +2,11 @@ using System;
 
 namespace ConsoleGameEngine.Core.Math;
 
-public struct Rect : IEquatable<Rect>
+public struct Rect(Vector position, Vector size) : IEquatable<Rect>
 {
-    public Vector Position { get; set; }
-    public Vector Size { get; set; }
-        
+    public Vector Position { get; set; } = position;
+    public Vector Size { get; set; } = size;
+
     public Vector Center => Position + Size * 0.5f;
     public float Width => Size.X;
     public float Height => Size.Y;
@@ -20,12 +20,6 @@ public struct Rect : IEquatable<Rect>
     public float Top => Position.Y;
     public float Right => Left + Size.X;
     public float Bottom => Top + Size.Y;
-
-    public Rect(Vector position, Vector size)
-    {
-        Position = position;
-        Size = size;
-    }
 
     public bool Contains(Vector point)
     {
@@ -42,7 +36,7 @@ public struct Rect : IEquatable<Rect>
         
     public override string ToString()
     {
-        return $"Position: {Position}, Size: {Size}";
+        return $"[Position: {Position}, Size: {Size}]";
     }
 
     public bool Equals(Rect other)
@@ -50,7 +44,7 @@ public struct Rect : IEquatable<Rect>
         return Position.Equals(other.Position) && Size.Equals(other.Size);
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is Rect other && Equals(other);
     }
@@ -58,5 +52,15 @@ public struct Rect : IEquatable<Rect>
     public override int GetHashCode()
     {
         return HashCode.Combine(Position, Size);
+    }
+
+    public static bool operator ==(Rect left, Rect right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(Rect left, Rect right)
+    {
+        return !(left == right);
     }
 }

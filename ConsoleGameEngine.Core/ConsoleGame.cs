@@ -17,10 +17,10 @@ public abstract class ConsoleGame
     private Vector _screenPosition;
     private bool _gameRunning;
     
-    protected ConsoleGame(IRenderer renderer, int targetFps = 60, string name = null)
+    protected ConsoleGame(IRenderer renderer, int targetFps = 60, string name = "")
     {
         _renderer = renderer;
-        _name = name ?? GetType().Name;
+        _name = name == "" ? GetType().Name : name;
         
         _targetFps = targetFps;
         if (_targetFps < 30) _targetFps = 30;
