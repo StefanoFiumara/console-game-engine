@@ -13,6 +13,9 @@ public enum KeyCode
     Z = 0x5A,
     X = 0x58,
     Enter = 0x0D,
+    
+    Shift = 0x10,
+    Control = 0x11,
         
     LeftMouse = 0x01,
     RightMouse = 0x02,

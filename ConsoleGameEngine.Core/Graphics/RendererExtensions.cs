@@ -179,6 +179,7 @@ public static class RendererExtensions
     public static void DrawString(this IRenderer renderer, Vector position, string msg, Color24 fgColor, TextAlignment alignment = TextAlignment.Left) => DrawString(renderer, (int) position.X, (int) position.Y, msg, fgColor, Color24.Black, alignment);
     public static void DrawString(this IRenderer renderer, Vector position, string msg, Color24 fgColor, Color24 bgColor, TextAlignment alignment = TextAlignment.Left) => DrawString(renderer, (int) position.X, (int) position.Y, msg, fgColor, bgColor, alignment);
     public static void DrawString(this IRenderer renderer, int x, int y, string msg, TextAlignment alignment = TextAlignment.Left) => DrawString(renderer, x,y, msg, Color24.White, Color24.Black, alignment);
+    public static void DrawString(this IRenderer renderer, int x, int y, string msg, Color24 fgColor, TextAlignment alignment = TextAlignment.Left) => DrawString(renderer, x, y, msg, fgColor, Color24.Black, alignment);
     public static void DrawString(this IRenderer renderer, int x, int y, string msg, Color24 fgColor, Color24 bgColor, TextAlignment alignment = TextAlignment.Left)
     {
         if (alignment == TextAlignment.Centered)

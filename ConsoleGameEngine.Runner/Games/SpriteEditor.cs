@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Graphics;
@@ -23,7 +24,10 @@ public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height
     private Color24 _secondary = Color24.Blue;
 
     private float _saturation = 1f;
-
+    
+    private bool _isDragging = false;
+    private Vector _dragStart = new (int.MinValue, int.MinValue);
+    private Vector _dragCurrent = new (int.MinValue, int.MinValue);
     /*
      * TODO: Sprite Editor Features
         * Adjustable Brush Size
@@ -65,14 +69,17 @@ public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height
         renderer.Fill(' ');
         renderer.DrawString((int) renderer.Screen.Center.X, 3, "SPRITE EDITOR", alignment: TextAlignment.Centered);
         
+        // TODO: Implement a multiline text component to start strings like these
         renderer.DrawString(10, (int)_canvas.Position.Y + 1, "CANVAS");
         renderer.DrawString(10, (int)_canvas.Position.Y + 4, "Left Click: Draw Primary Color");
         renderer.DrawString(10, (int)_canvas.Position.Y + 6, "Right Click: Draw Secondary Color");
-        renderer.DrawString(10, (int)_canvas.Position.Y + 10, "PALETTE");
-        renderer.DrawString(10, (int)_canvas.Position.Y + 13, "Left Click: Set Primary Color");
-        renderer.DrawString(10, (int)_canvas.Position.Y + 15, "Right Click: Set Secondary Color");
-        renderer.DrawString(10, (int)_canvas.Position.Y + 17, "Up Arrow: Increase Saturation");
-        renderer.DrawString(10, (int)_canvas.Position.Y + 19, "Down Arrow: Decrease Saturation");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 8, "Shift + Click: Draw Straight Lines");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 10, "Control + Click: Flood fill");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 16, "PALETTE");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 19, "Left Click: Set Primary Color");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 21, "Right Click: Set Secondary Color");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 23, "Up Arrow: Increase Saturation");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 25, "Down Arrow: Decrease Saturation");
         
         renderer.DrawObject(_canvas);
         renderer.DrawBorder(_canvas.Bounds);
@@ -86,13 +93,73 @@ public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height
             renderer.DrawString(_canvas.Bounds.TopRight  + Vector.Up * 3, canvasPos.ToString(), alignment: TextAlignment.Right);
             
             // Show Preview Brush
-            renderer.Draw(input.MousePosition, Sprite.SolidPixel, _primary);
+            if(!_isDragging)
+                renderer.Draw(input.MousePosition, Sprite.SolidPixel, _primary);
+            else 
+                renderer.DrawLine(_dragStart + _canvas.Position, _dragCurrent + _canvas.Position, Sprite.SolidPixel, _primary);
             
-            // Draw selected color onto canvas
-            if (input.IsKeyHeld(KeyCode.LeftMouse))
-                _canvas.Sprite.SetFgColor(canvasPos, _primary);
-            else if (input.IsKeyHeld(KeyCode.RightMouse)) 
+            // TODO: Possible state machine to handle input modes on the canvas?
+            // Check Start drag
+            if (input.IsKeyDown(KeyCode.LeftMouse) && input.IsKeyHeld(KeyCode.Shift))
+            {
+                _isDragging = true;
+                _dragStart = canvasPos;
+                _dragCurrent = _dragStart;
+            }
+            
+            // Check End Drag
+            if (input.IsKeyUp(KeyCode.LeftMouse) && _isDragging)
+            {
+                _isDragging = false;
+                // Draw the line
+                var canvasRenderer = _canvas.Sprite.GetRenderer();
+                canvasRenderer.DrawLine(_dragStart, _dragCurrent, Sprite.SolidPixel, _primary);
+                
+                _dragStart = new(int.MinValue, int.MinValue);
+                _dragCurrent = new(int.MinValue, int.MinValue);
+            }
+            
+            // Check Flood Fill
+            if (input.IsKeyHeld(KeyCode.Control) && input.IsKeyDown(KeyCode.LeftMouse))
+            {
+                var targetColor = _canvas.Sprite.GetFgColor(canvasPos);
+                if (targetColor != _primary)
+                {
+                    var queue = new Queue<Vector>();
+                    queue.Enqueue(canvasPos);
+                    while (queue.Count > 0)
+                    {
+                        var pos = queue.Dequeue();
+
+                        // Skip out-of-bounds or already filled pixels
+                        if (!_canvas.Bounds.Contains(canvasPos + _canvas.Position)) continue;
+                        if (_canvas.Sprite.GetFgColor(pos) != targetColor) continue;
+
+                        // Fill the current pixel
+                        _canvas.Sprite.SetFgColor(pos, _primary);
+
+                        // Enqueue neighbors
+                        queue.Enqueue(pos + Vector.Right); // Right
+                        queue.Enqueue(pos + Vector.Left); // Left
+                        queue.Enqueue(pos + Vector.Down); // Left
+                        queue.Enqueue(pos + Vector.Up); // Left
+                    }
+                }   
+            }
+            
+            // Paint selected color onto canvas
+            if (input.IsKeyHeld(KeyCode.LeftMouse) && !input.IsKeyHeld(KeyCode.Control))
+            {
+                if (_isDragging)
+                    _dragCurrent = canvasPos;
+                else
+                    _canvas.Sprite.SetFgColor(canvasPos, _primary);
+            }
+            else if (input.IsKeyHeld(KeyCode.RightMouse))
+            {
+                // TODO: allow line and flood fill behavior for secondary color (refactoring necessary)
                 _canvas.Sprite.SetFgColor(canvasPos, _secondary);
+            }
         }
         
         // Palette Saturation Control
@@ -147,6 +214,31 @@ public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height
         return true;
     }
 
+    /*
+ function getConstrainedPoint(start, current) {
+    const dx = Math.abs(current.x - start.x);
+    const dy = Math.abs(current.y - start.y);
+
+    if (dx > dy) {
+        // Constrain to horizontal line
+        return { x: current.x, y: start.y };
+    } else if (dy > dx) {
+        // Constrain to vertical line
+        return { x: start.x, y: current.y };
+    } else {
+        // Constrain to diagonal line
+        return { x: current.x, y: current.y };
+    }
+}
+ */
+    private static Vector GetConstrainedPoint(Vector initial, Vector current)
+    {
+        var direction = current - initial;
+        if(direction.X > direction.Y) return new Vector(current.X, initial.Y);
+        else if (direction.Y > direction.X) return new Vector(initial.X, current.Y);
+        else return current;
+    }
+    
     private static Sprite CreateColorPalette(int size, float saturation)
     {
         var result = new Sprite(size, size);

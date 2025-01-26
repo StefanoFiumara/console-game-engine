@@ -20,7 +20,6 @@ public class PlayerInput
     private readonly bool[] _previousKeyState;
         
     private readonly KeyState[] _keyStates;
-
     private readonly KeyCode[] _keys;
         
     // Point that will be updated by the function with the current mouse coordinates
@@ -28,7 +27,7 @@ public class PlayerInput
     private Vector _mousePosition;
 
     public Vector MousePosition => (_mousePosition / _pixelSize);
-        
+
     internal PlayerInput(short pixelSize)
     {
         _pixelSize = pixelSize;
@@ -38,29 +37,31 @@ public class PlayerInput
         _previousKeyState = new bool[256];
         _keyStates = new KeyState[256];
     }
-        
+    
     /// <summary>
     /// Returns true if the given key was pressed in the current frame 
     /// </summary>
-    public bool IsKeyDown(KeyCode k)
-    {
-        return _keyStates[(int) k].IsDown;
-    }
+    public bool IsKeyDown(KeyCode k) => _keyStates[(int) k].IsDown;
 
     /// <summary>
     /// Returns true if the given key was released in the current frame 
     /// </summary>
-    public bool IsKeyUp(KeyCode k)
-    {
-        return _keyStates[(int) k].IsReleased;
-    }
+    public bool IsKeyUp(KeyCode k) => _keyStates[(int) k].IsReleased;
 
     /// <summary>
     /// Returns true if the given key is being held down in the current frame 
     /// </summary>
-    public bool IsKeyHeld(KeyCode k)
+    public bool IsKeyHeld(KeyCode k) => _keyStates[(int) k].IsHeld;
+
+    public bool IsCommandPressed(params KeyCode[] keys)
     {
-        return _keyStates[(int) k].IsHeld;
+        if (keys == null || keys.Length == 0)
+            throw new ArgumentException("At least one key must be provided.", nameof(keys));
+        
+        for (var i = 0; i < keys.Length - 1 ; i++)
+            if(!IsKeyHeld(keys[i])) return false;
+
+        return IsKeyDown(keys[^1]);
     }
 
     internal void Update(Vector windowPos)
@@ -70,7 +71,7 @@ public class PlayerInput
         _mousePosition.X = _pointRef.X - windowPos.X - 8; // TODO: not sure why this is needed but the point ref and window pos values are slightly off
         _mousePosition.Y = _pointRef.Y - windowPos.Y - 30; // TODO: is there a programmatic way to measure the title bar?
             
-        // only loop through supported keys in the KeyCode enum
+        // Loop through supported Keycodes
         for (int i = 0; i < _keys.Length; i++)
         {
             var key = (int) _keys[i];

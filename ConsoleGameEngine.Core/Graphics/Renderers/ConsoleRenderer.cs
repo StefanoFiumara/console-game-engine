@@ -13,7 +13,7 @@ public struct PixelInfo
     public Color24 Background;
 }
 
-public partial class ConsoleRenderer : IRenderer
+public class ConsoleRenderer : IRenderer
 {
     private const uint EnableEditModeFlag = 0x0040;
     private const int EnableVirtualTerminalProcessingFlag = 0x0004;

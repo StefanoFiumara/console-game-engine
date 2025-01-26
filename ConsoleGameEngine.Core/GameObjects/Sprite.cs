@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Text;
 using ConsoleGameEngine.Core.Graphics;
+using ConsoleGameEngine.Core.Graphics.Renderers;
 using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Core.GameObjects;
@@ -18,6 +19,8 @@ public class Sprite
     public Vector Size { get; }
     public float Width => Size.X;
     public float Height => Size.Y;
+
+    public SpriteRenderer GetRenderer() => new SpriteRenderer(this);
     
     public Sprite(int width, int height) : this(width, height, Color24.White, Color24.Black) { }
     public Sprite(int width, int height, Color24 fgColor) : this(width, height, fgColor, Color24.Black) { }
@@ -193,6 +196,7 @@ public class Sprite
         return _bg[index];
     }
     
+    public Color24 GetFgColor(Vector pos) => GetFgColor((int)pos.X, (int)pos.Y);
     public Color24 GetFgColor(int x, int y)
     {
         if (x < 0 || x >= Width || y < 0 || y >= Height)
