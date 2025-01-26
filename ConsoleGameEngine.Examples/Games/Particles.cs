@@ -25,8 +25,8 @@ public class Particles() : ConsoleGame(new ConsoleRenderer(width: 160, height: 1
     {
         _rng = new Random();
         
-        _spiralPosition = renderer.Screen.Center + Vector.Down * 5 + Vector.Left * 30;
-        _fountainPosition = renderer.Screen.Center + Vector.Down * 5 + Vector.Right * 30;
+        _spiralPosition = renderer.Bounds.Center + Vector.Down * 5 + Vector.Left * 30;
+        _fountainPosition = renderer.Bounds.Center + Vector.Down * 5 + Vector.Right * 30;
 
         int spiralParticleCount = 30;
         var spiralSprites = Enumerable.Range(0, spiralParticleCount)

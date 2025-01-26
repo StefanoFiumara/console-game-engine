@@ -33,7 +33,7 @@ public class Physics() : ConsoleGame(new ConsoleRenderer(width: 160, height: 120
     protected override bool Create(IRenderer renderer)
     {
         // TODO: Upgrade to use physics Engine
-        _player = new PhysicsObject(Sprite.CreateSolid(3,3, PlayerColor), renderer.Screen.Center);
+        _player = new PhysicsObject(Sprite.CreateSolid(3,3, PlayerColor), renderer.Bounds.Center);
         _trail = new List<Vector>(MaxTrailCount);
         _trailCooldown = TrailResetTime;
             
@@ -100,9 +100,9 @@ public class Physics() : ConsoleGame(new ConsoleRenderer(width: 160, height: 120
         _player.Position += _player.Velocity * elapsedTime;
             
         // Check for Collisions
-        if ((int)_player.Position.Y + _player.Bounds.Height > renderer.ScreenHeight+1)
+        if ((int)_player.Position.Y + _player.Bounds.Height > renderer.Height+1)
         {
-            _player.Position = new Vector(_player.Position.X, renderer.ScreenHeight - _player.Bounds.Height);
+            _player.Position = new Vector(_player.Position.X, renderer.Height - _player.Bounds.Height);
             _player.Velocity = new Vector(_player.Velocity.X, -_player.Velocity.Y * 0.9f);
         }
 
@@ -111,9 +111,9 @@ public class Physics() : ConsoleGame(new ConsoleRenderer(width: 160, height: 120
             _player.Position = new Vector(0, _player.Position.Y);
             _player.Velocity = new Vector(-_player.Velocity.X, _player.Velocity.Y);
         }
-        else if ((int)_player.Position.X + _player.Bounds.Width > renderer.ScreenWidth)
+        else if ((int)_player.Position.X + _player.Bounds.Width > renderer.Width)
         {
-            _player.Position = new Vector(renderer.ScreenWidth - _player.Bounds.Width, _player.Position.Y);
+            _player.Position = new Vector(renderer.Width - _player.Bounds.Width, _player.Position.Y);
             _player.Velocity = new Vector(-_player.Velocity.X, _player.Velocity.Y);
         }
             

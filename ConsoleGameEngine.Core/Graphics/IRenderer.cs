@@ -4,11 +4,13 @@ namespace ConsoleGameEngine.Core.Graphics;
 
 public interface IRenderer
 {
-    int ScreenWidth  { get; }
-    int ScreenHeight { get; }
-    Rect Screen { get; }
+    int Width => (int)Bounds.Width;
+    int Height => (int)Bounds.Height;
+    Rect Bounds { get; }
+    
+    // TODO: figure out if these properties can be abstracted away or baked into the ConsoleGame class
+    // PixelSize and Window Position are only relevant for interaction with the PlayerInput class, and probably do not belong in this interface
     short PixelSize { get; }
-
     Vector GetWindowPosition();
     
     /// <summary>
@@ -23,4 +25,25 @@ public interface IRenderer
     void Draw(int x, int y, char c, Color24 fgColor) => Draw(x, y, c, fgColor, Color24.Black);
     void Draw(int x, int y, char c) => Draw(x, y, c, Color24.White, Color24.Black);
     void Draw(int x, int y, char c, Color24 fgColor, Color24 bgColor);
+}
+
+public abstract class BaseRenderer : IRenderer
+{
+    public int Width => (int)Bounds.Width;
+    public int Height => (int)Bounds.Height;
+    public abstract Rect Bounds { get; }
+    
+    public abstract short PixelSize { get; }
+    public abstract Vector GetWindowPosition();
+    
+    /// <summary>
+    /// Called by the Engine when a frame needs to be drawn.
+    /// You do not need to call this method manually in your Update() method.
+    /// </summary>
+    public virtual void Render() { }
+    
+    /// <summary>
+    /// Base method to draw a character to the renderers internal buffer
+    /// </summary>
+    public abstract void Draw(int x, int y, char c, Color24 fgColor, Color24 bgColor);
 }

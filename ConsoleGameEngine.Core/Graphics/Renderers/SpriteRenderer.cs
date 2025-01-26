@@ -3,21 +3,20 @@ using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Core.Graphics.Renderers;
 
-// helper class allowing us to treat a sprite as a rendering target and call the various Draw methods on it
-public class SpriteRenderer(Sprite target) : IRenderer
+/// <summary>
+/// Allows us to treat a sprite as a rendering target
+/// </summary>
+/// <param name="target"></param>
+public class SpriteRenderer(Sprite target) : BaseRenderer
 {
-    public int ScreenWidth => (int)target.Width;
-    public int ScreenHeight => (int)target.Height;
-    public Rect Screen => new(Vector.Zero, target.Size);
-    public short PixelSize => 1;
+    public override Rect Bounds => new(Vector.Zero, target.Size);
+    public override short PixelSize => 1;
 
-    public Vector GetWindowPosition() => Vector.Zero;
+    public override Vector GetWindowPosition() => Vector.Zero;
 
-    public void Render() { /* Not Needed */ }
-
-    public void Draw(int x, int y, char c, Color24 fgColor, Color24 bgColor)
+    public override void Draw(int x, int y, char c, Color24 fgColor, Color24 bgColor)
     {
-        if (x >= ScreenWidth || x < 0 || y >= ScreenHeight || y < 0)
+        if (x >= Width || x < 0 || y >= Height || y < 0)
             return;
         
         target[x, y] = c;

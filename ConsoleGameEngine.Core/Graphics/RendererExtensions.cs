@@ -12,7 +12,7 @@ public enum TextAlignment
 
 public static class RendererExtensions
 {
-    public static void Fill(this IRenderer renderer, char c) => Fill(renderer, renderer.Screen, c, Color24.White, Color24.Black);
+    public static void Fill(this IRenderer renderer, char c) => Fill(renderer, renderer.Bounds, c, Color24.White, Color24.Black);
     public static void Fill(this IRenderer renderer, Rect rect, char c) => Fill(renderer, rect, c, Color24.White, Color24.Black);
     public static void Fill(this IRenderer renderer, Rect rect, char c, Color24 fgColor) => Fill(renderer, rect.Position, rect.Size, c, fgColor, Color24.Black);
     public static void Fill(this IRenderer renderer, Rect rect, char c, Color24 fgColor, Color24 bgColor) => Fill(renderer, rect.Position, rect.Size, c, fgColor, bgColor);
@@ -21,8 +21,8 @@ public static class RendererExtensions
     public static void Fill(this IRenderer renderer, Vector position, Vector size, char c, Color24 fgColor, Color24 bgColor) => Fill(renderer, (int)position.X, (int)position.Y, (int)(size.X + position.X), (int)(size.Y + position.Y), c, fgColor, bgColor);
     public static void Fill(this IRenderer renderer, int x1, int y1, int x2, int y2, char c, Color24 fgColor, Color24 bgColor)
     {
-        Clip(ref x1, ref y1, renderer.ScreenWidth, renderer.ScreenHeight);
-        Clip(ref x2, ref y2, renderer.ScreenWidth, renderer.ScreenHeight);
+        Clip(ref x1, ref y1, renderer.Width, renderer.Height);
+        Clip(ref x2, ref y2, renderer.Width, renderer.Height);
 
         for (int y = y1; y < y2; y++)
         {

@@ -57,7 +57,7 @@ public class Snake : ConsoleGame
 
     protected override bool Create(IRenderer renderer)
     {
-        _map.Position = renderer.Screen.Center - _map.Bounds.Size * 0.5f + 7 * Vector.Down;
+        _map.Position = renderer.Bounds.Center - _map.Bounds.Size * 0.5f + 7 * Vector.Down;
         
         _score = 0;
         _input = Vector.Right;
@@ -161,7 +161,7 @@ public class Snake : ConsoleGame
             renderer.Draw(piece, gfx, Color24.Green);
         }
 
-        renderer.DrawString(renderer.ScreenWidth / 2, 1, "SNAKE", alignment: TextAlignment.Centered);
+        renderer.DrawString(renderer.Width / 2, 1, "SNAKE", alignment: TextAlignment.Centered);
         renderer.DrawString(1,5, "Arrow Keys: Move");
         renderer.DrawString(1,7, "ESC: Exit");
         renderer.DrawString(1,10, $"High Score: {_highScore}");

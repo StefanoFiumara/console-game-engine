@@ -13,7 +13,7 @@ public struct PixelInfo
     public Color24 Background;
 }
 
-public class ConsoleRenderer : IRenderer
+public class ConsoleRenderer : BaseRenderer
 {
     private const uint EnableEditModeFlag = 0x0040;
     private const int EnableVirtualTerminalProcessingFlag = 0x0004;
@@ -31,12 +31,9 @@ public class ConsoleRenderer : IRenderer
     
     private readonly PixelInfo[] _screenBuffer;
     private bool _isDirty = true;
-    
-    public int ScreenWidth => (int)Screen.Size.X;
-    public int ScreenHeight => (int)Screen.Size.Y;
-    public short PixelSize { get; }
-    
-    public Rect Screen { get; }
+
+    public override short PixelSize { get; }
+    public override Rect Bounds { get; }
     
     public ConsoleRenderer(int width, int height, short pixelSize = 8)
     {
@@ -64,7 +61,7 @@ public class ConsoleRenderer : IRenderer
             height = (int) (height * ratio);
         }
 
-        Screen = new Rect(Vector.Zero, new Vector(width, height));
+        Bounds = new Rect(Vector.Zero, new Vector(width, height));
         
         EnableVirtualTerminalProcessing();
         _screenBuffer = new PixelInfo[width * height];
@@ -75,7 +72,7 @@ public class ConsoleRenderer : IRenderer
         #pragma warning restore CA1416
     }
     
-    public void Render()
+    public override void Render()
     {
         if (!_isDirty) return;
         
@@ -115,7 +112,7 @@ public class ConsoleRenderer : IRenderer
             sb.Append(cell.Char);
         
             // Check if we've reached the end of a row, and if so, add a newline
-            bool isRowEnd = (i + 1) % ScreenWidth == 0; // Check if this is the last index in the row
+            bool isRowEnd = (i + 1) % Width == 0; // Check if this is the last index in the row
             if (isRowEnd && i != buffer.Length - 1)
             {
                 sb.Append(Environment.NewLine);
@@ -125,12 +122,12 @@ public class ConsoleRenderer : IRenderer
         return sb.ToString();
     }
     
-    public void Draw(int x, int y, char c, Color24 fgColor, Color24 bgColor)
+    public override void Draw(int x, int y, char c, Color24 fgColor, Color24 bgColor)
     {
-        if (x >= ScreenWidth || x < 0 || y >= ScreenHeight || y < 0)
+        if (x >= Width || x < 0 || y >= Height || y < 0)
             return;
 
-        var index = y * ScreenWidth + x;
+        var index = y * Width + x;
         
         // TODO: only mark dirty if the replaced character in the buffer differs from this one
         _isDirty = true;
@@ -140,7 +137,7 @@ public class ConsoleRenderer : IRenderer
         _screenBuffer[index].Background = c == Sprite.SolidPixel ? fgColor : bgColor;
     }
     
-    public Vector GetWindowPosition()
+    public override Vector GetWindowPosition()
     {
         if (!GetWindowRect(GetConsoleWindow(), out IntRect rect))
         {

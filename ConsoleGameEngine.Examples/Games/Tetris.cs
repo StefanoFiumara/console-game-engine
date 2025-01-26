@@ -138,7 +138,7 @@ public class Tetris : ConsoleGame
         }
         fieldLayout += "############\n";
         _field = new GameObject(Sprite.Create(fieldLayout));
-        _field.Position = renderer.Screen.Center - _field.Bounds.Size * 0.5f + 7 * Vector.Down;
+        _field.Position = renderer.Bounds.Center - _field.Bounds.Size * 0.5f + 7 * Vector.Down;
             
         _clearedLines = new List<int>();
 
@@ -157,11 +157,11 @@ public class Tetris : ConsoleGame
         if (_gameOver)
         {
             renderer.Fill(' ');
-            renderer.DrawString(renderer.Screen.Center, "GAME OVER", alignment: TextAlignment.Centered);
-            renderer.DrawString(renderer.Screen.Center + 2 * Vector.Down, $"Score: {_score}", alignment: TextAlignment.Centered);
-            renderer.DrawString(renderer.Screen.Center + 4 * Vector.Down, $"Level: {_level}", alignment: TextAlignment.Centered);
-            renderer.DrawString(renderer.Screen.Center + 6 * Vector.Down, $"Lines: {_lineCount}", alignment: TextAlignment.Centered);
-            renderer.DrawString(renderer.Screen.Center + 8 * Vector.Down, $"Press ENTER to restart", alignment: TextAlignment.Centered);
+            renderer.DrawString(renderer.Bounds.Center, "GAME OVER", alignment: TextAlignment.Centered);
+            renderer.DrawString(renderer.Bounds.Center + 2 * Vector.Down, $"Score: {_score}", alignment: TextAlignment.Centered);
+            renderer.DrawString(renderer.Bounds.Center + 4 * Vector.Down, $"Level: {_level}", alignment: TextAlignment.Centered);
+            renderer.DrawString(renderer.Bounds.Center + 6 * Vector.Down, $"Lines: {_lineCount}", alignment: TextAlignment.Centered);
+            renderer.DrawString(renderer.Bounds.Center + 8 * Vector.Down, $"Press ENTER to restart", alignment: TextAlignment.Centered);
 
             if (input.IsKeyDown(KeyCode.Enter))
             {
@@ -308,7 +308,7 @@ public class Tetris : ConsoleGame
 
     private void DrawHud(IRenderer renderer)
     {
-        renderer.DrawString(Vector.Down + Vector.Right * renderer.ScreenWidth / 2, "TETRIS", alignment: TextAlignment.Centered);
+        renderer.DrawString(Vector.Down + Vector.Right * renderer.Width / 2, "TETRIS", alignment: TextAlignment.Centered);
         renderer.DrawString(4 * Vector.Down, $"Score: {_score}");
         renderer.DrawString(6 * Vector.Down, $"Level: {_level}");
         renderer.DrawString(8 * Vector.Down, $"Lines: {_lineCount}");

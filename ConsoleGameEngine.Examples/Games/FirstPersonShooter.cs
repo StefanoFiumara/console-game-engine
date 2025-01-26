@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Graphics;
@@ -56,13 +55,13 @@ public class FirstPersonShooter() : ConsoleGame(new ConsoleRenderer(width: 240, 
         map += "################\n";
 
         _map = new Sprite(map);
-        _miniMapPosition = new Vector(renderer.ScreenWidth - _map.Width, renderer.ScreenHeight - _map.Height);
+        _miniMapPosition = new Vector(renderer.Width - _map.Width, renderer.Height - _map.Height);
         _playerPosition = new Vector(8, 8);
         _playerAngle = 0f;
         
-        _skyGradient = Color24.CreateGradient((renderer.ScreenHeight / 2), Color24.Cyan, Color24.DarkCyan);
-        _grassGradient = Color24.CreateGradient((renderer.ScreenHeight / 2), new Color24(100, 20, 0), new Color24(223,161, 0));
-        _wallGradient = Color24.CreateGradient((renderer.ScreenWidth / 2), Color24.White, Color24.Black);
+        _skyGradient = Color24.CreateGradient((renderer.Height / 2), Color24.Cyan, Color24.DarkCyan);
+        _grassGradient = Color24.CreateGradient((renderer.Height / 2), new Color24(100, 20, 0), new Color24(223,161, 0));
+        _wallGradient = Color24.CreateGradient((renderer.Width / 2), Color24.White, Color24.Black);
         return true;
     }
 
@@ -92,22 +91,22 @@ public class FirstPersonShooter() : ConsoleGame(new ConsoleRenderer(width: 240, 
         }
             
         // Basic raycast algorithm for each column on the screen
-        for (int x = 0; x < renderer.ScreenWidth; x++)
+        for (int x = 0; x < renderer.Width; x++)
         {
             // Create ray vector
-            double rayAngle = (_playerAngle - FieldOfView / 2.0d) + ((x / (double) renderer.ScreenWidth) * FieldOfView);
+            double rayAngle = (_playerAngle - FieldOfView / 2.0d) + ((x / (double) renderer.Width) * FieldOfView);
             var direction = new Vector((float) Sin(rayAngle), (float) Cos(rayAngle));
 
             var ray = Raycast.Send(_map, _playerPosition, direction, '#', BoundaryTolerance);
 
             // Use distance to wall to determine ceiling and floor height for this column
             // From the midpoint (height / 2), subtract an amount proportional to the distance of the wall
-            int ceiling = (int) (renderer.ScreenHeight / 2f - renderer.ScreenHeight / ray.Distance);
+            int ceiling = (int) (renderer.Height / 2f - renderer.Height / ray.Distance);
             // Floor is mirror of ceiling
-            int floor = renderer.ScreenHeight - ceiling;
+            int floor = renderer.Height - ceiling;
 
             // Render column based on ceiling and floor values
-            for (int y = 0; y < renderer.ScreenHeight; y++)
+            for (int y = 0; y < renderer.Height; y++)
             {
                 if (y < ceiling)
                 {
@@ -127,7 +126,7 @@ public class FirstPersonShooter() : ConsoleGame(new ConsoleRenderer(width: 240, 
 
         // Draw HUD
         renderer.DrawSprite(_map, _miniMapPosition);
-        renderer.DrawString(renderer.ScreenWidth, (int)_miniMapPosition.Y - 1, $"Boundary Tol: {BoundaryTolerance}", alignment: TextAlignment.Right);
+        renderer.DrawString(renderer.Width, (int)_miniMapPosition.Y - 1, $"Boundary Tol: {BoundaryTolerance}", alignment: TextAlignment.Right);
         renderer.Draw(_miniMapPosition + _playerPosition.Rounded, 'X', Color24.Red, Color24.Black);
 
         return !input.IsKeyDown(KeyCode.Esc);

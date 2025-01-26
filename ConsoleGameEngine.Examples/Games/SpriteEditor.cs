@@ -40,7 +40,7 @@ public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height
     protected override bool Create(IRenderer renderer)
     {
         var canvasSpr = Sprite.CreateSolid(CanvasSize, CanvasSize, Color24.White); 
-        var canvasPos = (renderer.Screen.Center - canvasSpr.Size * 0.5f).Rounded;
+        var canvasPos = (renderer.Bounds.Center - canvasSpr.Size * 0.5f).Rounded;
         _canvas = new GameObject(canvasSpr, canvasPos);
         
         var paletteSpr = CreateColorPalette(size: PaletteSize, _saturation);
@@ -67,7 +67,7 @@ public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height
         if (input.IsKeyUp(KeyCode.Esc)) return false;
         
         renderer.Fill(' ');
-        renderer.DrawString((int) renderer.Screen.Center.X, 3, "SPRITE EDITOR", alignment: TextAlignment.Centered);
+        renderer.DrawString((int) renderer.Bounds.Center.X, 3, "SPRITE EDITOR", alignment: TextAlignment.Centered);
         
         // TODO: Implement a multiline text component to start strings like these
         renderer.DrawString(10, (int)_canvas.Position.Y + 1, "CANVAS");
