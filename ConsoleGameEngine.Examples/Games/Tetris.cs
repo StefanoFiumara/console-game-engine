@@ -49,7 +49,7 @@ public class Tetris : ConsoleGame
     
     private List<Sprite> _randomizerBag;
         
-    public Tetris() : base(new ConsoleRenderer(width: 32, height: 40, pixelSize: 16))
+    public Tetris() : base(width: 32, height: 40, pixelSize: 16)
     {
         _rng = new Random();
 
@@ -130,7 +130,6 @@ public class Tetris : ConsoleGame
         _randomizerBag.AddRange(GetRandomTetrominoBag());
             
         //TODO: Figure out circular buffer for next piece queue
-            
         var fieldLayout = string.Empty;
         for (int i = 0; i < 21; i++)
         {

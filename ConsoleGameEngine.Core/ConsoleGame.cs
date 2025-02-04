@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using ConsoleGameEngine.Core.Graphics;
+using ConsoleGameEngine.Core.Graphics.Renderers;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 
@@ -17,9 +18,17 @@ public abstract class ConsoleGame
     private Vector _screenPosition;
     private bool _gameRunning;
     
-    protected ConsoleGame(IRenderer renderer, int targetFps = 60, string name = "")
+    /// <summary>
+    /// Creates a new instance of the Console Game Engine
+    /// </summary>
+    /// <param name="width">The desired width (in characters) of the console window.</param>
+    /// <param name="height">The desired height (in characters) of the console window.</param>
+    /// <param name="pixelSize">The desired size of each character in the console window.</param>
+    /// <param name="targetFps">The target framerate for the application</param>
+    /// <param name="name">Name of the application, will default to the class name if not provided, show in the window title.</param>
+    protected ConsoleGame(int width, int height, short pixelSize = 8, int targetFps = 60, string name = "")
     {
-        _renderer = renderer;
+        _renderer = new ConsoleRenderer(width, height, pixelSize);
         _name = name == "" ? GetType().Name : name;
         
         _targetFps = targetFps;

@@ -10,7 +10,7 @@ using ConsoleGameEngine.Core.Physics;
 namespace ConsoleGameEngine.Runner.Games;
 
 // ReSharper disable once UnusedType.Global
-public class Physics() : ConsoleGame(new ConsoleRenderer(width: 160, height: 120))
+public class Physics() : ConsoleGame(width: 160, height: 120)
 {
     private const float Gravity = 25f;
     private const float TerminalVelocity = 55f;

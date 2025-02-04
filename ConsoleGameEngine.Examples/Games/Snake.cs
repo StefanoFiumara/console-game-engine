@@ -40,7 +40,7 @@ public class Snake : ConsoleGame
 
     private float _gameTimer;
 
-    public Snake() : base(new ConsoleRenderer(width: 50, height: 50, pixelSize: 14))
+    public Snake() : base(width: 50, height: 50, pixelSize: 14)
     {
         _rng = new Random();
 

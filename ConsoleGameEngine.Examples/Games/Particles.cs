@@ -11,7 +11,7 @@ using ConsoleGameEngine.Core.Physics;
 namespace ConsoleGameEngine.Runner.Games;
 
 // ReSharper disable once UnusedType.Global
-public class Particles() : ConsoleGame(new ConsoleRenderer(width: 160, height: 120))
+public class Particles() : ConsoleGame(width: 160, height: 120)
 {
     private Vector _spiralPosition;
     private ParticleSystem _spiralParticles;
