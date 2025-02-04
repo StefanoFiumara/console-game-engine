@@ -58,9 +58,10 @@ public static class Program
         Console.Title = "Main Menu";
         Console.CursorVisible = true;
 
+        ConsoleRenderer.SetCurrentFont("Modern DOS 8x8", 11);
+        
         Console.SetWindowSize(40, 40);
         Console.SetBufferSize(40, 40);
-        ConsoleRenderer.SetCurrentFont("Modern DOS 8x8", 11);
         Console.Clear();
     }
 }

@@ -40,7 +40,6 @@ public class ConsoleRenderer : BaseRenderer
         DisableResize();
         DisableMouseInput();
 
-        if (pixelSize < 4) pixelSize = 4;
         SetCurrentFont("Modern DOS 8x8", pixelSize);
 
         // Clamp width and height while maintaining aspect ratio

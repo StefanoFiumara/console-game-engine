@@ -26,6 +26,7 @@ public abstract class ConsoleGame
     /// <param name="name">Name of the application, will default to the class name if not provided, show in the window title.</param>
     protected ConsoleGame(int width, int height, short pixelSize = 8, int targetFps = 60, string name = "")
     {
+        if (pixelSize < 1) pixelSize = 1;
         _renderer = new ConsoleRenderer(width, height, pixelSize);
         _name = name == "" ? GetType().Name : name;
         
