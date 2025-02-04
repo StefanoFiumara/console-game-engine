@@ -10,9 +10,6 @@ namespace ConsoleGameEngine.Core.Graphics.Renderers;
 public class SpriteRenderer(Sprite target) : BaseRenderer
 {
     public override Rect Bounds => new(Vector.Zero, target.Size);
-    public override short PixelSize => 1;
-
-    public override Vector GetWindowPosition() => Vector.Zero;
 
     public override void Draw(int x, int y, char c, Color24 fgColor, Color24 bgColor)
     {

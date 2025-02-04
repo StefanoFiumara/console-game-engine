@@ -4,18 +4,16 @@ using System.Threading;
 using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Graphics.Renderers;
 using ConsoleGameEngine.Core.Input;
-using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Core;
 
 public abstract class ConsoleGame
 {
     private readonly string _name;
+    private readonly ConsoleRenderer _renderer;
     private readonly PlayerInput _input;
-    private readonly IRenderer _renderer;
     private readonly int _targetFps;
 
-    private Vector _screenPosition;
     private bool _gameRunning;
     
     /// <summary>
@@ -34,7 +32,7 @@ public abstract class ConsoleGame
         _targetFps = targetFps;
         if (_targetFps < 30) _targetFps = 30;
                 
-        _input = new PlayerInput(_renderer.PixelSize);
+        _input = new PlayerInput(pixelSize);
     }
 
     public void Start()
@@ -61,9 +59,8 @@ public abstract class ConsoleGame
             var currentTime = timer.Elapsed.TotalMilliseconds;
             var elapsedTime = currentTime - previousTime;
             previousTime = currentTime;
-                
-            _screenPosition = _renderer.GetWindowPosition();
-            _input.Update(_screenPosition);
+            
+            _input.Update();
 
             // Game Logic
             if (!Update((float) elapsedTime / 1000f, _renderer, _input))

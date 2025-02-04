@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.InteropServices;
+using ConsoleGameEngine.Core.Graphics.Renderers;
 using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Core.Input;
@@ -9,12 +10,6 @@ namespace ConsoleGameEngine.Core.Input;
 public class PlayerInput
 {
     private readonly short _pixelSize;
-
-    [DllImport("user32.dll", CharSet = CharSet.Auto, ExactSpelling = true)]
-    private static extern short GetAsyncKeyState(int keyCode);
-        
-    [DllImport("user32.dll")]
-    private static extern bool GetCursorPos(ref Point lpPoint);
 
     private readonly bool[] _currentKeyState;
     private readonly bool[] _previousKeyState;
@@ -31,11 +26,6 @@ public class PlayerInput
     /// </summary>
     public Vector MousePosition => (_mousePosition / _pixelSize);
     
-    /// <summary>
-    /// The mouse position represented as raw pixel coordinates
-    /// </summary>
-    public Vector RawMousePosition => _mousePosition;
-
     internal PlayerInput(short pixelSize)
     {
         _pixelSize = pixelSize;
@@ -76,10 +66,12 @@ public class PlayerInput
         return IsKeyDown(keys[^1]);
     }
 
-    internal void Update(Vector windowPos)
+    internal void Update()
     {
         // Update Mouse Position
-        GetCursorPos(ref _pointRef);
+        var windowPos = GetWindowPosition();
+
+        Win32.GetCursorPos(ref _pointRef);
         _mousePosition.X = _pointRef.X - windowPos.X - 8; // TODO: not sure why this is needed but the point ref and window pos values are slightly off
         _mousePosition.Y = _pointRef.Y - windowPos.Y - 30; // TODO: is there a programmatic way to measure the title bar height?
             
@@ -115,6 +107,18 @@ public class PlayerInput
     {
         //If the high-order bit is 1, the key is down
         //otherwise, it is up.
-        return (GetAsyncKeyState(key) & 0x8000) == 0x8000;
+        return (Win32.GetAsyncKeyState(key) & 0x8000) == 0x8000;
+    }
+    
+    private Vector GetWindowPosition()
+    {
+        if (!Win32.GetWindowRect(Win32.GetConsoleWindow(), out IntRect rect))
+        {
+            var ex = Marshal.GetLastWin32Error();
+            Console.WriteLine("Set error " + ex);
+            throw new System.ComponentModel.Win32Exception(ex);
+        }
+
+        return new Vector(rect.Left, rect.Top);
     }
 }

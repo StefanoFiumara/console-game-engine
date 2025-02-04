@@ -8,11 +8,6 @@ public interface IRenderer
     int Height => (int)Bounds.Height;
     Rect Bounds { get; }
     
-    // TODO: figure out if these properties can be abstracted away or baked into the ConsoleGame class
-    // PixelSize and Window Position are only relevant for interaction with the PlayerInput class, and probably do not belong in this interface
-    short PixelSize { get; }
-    Vector GetWindowPosition();
-    
     /// <summary>
     /// Called by the Engine when a frame needs to be drawn.
     /// You do not need to call this method manually in your Update() method.
@@ -32,9 +27,6 @@ public abstract class BaseRenderer : IRenderer
     public int Width => (int)Bounds.Width;
     public int Height => (int)Bounds.Height;
     public abstract Rect Bounds { get; }
-    
-    public abstract short PixelSize { get; }
-    public abstract Vector GetWindowPosition();
     
     /// <summary>
     /// Called by the Engine when a frame needs to be drawn.
