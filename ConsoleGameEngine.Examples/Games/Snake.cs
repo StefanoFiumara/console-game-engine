@@ -36,7 +36,7 @@ public class Snake : ConsoleGame
     private int _highScore;
 
     private readonly Random _rng;
-    private readonly GameObject _map;
+    private readonly GameEntity _map;
 
     private float _gameTimer;
 
@@ -52,7 +52,7 @@ public class Snake : ConsoleGame
         }
         map += "################################\n";
         
-        _map = new GameObject(Sprite.Create(map));
+        _map = new GameEntity(Sprite.Create(map));
     }
 
     protected override bool Create(IRenderer renderer)

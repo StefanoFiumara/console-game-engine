@@ -1,13 +1,16 @@
 using System;
 using System.Linq;
 using System.Text;
-using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Graphics.Renderers;
 using ConsoleGameEngine.Core.Math;
 
-namespace ConsoleGameEngine.Core.GameObjects;
+namespace ConsoleGameEngine.Core.Graphics;
 
 // TODO: Animated Sprite
+/// <summary>
+/// Sprites encapsulate a static graphical asset, storing image data and size information without any positional or rendering logic.
+/// It serves as the visual building block that game entities use to draw themselves on screen.
+/// </summary>
 public class Sprite
 {
     public const char SolidPixel = '\u2588';

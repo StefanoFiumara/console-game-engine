@@ -194,6 +194,7 @@ public static class RendererExtensions
         }
     }
     
+    public static void DrawObject(this IRenderer renderer, GameObject obj) => obj.Draw(renderer);
     public static void DrawSprite(this IRenderer renderer, Sprite sprite, Vector position)
     {
         for (var y = 0; y < sprite.Height; y++)
@@ -211,11 +212,6 @@ public static class RendererExtensions
                 }
             }
         }
-    }
-
-    public static void DrawObject(this IRenderer renderer, GameObject obj)
-    {
-        renderer.DrawSprite(obj.Sprite, obj.Position);
     }
     
     private static void Clip(ref int x, ref int y, int width, int height)

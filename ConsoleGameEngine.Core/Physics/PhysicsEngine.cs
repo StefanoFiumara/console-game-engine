@@ -6,12 +6,14 @@ using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Core.Physics;
 
-public class PhysicsEngine(List<PhysicsObject> objects)
+public class PhysicsEngine(List<PhysicsEntity> entities)
 {
-    /*TODO:
+    public PhysicsEngine() : this([]) { }
+    
+    /* TODO:
         * Collisions 
      */
-    public List<PhysicsObject> Objects { get; } = objects;
+    public List<PhysicsEntity> Entities { get; } = entities;
     
     public float Gravity { get; set; } = 25f;
     public float TerminalVelocity { get; set; } = 55f;
@@ -22,39 +24,38 @@ public class PhysicsEngine(List<PhysicsObject> objects)
         MaxDegreeOfParallelism = Environment.ProcessorCount
     };
 
-    public PhysicsEngine() : this([]) { }
-
     public void Update(float elapsedTime)
     {
-        Parallel.ForEach(Objects, _parallelOptions, obj => UpdatePhysicsObject(obj, elapsedTime));
+        Parallel.ForEach(Entities, _parallelOptions, entity => UpdatePhysicsEntity(entity, elapsedTime));
     }
 
-    private void UpdatePhysicsObject(PhysicsObject obj, float elapsedTime)
+    private void UpdatePhysicsEntity(PhysicsEntity entity, float elapsedTime)
     {
         // Friction
-        if (obj.Velocity.Magnitude > 0)
+        if (entity.Velocity.Magnitude > 0)
         {
-            var friction = -obj.Velocity.Normalized.X * FrictionCoefficient;
-            obj.ApplyForce(new Vector(friction, 0));
+            var friction = -entity.Velocity.Normalized.X * FrictionCoefficient;
+            entity.ApplyForce(new Vector(friction, 0));
         }
 
         // Gravity
-        obj.ApplyForce(Gravity * Vector.Down);
+        entity.ApplyForce(Gravity * Vector.Down);
 
         // Update Velocity
-        obj.Velocity += obj.Acceleration * elapsedTime;
+        entity.Velocity += entity.Acceleration * elapsedTime;
 
         // Apply terminal velocity
-        if (obj.Velocity.Y > TerminalVelocity) 
-            obj.Velocity = new Vector(obj.Velocity.X, TerminalVelocity);
+        if (entity.Velocity.Y > TerminalVelocity) 
+            entity.Velocity = new Vector(entity.Velocity.X, TerminalVelocity);
 
-        if (obj.Velocity.Magnitude < 0.01f) 
-            obj.Velocity = Vector.Zero;
+        // Snap small velocities to zero
+        if (entity.Velocity.Magnitude < 0.01f) 
+            entity.Velocity = Vector.Zero;
 
         // Calculate position based on velocity
-        obj.Position += obj.Velocity * elapsedTime;
+        entity.Position += entity.Velocity * elapsedTime;
 
         // Reset Acceleration
-        obj.Acceleration = Vector.Zero;
+        entity.Acceleration = Vector.Zero;
     }
 }

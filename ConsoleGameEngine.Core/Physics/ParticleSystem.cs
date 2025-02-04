@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Core.Physics;
@@ -17,15 +18,15 @@ public class ParticleSystem
     private readonly Vector _position;
     private readonly PhysicsEngine _engine;
     private readonly Sprite[] _particles;
-    private readonly Action<PhysicsObject> _initParticleAction;
+    private readonly Action<PhysicsEntity> _initParticleAction;
     private readonly float _spawnInterval;
     private readonly float _particleLifetime;
-    private readonly ObjectPool<PhysicsObject> _pool;
+    private readonly ObjectPool<PhysicsEntity> _pool;
     
     private float _spawnTimer;
-    private readonly Dictionary<PhysicsObject, float> _particleTimers;
+    private readonly Dictionary<PhysicsEntity, float> _particleTimers;
 
-    public IReadOnlyList<PhysicsObject> ActiveParticles => _engine.Objects;
+    public IReadOnlyList<PhysicsEntity> ActiveParticles => _engine.Entities;
 
     /// <summary>
     /// Creates a Particle System, note that the particles need to be drawn during Update in a separate
@@ -40,7 +41,7 @@ public class ParticleSystem
     public ParticleSystem(
         Vector position,
         Sprite[] particles, 
-        Action<PhysicsObject> initParticleAction, 
+        Action<PhysicsEntity> initParticleAction, 
         float spawnInterval,
         ParticleOptions options)
     {
@@ -56,17 +57,17 @@ public class ParticleSystem
             FrictionCoefficient = options.Friction
         };
 
-        _particleTimers = new Dictionary<PhysicsObject, float>();
+        _particleTimers = new Dictionary<PhysicsEntity, float>();
         _spawnTimer = _spawnInterval;
-        _pool = new ObjectPool<PhysicsObject>(CreateParticle);
+        _pool = new ObjectPool<PhysicsEntity>(CreateParticle);
     }
 
     private int _spriteIndex;
 
-    private PhysicsObject CreateParticle()
+    private PhysicsEntity CreateParticle()
     {
         var sprite = _particles[_spriteIndex++ % _particles.Length];
-        var particle = new PhysicsObject(sprite, _position);
+        var particle = new PhysicsEntity(sprite, _position);
         return particle;
     }
 
@@ -79,20 +80,20 @@ public class ParticleSystem
             var particle = _pool.Get();
             particle.Position = _position;
             _initParticleAction(particle);
-            _engine.Objects.Add(particle);
+            _engine.Entities.Add(particle);
             _particleTimers.Add(particle, _particleLifetime);
         }
         
         _engine.Update(elapsedTime);
-        for (var i = _engine.Objects.Count - 1; i >= 0; i--)
+        for (var i = _engine.Entities.Count - 1; i >= 0; i--)
         {
-            var particle = _engine.Objects[i];
+            var particle = _engine.Entities[i];
             _particleTimers[particle] -= elapsedTime;
             
             if (_particleTimers[particle] <= 0)
             {
                 _pool.Return(particle);
-                _engine.Objects.Remove(particle);
+                _engine.Entities.Remove(particle);
                 _particleTimers.Remove(particle);
             }
         }

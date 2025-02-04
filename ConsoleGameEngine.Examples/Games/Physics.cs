@@ -5,6 +5,7 @@ using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Graphics.Renderers;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
+using ConsoleGameEngine.Core.Physics;
 
 namespace ConsoleGameEngine.Runner.Games;
 
@@ -25,7 +26,7 @@ public class Physics() : ConsoleGame(new ConsoleRenderer(width: 160, height: 120
     private static readonly Color24 PlayerColor = Color24.White;
     private static readonly Color24 TrailColor = Color24.Red;
         
-    private PhysicsObject _player;
+    private PhysicsEntity _player;
 
     private List<Vector> _trail;
     private float _trailCooldown;
@@ -33,7 +34,7 @@ public class Physics() : ConsoleGame(new ConsoleRenderer(width: 160, height: 120
     protected override bool Create(IRenderer renderer)
     {
         // TODO: Upgrade to use physics Engine
-        _player = new PhysicsObject(Sprite.CreateSolid(3,3, PlayerColor), renderer.Bounds.Center);
+        _player = new PhysicsEntity(Sprite.CreateSolid(3,3, PlayerColor), renderer.Bounds.Center);
         _trail = new List<Vector>(MaxTrailCount);
         _trailCooldown = TrailResetTime;
             

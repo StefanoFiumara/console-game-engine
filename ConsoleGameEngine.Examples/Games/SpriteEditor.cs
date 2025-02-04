@@ -14,11 +14,11 @@ public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height
 {
     private const int CanvasSize = 64;
     private const int PaletteSize = 50;
-    private GameObject _canvas;
-    private GameObject _palette;
-    private GameObject _colorPreview;
-    private GameObject _primaryPreview;
-    private GameObject _secondaryPreview;
+    private GameEntity _canvas;
+    private GameEntity _palette;
+    private GameEntity _colorPreview;
+    private GameEntity _primaryPreview;
+    private GameEntity _secondaryPreview;
         
     private Color24 _primary = Color24.Red;
     private Color24 _secondary = Color24.Blue;
@@ -41,23 +41,23 @@ public class SpriteEditor() : ConsoleGame(new ConsoleRenderer(width: 192, height
     {
         var canvasSpr = Sprite.CreateSolid(CanvasSize, CanvasSize, Color24.White); 
         var canvasPos = (renderer.Bounds.Center - canvasSpr.Size * 0.5f).Rounded;
-        _canvas = new GameObject(canvasSpr, canvasPos);
+        _canvas = new GameEntity(canvasSpr, canvasPos);
         
         var paletteSpr = CreateColorPalette(size: PaletteSize, _saturation);
         var palettePos = _canvas.Bounds.TopRight + Vector.Right * 4;
-        _palette = new GameObject(paletteSpr, palettePos);
+        _palette = new GameEntity(paletteSpr, palettePos);
         
         var previewSpr = Sprite.CreateSolid(8, 8, Color24.Black);
         var previewPos = _palette.Bounds.TopRight + Vector.Up * 10 + Vector.Left * 8;
-        _colorPreview = new GameObject(previewSpr, previewPos);
+        _colorPreview = new GameEntity(previewSpr, previewPos);
         
         var primarySpr = Sprite.CreateSolid(8, 8, _primary);
         var primaryPos = _palette.Bounds.BottomLeft + Vector.Down * 2;
-        _primaryPreview = new GameObject(primarySpr, primaryPos);
+        _primaryPreview = new GameEntity(primarySpr, primaryPos);
         
         var secondarySpr = Sprite.CreateSolid(8, 8, _secondary);
         var secondaryPos = _primaryPreview.Bounds.TopRight + Vector.Right * 4;
-        _secondaryPreview = new GameObject(secondarySpr, secondaryPos);
+        _secondaryPreview = new GameEntity(secondarySpr, secondaryPos);
         
         return true;
     }

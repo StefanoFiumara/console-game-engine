@@ -112,7 +112,8 @@ public class ConsoleRenderer : BaseRenderer
             sb.Append(cell.Char);
         
             // Check if we've reached the end of a row, and if so, add a newline
-            bool isRowEnd = (i + 1) % Width == 0; // Check if this is the last index in the row
+            bool isRowEnd = (i + 1) % Width == 0;
+            // Do not add a new line for the last row in the buffer
             if (isRowEnd && i != buffer.Length - 1)
             {
                 sb.Append(Environment.NewLine);
@@ -129,7 +130,7 @@ public class ConsoleRenderer : BaseRenderer
 
         var index = y * Width + x;
         
-        // TODO: only mark dirty if the replaced character in the buffer differs from this one
+        // TODO: only mark dirty if the replaced character/color in the buffer differs from this one
         _isDirty = true;
 
         _screenBuffer[index].Char = c;

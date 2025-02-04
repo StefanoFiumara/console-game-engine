@@ -20,9 +20,9 @@ public class Tetris : ConsoleGame
 
     private readonly List<Sprite> _tetrominos;
         
-    private GameObject _field;
-    private GameObject _currentPiece;
-    private GameObject _ghostPiece;
+    private GameEntity _field;
+    private GameEntity _currentPiece;
+    private GameEntity _ghostPiece;
         
     private int _currentRotation;
         
@@ -44,9 +44,9 @@ public class Tetris : ConsoleGame
     private List<int> _clearedLines;
     private int _droppedPieces;
         
+    private readonly Vector _heldPiecePosition = new (5, 16);
     private Sprite _heldPiece;
-    private Vector _heldPiecePosition = new (5, 16);
-
+    
     private List<Sprite> _randomizerBag;
         
     public Tetris() : base(new ConsoleRenderer(width: 32, height: 40, pixelSize: 16))
@@ -137,7 +137,7 @@ public class Tetris : ConsoleGame
             fieldLayout += "#          #\n";
         }
         fieldLayout += "############\n";
-        _field = new GameObject(Sprite.Create(fieldLayout));
+        _field = new GameEntity(Sprite.Create(fieldLayout));
         _field.Position = renderer.Bounds.Center - _field.Bounds.Size * 0.5f + 7 * Vector.Down;
             
         _clearedLines = new List<int>();
@@ -210,11 +210,11 @@ public class Tetris : ConsoleGame
     {
         if (newPiece != null)
         {
-            _currentPiece = new GameObject(newPiece);
+            _currentPiece = new GameEntity(newPiece);
         }
         else
         {
-            _currentPiece = new GameObject(_randomizerBag[0]);
+            _currentPiece = new GameEntity(_randomizerBag[0]);
             _randomizerBag.RemoveAt(0);
 
             if (_randomizerBag.Count <= 7)
@@ -225,7 +225,7 @@ public class Tetris : ConsoleGame
         }
             
         _currentPiece.Position = _field.Bounds.Center + Vector.Up * _field.Bounds.Height / 2 + Vector.Left * _currentPiece.Bounds.Width / 2;
-        _ghostPiece = new GameObject(_currentPiece.Sprite);
+        _ghostPiece = new GameEntity(new(_currentPiece.Sprite));
         _ghostPiece.Sprite.SetSpriteBackground(Color24.Black);
         _currentRotation = 0;
             
@@ -418,7 +418,7 @@ public class Tetris : ConsoleGame
         SpawnNewPiece();
     }
 
-    private bool MovePiece(GameObject piece, int rotation, Vector direction)
+    private bool MovePiece(GameEntity piece, int rotation, Vector direction)
     {
         if (DoesPieceFit(piece, rotation, piece.Position + direction))
         {
@@ -461,7 +461,7 @@ public class Tetris : ConsoleGame
         }
     }
 
-    private bool DoesPieceFit(GameObject piece, int rotation, Vector newPosition)
+    private bool DoesPieceFit(GameEntity piece, int rotation, Vector newPosition)
     {
         for (int x = 0; x < piece.Bounds.Width; x++)
         {
@@ -480,7 +480,7 @@ public class Tetris : ConsoleGame
         return true;
     }
 
-    private void DrawRotatedPiece(IRenderer renderer, GameObject piece, int rotation)
+    private void DrawRotatedPiece(IRenderer renderer, GameEntity piece, int rotation)
     {
         for (var y = 0; y < piece.Bounds.Height; y++)
         {

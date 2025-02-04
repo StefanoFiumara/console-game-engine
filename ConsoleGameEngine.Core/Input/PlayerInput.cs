@@ -26,7 +26,15 @@ public class PlayerInput
     private Point _pointRef;
     private Vector _mousePosition;
 
+    /// <summary>
+    /// The mouse position represented as a coordinate on the screen
+    /// </summary>
     public Vector MousePosition => (_mousePosition / _pixelSize);
+    
+    /// <summary>
+    /// The mouse position represented as raw pixel coordinates
+    /// </summary>
+    public Vector RawMousePosition => _mousePosition;
 
     internal PlayerInput(short pixelSize)
     {
