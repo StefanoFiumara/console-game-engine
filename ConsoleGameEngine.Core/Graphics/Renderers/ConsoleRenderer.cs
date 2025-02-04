@@ -1,8 +1,8 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Math;
+using ConsoleGameEngine.Core.Utilities;
 
 namespace ConsoleGameEngine.Core.Graphics.Renderers;
 

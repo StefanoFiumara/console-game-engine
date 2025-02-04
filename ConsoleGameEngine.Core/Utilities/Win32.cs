@@ -2,7 +2,7 @@
 using System.Drawing;
 using System.Runtime.InteropServices;
 
-namespace ConsoleGameEngine.Core;
+namespace ConsoleGameEngine.Core.Utilities;
 
 internal static class Win32
 {

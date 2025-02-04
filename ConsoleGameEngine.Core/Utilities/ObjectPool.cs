@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 
-namespace ConsoleGameEngine.Core.GameObjects;
+namespace ConsoleGameEngine.Core.Utilities;
 
 public class ObjectPool<T>(Func<T> objectFactory)
 {

@@ -1,4 +1,3 @@
-using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Core.Graphics.Renderers;

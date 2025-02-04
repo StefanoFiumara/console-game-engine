@@ -1,7 +1,7 @@
 ﻿using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Math;
 
-namespace ConsoleGameEngine.Core.GameObjects;
+namespace ConsoleGameEngine.Core.Entities;
 
 public class GameEntity(Sprite sprite, Vector position = default) : GameObject(position)
 {

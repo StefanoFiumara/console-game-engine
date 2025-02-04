@@ -1,11 +1,11 @@
 using System;
 using ConsoleGameEngine.Core;
-using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Graphics.Renderers;
 using ConsoleGameEngine.Core.Input;
 using ConsoleGameEngine.Core.Math;
 using ConsoleGameEngine.Core.Physics;
+using ConsoleGameEngine.Core.Utilities;
 
 namespace ConsoleGameEngine.Runner.Games;
 

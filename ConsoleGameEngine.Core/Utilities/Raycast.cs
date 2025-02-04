@@ -1,11 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
-using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Math;
 using static System.Math;
 
-namespace ConsoleGameEngine.Core.Physics;
+namespace ConsoleGameEngine.Core.Utilities;
 
 public static class Raycast
 {

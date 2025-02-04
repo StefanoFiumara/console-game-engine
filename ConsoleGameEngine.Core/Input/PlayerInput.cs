@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using ConsoleGameEngine.Core.Graphics.Renderers;
 using ConsoleGameEngine.Core.Math;
+using ConsoleGameEngine.Core.Utilities;
 
 namespace ConsoleGameEngine.Core.Input;
 

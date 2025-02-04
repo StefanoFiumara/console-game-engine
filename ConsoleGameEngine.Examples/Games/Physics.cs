@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using ConsoleGameEngine.Core;
-using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Graphics.Renderers;
 using ConsoleGameEngine.Core.Input;

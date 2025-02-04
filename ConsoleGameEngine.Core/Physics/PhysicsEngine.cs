@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ConsoleGameEngine.Core.GameObjects;
 using ConsoleGameEngine.Core.Math;
 
 namespace ConsoleGameEngine.Core.Physics;

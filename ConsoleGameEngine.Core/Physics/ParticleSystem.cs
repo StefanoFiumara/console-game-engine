@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using ConsoleGameEngine.Core.GameObjects;
+using ConsoleGameEngine.Core.Entities;
 using ConsoleGameEngine.Core.Graphics;
 using ConsoleGameEngine.Core.Math;
+using ConsoleGameEngine.Core.Utilities;
 
 namespace ConsoleGameEngine.Core.Physics;
 
