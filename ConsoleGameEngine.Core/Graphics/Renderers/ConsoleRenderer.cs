@@ -6,7 +6,7 @@ using ConsoleGameEngine.Core.Utilities;
 
 namespace ConsoleGameEngine.Core.Graphics.Renderers;
 
-public struct PixelInfo
+public record struct PixelInfo
 {
     public char Char;
     public Color24 Foreground;
@@ -29,8 +29,8 @@ public class ConsoleRenderer : BaseRenderer
     private static readonly IntPtr ConsoleOutputHandle = Win32.GetStdHandle(StdOutputHandle);
     private const int FixedWidthTrueType = 54;
 
-    private readonly PixelInfo[] _screenBuffer;
-    private bool _isDirty = true;
+    private readonly PixelInfo[] _previousFrame;
+    private readonly PixelInfo[] _currentFrame;
 
     public override Rect Bounds { get; }
 
@@ -40,7 +40,7 @@ public class ConsoleRenderer : BaseRenderer
         DisableResize();
         DisableMouseInput();
 
-        SetCurrentFont("Modern DOS 8x8", pixelSize);
+        SetConsoleFont("Modern DOS 8x8", pixelSize);
 
         // Clamp width and height while maintaining aspect ratio
         var maxWidth = Console.LargestWindowWidth - 1;
@@ -61,7 +61,8 @@ public class ConsoleRenderer : BaseRenderer
         Bounds = new Rect(Vector.Zero, new Vector(width, height));
 
         EnableVirtualTerminalProcessing();
-        _screenBuffer = new PixelInfo[width * height];
+        _currentFrame  = new PixelInfo[width * height];
+        _previousFrame = new PixelInfo[width * height];
 
 #pragma warning disable CA1416
         Console.SetWindowSize(width, height);
@@ -71,53 +72,75 @@ public class ConsoleRenderer : BaseRenderer
 
     public override void Render()
     {
-        if (!_isDirty) return;
-
-        var ansiSequence = GenerateAnsiSequence(_screenBuffer);
+        var ansiSequence = GenerateAnsiSequence();
         byte[] buffer = Encoding.ASCII.GetBytes(ansiSequence);
-
         Win32.WriteFile(ConsoleOutputHandle, buffer, (uint)buffer.Length, out _, IntPtr.Zero);
-        _isDirty = false;
+        
+        // swap buffers
+        Array.Copy(_currentFrame, _previousFrame, _currentFrame.Length);
     }
 
-    private string GenerateAnsiSequence(PixelInfo[] buffer)
+    private string GenerateAnsiSequence()
     {
+        var dirtyRows = GetDirtyRows();
         var sb = new StringBuilder();
 
-        Color24? currentFgColor = null;
-        Color24? currentBgColor = null;
-
-        for (int i = 0; i < buffer.Length; i++)
+        for (int y = 0; y < Height; y++)
         {
-            var cell = buffer[i];
-
-            if (currentFgColor != cell.Foreground)
+            if(!dirtyRows[y]) continue;
+            
+            // Move cursor to the start of the changed row
+            sb.Append($"\e[{y + 1};1H");
+            Color24? currentFgColor = null;
+            Color24? currentBgColor = null;
+            for (int x = 0; x < Width; x++)
             {
-                string fgColorSeq = $"\e[38;2;{cell.Foreground.R};{cell.Foreground.G};{cell.Foreground.B}m";
-                sb.Append(fgColorSeq);
-                currentFgColor = cell.Foreground;
+                var cell = _currentFrame[y * Width + x];
+
+                if (currentFgColor != cell.Foreground)
+                {
+                    string fgColorSeq = $"\e[38;2;{cell.Foreground.R};{cell.Foreground.G};{cell.Foreground.B}m";
+                    sb.Append(fgColorSeq);
+                    currentFgColor = cell.Foreground;
+                }
+
+                if (currentBgColor != cell.Background)
+                {
+                    string bgColorSeq = $"\e[48;2;{cell.Background.R};{cell.Background.G};{cell.Background.B}m";
+                    sb.Append(bgColorSeq);
+                    currentBgColor = cell.Background;
+                }
+
+                // Append the character (or blank space) for this cell
+                sb.Append(cell.Char);
+            }
+            sb.Append("\e[0m"); // Reset colors
+        }
+        
+        return sb.ToString();
+    }
+
+    private bool[] GetDirtyRows()
+    {
+        // Determine which rows need to be re-drawn
+        var dirtyRows = new bool[Height];
+
+        for (int y = 0; y < Height; y++)
+        {
+            bool rowChanged = false;
+            for (int x = 0; x < Width; x++)
+            {
+                if (_currentFrame[y * Width + x] != _previousFrame[y * Width + x])
+                {
+                    rowChanged = true;
+                    break;
+                }
             }
 
-            if (currentBgColor != cell.Background)
-            {
-                string bgColorSeq = $"\e[48;2;{cell.Background.R};{cell.Background.G};{cell.Background.B}m";
-                sb.Append(bgColorSeq);
-                currentBgColor = cell.Background;
-            }
-
-            // Append the character (or blank space) for this cell
-            sb.Append(cell.Char);
-
-            // Check if we've reached the end of a row, and if so, add a newline
-            bool isRowEnd = (i + 1) % Width == 0;
-            // Do not add a new line for the last row in the buffer
-            if (isRowEnd && i != buffer.Length - 1)
-            {
-                sb.Append(Environment.NewLine);
-            }
+            dirtyRows[y] = rowChanged;
         }
 
-        return sb.ToString();
+        return dirtyRows;
     }
 
     public override void Draw(int x, int y, char c, Color24 fgColor, Color24 bgColor)
@@ -127,15 +150,12 @@ public class ConsoleRenderer : BaseRenderer
 
         var index = y * Width + x;
 
-        // TODO: only mark dirty if the replaced character/color in the buffer differs from this one
-        _isDirty = true;
-
-        _screenBuffer[index].Char = c;
-        _screenBuffer[index].Foreground = fgColor;
-        _screenBuffer[index].Background = c == Sprite.SolidPixel ? fgColor : bgColor;
+        _currentFrame[index].Char = c;
+        _currentFrame[index].Foreground = fgColor;
+        _currentFrame[index].Background = c == Sprite.SolidPixel ? fgColor : bgColor;
     }
 
-    public static void SetCurrentFont(string font, short fontSize = 0)
+    public static void SetConsoleFont(string font, short fontSize = 0)
     {
         var before = new FontInfo
         {
