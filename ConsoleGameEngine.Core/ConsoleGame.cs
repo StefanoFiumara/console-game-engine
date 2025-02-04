@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using ConsoleGameEngine.Core.Graphics;
@@ -12,7 +13,10 @@ public abstract class ConsoleGame
     private readonly string _name;
     private readonly ConsoleRenderer _renderer;
     private readonly PlayerInput _input;
+    
     private readonly int _targetFps;
+    private readonly Queue<double> _frameTimes = new();
+    private const double FrameTimeWindow = 3.0; // seconds
 
     private bool _gameRunning;
     
@@ -72,7 +76,14 @@ public abstract class ConsoleGame
             // Draw the screen
             _renderer.Render();
 
-            var averageFps = ++framesRendered / (timer.Elapsed.TotalMilliseconds / 1000f);
+            _frameTimes.Enqueue(timer.Elapsed.TotalSeconds);
+            framesRendered++;
+            
+            while(_frameTimes.Count > 0 && _frameTimes.Peek() < timer.Elapsed.TotalSeconds - FrameTimeWindow)
+                _frameTimes.Dequeue();
+
+            var averageFps = _frameTimes.Count / FrameTimeWindow;
+            //var averageFps = ++framesRendered / (timer.Elapsed.TotalMilliseconds / 1000f);
             Console.Title = $"{_name} ~ Average FPS: {averageFps:F}";
                 
             // Give back some system resources by suspending the thread if update loop takes less time than necessary to hit our target FPS.
