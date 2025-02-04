@@ -12,7 +12,7 @@ namespace ConsoleGameEngine.Runner.Games;
 using static Math;
 
 // ReSharper disable once UnusedType.Global
-public class FirstPersonShooter() : ConsoleGame(width: 240, height: 135, pixelSize: 4, targetFps: 120)
+public class FirstPersonShooter() : ConsoleGame(width: 320, height: 240, pixelSize: 2, targetFps: 120)
 {
     private const float TurnSpeed = 1.2f;
     private const float MoveSpeed = 3.0f;
@@ -115,7 +115,7 @@ public class FirstPersonShooter() : ConsoleGame(width: 240, height: 135, pixelSi
                 else if (y >= ceiling && y <= floor)
                 {
                     int wallIndex = (int)((_wallGradient.Length - 1) * ray.Distance / Raycast.MaxRaycastDepth);
-                    renderer.Draw(x, y, Sprite.SolidPixel, ray.HitBoundary ? Color24.Black : _wallGradient[wallIndex]);
+                    renderer.Draw(x, y, Sprite.SolidPixel, _wallGradient[wallIndex]);
                 }
                 else
                 {

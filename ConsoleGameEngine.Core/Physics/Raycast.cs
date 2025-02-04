@@ -12,7 +12,7 @@ public static class Raycast
     public const float MaxRaycastDepth = 20f;
 
     // DDA Raycast Algorithm
-    public static RaycastInfo Send(Sprite map, Vector startPos, Vector direction, char impassable, float boundaryTolerance = 0.0025f)
+    public static RaycastInfo Send(Sprite map, Vector startPos, Vector direction, char impassable, float boundaryTolerance = 0.00125f)
     {
         var result = new RaycastInfo();
 
@@ -68,50 +68,10 @@ public static class Raycast
             }
         }
 
-        if (result.Hit)
-        {
+        if (result.Hit) 
             result.Intersection = startPos + direction * result.Distance;
-            result.HitBoundary = DetermineBoundary(startPos, direction, mapCheck.Rounded, boundaryTolerance);
-        }
             
         return result;
-    }
-
-    private static bool DetermineBoundary(Vector startPos, Vector direction, Vector endPos, float boundaryTolerance)
-    {
-        // To highlight tile boundaries, cast a ray from each corner
-        // of the tile, to the player. The more coincident this ray
-        // is to the rendering ray, the closer we are to a tile
-        // boundary
-        var boundaryRays = new List<(float distance, float dotProduct)>(4);
-
-        // Test each corner of hit tile, storing the distance from
-        // the player, and the calculated dot product of the two rays
-        for (int cornerX = 0; cornerX < 2; cornerX++)
-        {
-            for (int cornerY = 0; cornerY < 2; cornerY++)
-            {
-                // Angle of corner to eye
-                var cornerRay = new Vector(
-                    endPos.X + cornerX - startPos.X,
-                    endPos.Y + cornerY - startPos.Y);
-
-                // TODO: formalize dot product in Vector Class
-                float dot = (direction.X * cornerRay.X / cornerRay.Magnitude) + (direction.Y * cornerRay.Y / cornerRay.Magnitude);
-
-                boundaryRays.Add((cornerRay.Magnitude, dot));
-            }
-        }
-
-        // Sort Pairs from closest to farthest
-        boundaryRays = boundaryRays.OrderBy(v => v.distance).ToList();
-
-        // First two/three are closest (we will never see all four)
-        if (Acos(boundaryRays[0].dotProduct) < boundaryTolerance) return true;
-        if (Acos(boundaryRays[1].dotProduct) < boundaryTolerance) return true;
-        //if (Acos(boundaryRays[2].dotProduct) < boundaryTolerance) return true;
-
-        return false;
     }
 }
 
@@ -121,11 +81,6 @@ public struct RaycastInfo
     /// True if the raycast hit an object, false otherwise
     /// </summary>
     public bool Hit { get; set; }
-    
-    /// <summary>
-    /// True if the raycast hit a tile boundary, false otherwise
-    /// </summary>
-    public bool HitBoundary { get; set; }
     
     /// <summary>
     /// Distance between start and end of raycast
