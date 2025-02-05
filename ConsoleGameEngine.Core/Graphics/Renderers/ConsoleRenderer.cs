@@ -85,6 +85,7 @@ public class ConsoleRenderer : BaseRenderer
         var dirtyRows = GetDirtyRows();
         var sb = new StringBuilder();
 
+        // TODO: Investigate bounding box rendering strategy
         for (int y = 0; y < Height; y++)
         {
             if(!dirtyRows[y]) continue;
@@ -122,7 +123,7 @@ public class ConsoleRenderer : BaseRenderer
 
     private bool[] GetDirtyRows()
     {
-        // Determine which rows need to be re-drawn
+        // Determine which rows need to be re-drawn by comparing the previous frame buffer
         var dirtyRows = new bool[Height];
 
         for (int y = 0; y < Height; y++)

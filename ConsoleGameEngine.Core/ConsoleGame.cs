@@ -53,8 +53,6 @@ public abstract class ConsoleGame
             _gameRunning = false;
         }
 
-        long framesRendered = 0;
-
         var timer = new Stopwatch();
         timer.Start();
 
@@ -76,18 +74,15 @@ public abstract class ConsoleGame
             // Draw the screen
             _renderer.Render();
 
+            // Calculate FPS
             _frameTimes.Enqueue(timer.Elapsed.TotalSeconds);
-            framesRendered++;
-            
             while(_frameTimes.Count > 0 && _frameTimes.Peek() < timer.Elapsed.TotalSeconds - FrameTimeWindow)
                 _frameTimes.Dequeue();
 
             var averageFps = _frameTimes.Count / FrameTimeWindow;
-            //var averageFps = ++framesRendered / (timer.Elapsed.TotalMilliseconds / 1000f);
             Console.Title = $"{_name} ~ Average FPS: {averageFps:F}";
                 
             // Give back some system resources by suspending the thread if update loop takes less time than necessary to hit our target FPS.
-            // This vastly reduces CPU usage!
             var waitTime = 1f / _targetFps * 1000f - elapsedTime;
             if (waitTime > 0)
             {
