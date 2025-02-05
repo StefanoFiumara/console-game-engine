@@ -73,7 +73,7 @@ public class ConsoleRenderer : BaseRenderer
     public override void Render()
     {
         var ansiSequence = GenerateAnsiSequence();
-        byte[] buffer = Encoding.ASCII.GetBytes(ansiSequence);
+        var buffer = Encoding.ASCII.GetBytes(ansiSequence);
         Win32.WriteFile(ConsoleOutputHandle, buffer, (uint)buffer.Length, out _, IntPtr.Zero);
         
         // swap buffers

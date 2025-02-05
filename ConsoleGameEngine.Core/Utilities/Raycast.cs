@@ -9,7 +9,7 @@ public static class Raycast
     public const float MaxRaycastDepth = 20f;
 
     // DDA Raycast Algorithm
-    public static RaycastInfo Send(Sprite map, Vector startPos, Vector direction, char impassable, float boundaryTolerance = 0.00125f)
+    public static RaycastInfo Send(Sprite map, Vector startPos, Vector direction, char impassable)
     {
         var result = new RaycastInfo();
 
