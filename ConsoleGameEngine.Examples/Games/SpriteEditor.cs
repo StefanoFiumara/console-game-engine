@@ -13,8 +13,9 @@ namespace ConsoleGameEngine.Runner.Games;
 // ReSharper disable once UnusedType.Global
 public class SpriteEditor() : ConsoleGame(width: 192, height: 128, pixelSize: 10, targetFps: 120)
 {
-    private const int CanvasSize = 64;
-    private const int PaletteSize = 50;
+    private const int CANVAS_SIZE = 64;
+    private const int PALETTE_SIZE = 50;
+    private const string SPRITE_FILE_NAME = "canvas.spr";
     private GameEntity _canvas;
     private GameEntity _palette;
     private GameEntity _colorPreview;
@@ -40,11 +41,11 @@ public class SpriteEditor() : ConsoleGame(width: 192, height: 128, pixelSize: 10
         
     protected override bool Create(IRenderer renderer)
     {
-        var canvasSpr = Sprite.CreateSolid(CanvasSize, CanvasSize, Color24.White); 
+        var canvasSpr = Sprite.CreateSolid(CANVAS_SIZE, CANVAS_SIZE, Color24.White); 
         var canvasPos = (renderer.Bounds.Center - canvasSpr.Size * 0.5f).Rounded;
         _canvas = new GameEntity(canvasSpr, canvasPos);
         
-        var paletteSpr = CreateColorPalette(size: PaletteSize, _saturation);
+        var paletteSpr = CreateColorPalette(size: PALETTE_SIZE, _saturation);
         var palettePos = _canvas.Bounds.TopRight + Vector.Right * 4;
         _palette = new GameEntity(paletteSpr, palettePos);
         
@@ -185,13 +186,13 @@ public class SpriteEditor() : ConsoleGame(width: 192, height: 128, pixelSize: 10
         if (input.IsKeyHeld(KeyCode.Up))
         {
             _saturation = MathF.Min(_saturation + elapsedTime, 1f);
-            _palette.Sprite = CreateColorPalette(PaletteSize, _saturation);
+            _palette.Sprite = CreateColorPalette(PALETTE_SIZE, _saturation);
             
         }
         else if (input.IsKeyHeld(KeyCode.Down))
         {
             _saturation = MathF.Max(_saturation - elapsedTime, 0f);
-            _palette.Sprite = CreateColorPalette(PaletteSize, _saturation);
+            _palette.Sprite = CreateColorPalette(PALETTE_SIZE, _saturation);
         }
         
         // Palette
@@ -250,13 +251,11 @@ public class SpriteEditor() : ConsoleGame(width: 192, height: 128, pixelSize: 10
         return result;
     }
 
-    private const string SpriteFileName = "canvas.spr";
-
     private void SaveSprite(Sprite sprite)
     {
         try
         {
-            using var fs = new FileStream(SpriteFileName, FileMode.Create);
+            using var fs = new FileStream(SPRITE_FILE_NAME, FileMode.Create);
             using var writer = new BinaryWriter(fs);
             
             // Write sprite dimensions
@@ -304,10 +303,10 @@ public class SpriteEditor() : ConsoleGame(width: 192, height: 128, pixelSize: 10
     {
         try
         {
-            if (!File.Exists(SpriteFileName))
+            if (!File.Exists(SPRITE_FILE_NAME))
                 return null;
 
-            using var fs = new FileStream(SpriteFileName, FileMode.Open);
+            using var fs = new FileStream(SPRITE_FILE_NAME, FileMode.Open);
             using var reader = new BinaryReader(fs);
             
             // Read sprite dimensions
