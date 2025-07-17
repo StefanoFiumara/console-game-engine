@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.Entities;
 using ConsoleGameEngine.Core.Graphics;
@@ -66,6 +67,22 @@ public class SpriteEditor() : ConsoleGame(width: 192, height: 128, pixelSize: 10
     {
         if (input.IsKeyUp(KeyCode.Esc)) return false;
         
+        // Save functionality (Ctrl + S)
+        if (input.IsCommandPressed(KeyCode.Control, KeyCode.S))
+        {
+            SaveSprite(_canvas.Sprite);
+        }
+        
+        // Load functionality (Ctrl + L)
+        if (input.IsCommandPressed(KeyCode.Control, KeyCode.L))
+        {
+            var loadedSprite = LoadSprite();
+            if (loadedSprite != null)
+            {
+                _canvas.Sprite = loadedSprite;
+            }
+        }
+        
         renderer.Fill(' ');
         renderer.DrawString((int) renderer.Bounds.Center.X, 3, "SPRITE EDITOR", alignment: TextAlignment.Centered);
         
@@ -75,6 +92,8 @@ public class SpriteEditor() : ConsoleGame(width: 192, height: 128, pixelSize: 10
         renderer.DrawString(10, (int)_canvas.Position.Y + 6, "Right Click: Draw Secondary Color");
         renderer.DrawString(10, (int)_canvas.Position.Y + 8, "Shift + Click: Draw Straight Lines");
         renderer.DrawString(10, (int)_canvas.Position.Y + 10, "Control + Click: Flood fill");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 12, "Control + S: Save Sprite");
+        renderer.DrawString(10, (int)_canvas.Position.Y + 14, "Control + L: Load Sprite");
         renderer.DrawString(10, (int)_canvas.Position.Y + 16, "PALETTE");
         renderer.DrawString(10, (int)_canvas.Position.Y + 19, "Left Click: Set Primary Color");
         renderer.DrawString(10, (int)_canvas.Position.Y + 21, "Right Click: Set Secondary Color");
@@ -229,5 +248,110 @@ public class SpriteEditor() : ConsoleGame(width: 192, height: 128, pixelSize: 10
         }
 
         return result;
+    }
+
+    private const string SpriteFileName = "canvas.spr";
+
+    private void SaveSprite(Sprite sprite)
+    {
+        try
+        {
+            using var fs = new FileStream(SpriteFileName, FileMode.Create);
+            using var writer = new BinaryWriter(fs);
+            
+            // Write sprite dimensions
+            writer.Write((int)sprite.Size.X);
+            writer.Write((int)sprite.Size.Y);
+            
+            // Get sprite data
+            var glyphs = sprite.GetGlyphs();
+            var fgColors = sprite.GetForegroundColors();
+            var bgColors = sprite.GetBackgroundColors();
+            
+            // Write glyphs array
+            writer.Write(glyphs.Length);
+            for (int i = 0; i < glyphs.Length; i++)
+            {
+                writer.Write(glyphs[i]);
+            }
+            
+            // Write foreground colors array
+            writer.Write(fgColors.Length);
+            for (int i = 0; i < fgColors.Length; i++)
+            {
+                writer.Write(fgColors[i].R);
+                writer.Write(fgColors[i].G);
+                writer.Write(fgColors[i].B);
+            }
+            
+            // Write background colors array
+            writer.Write(bgColors.Length);
+            for (int i = 0; i < bgColors.Length; i++)
+            {
+                writer.Write(bgColors[i].R);
+                writer.Write(bgColors[i].G);
+                writer.Write(bgColors[i].B);
+            }
+        }
+        catch (Exception ex)
+        {
+            // Silently handle save errors for now
+            Console.WriteLine($"Error saving sprite: {ex.Message}");
+        }
+    }
+
+    private Sprite LoadSprite()
+    {
+        try
+        {
+            if (!File.Exists(SpriteFileName))
+                return null;
+
+            using var fs = new FileStream(SpriteFileName, FileMode.Open);
+            using var reader = new BinaryReader(fs);
+            
+            // Read sprite dimensions
+            int width = reader.ReadInt32();
+            int height = reader.ReadInt32();
+            var size = new Vector(width, height);
+            
+            // Read glyphs array
+            int glyphsLength = reader.ReadInt32();
+            var glyphs = new char[glyphsLength];
+            for (int i = 0; i < glyphsLength; i++)
+            {
+                glyphs[i] = reader.ReadChar();
+            }
+            
+            // Read foreground colors array
+            int fgLength = reader.ReadInt32();
+            var fgColors = new Color24[fgLength];
+            for (int i = 0; i < fgLength; i++)
+            {
+                byte r = reader.ReadByte();
+                byte g = reader.ReadByte();
+                byte b = reader.ReadByte();
+                fgColors[i] = new Color24(r, g, b);
+            }
+            
+            // Read background colors array
+            int bgLength = reader.ReadInt32();
+            var bgColors = new Color24[bgLength];
+            for (int i = 0; i < bgLength; i++)
+            {
+                byte r = reader.ReadByte();
+                byte g = reader.ReadByte();
+                byte b = reader.ReadByte();
+                bgColors[i] = new Color24(r, g, b);
+            }
+            
+            return Sprite.FromSerializationData(size, glyphs, fgColors, bgColors);
+        }
+        catch (Exception ex)
+        {
+            // Silently handle load errors for now
+            Console.WriteLine($"Error loading sprite: {ex.Message}");
+            return null;
+        }
     }
 }
