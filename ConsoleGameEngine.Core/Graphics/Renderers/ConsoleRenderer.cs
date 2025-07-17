@@ -91,7 +91,7 @@ public class ConsoleRenderer : BaseRenderer
             if(!dirtyRows[y]) continue;
             
             // Move cursor to the start of the changed row
-            sb.Append($"\e[{y + 1};1H");
+            sb.Append($"\\e[{y + 1};1H");
             Color24? currentFgColor = null;
             Color24? currentBgColor = null;
             for (int x = 0; x < Width; x++)
@@ -100,14 +100,14 @@ public class ConsoleRenderer : BaseRenderer
 
                 if (currentFgColor != cell.Foreground)
                 {
-                    string fgColorSeq = $"\e[38;2;{cell.Foreground.R};{cell.Foreground.G};{cell.Foreground.B}m";
+                    string fgColorSeq = $"\\e[38;2;{cell.Foreground.R};{cell.Foreground.G};{cell.Foreground.B}m";
                     sb.Append(fgColorSeq);
                     currentFgColor = cell.Foreground;
                 }
 
                 if (currentBgColor != cell.Background)
                 {
-                    string bgColorSeq = $"\e[48;2;{cell.Background.R};{cell.Background.G};{cell.Background.B}m";
+                    string bgColorSeq = $"\\e[48;2;{cell.Background.R};{cell.Background.G};{cell.Background.B}m";
                     sb.Append(bgColorSeq);
                     currentBgColor = cell.Background;
                 }
@@ -115,7 +115,7 @@ public class ConsoleRenderer : BaseRenderer
                 // Append the character (or blank space) for this cell
                 sb.Append(cell.Char);
             }
-            sb.Append("\e[0m"); // Reset colors
+            sb.Append("\\e[0m"); // Reset colors
         }
         
         return sb.ToString();
