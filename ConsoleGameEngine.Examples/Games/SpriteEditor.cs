@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using ConsoleGameEngine.Core;
 using ConsoleGameEngine.Core.Entities;
 using ConsoleGameEngine.Core.Graphics;
@@ -71,7 +73,7 @@ public class SpriteEditor() : ConsoleGame(width: 192, height: 128, pixelSize: 10
         // Save functionality (Ctrl + S)
         if (input.IsCommandPressed(KeyCode.Control, KeyCode.S))
         {
-            SaveSprite(_canvas.Sprite);
+            _ = SaveSpriteAsync(_canvas.Sprite);
         }
         
         // Load functionality (Ctrl + L)
@@ -251,52 +253,55 @@ public class SpriteEditor() : ConsoleGame(width: 192, height: 128, pixelSize: 10
         return result;
     }
 
-    private void SaveSprite(Sprite sprite)
+    private async Task SaveSpriteAsync(Sprite sprite)
     {
-        try
+        await Task.Run(() =>
         {
-            using var fs = new FileStream(SPRITE_FILE_NAME, FileMode.Create);
-            using var writer = new BinaryWriter(fs);
-            
-            // Write sprite dimensions
-            writer.Write((int)sprite.Size.X);
-            writer.Write((int)sprite.Size.Y);
-            
-            // Get sprite data
-            var glyphs = sprite.GetGlyphs();
-            var fgColors = sprite.GetForegroundColors();
-            var bgColors = sprite.GetBackgroundColors();
-            
-            // Write glyphs array
-            writer.Write(glyphs.Length);
-            for (int i = 0; i < glyphs.Length; i++)
+            try
             {
-                writer.Write(glyphs[i]);
+                using var fs = new FileStream(SPRITE_FILE_NAME, FileMode.Create);
+                using var writer = new BinaryWriter(fs);
+                
+                // Write sprite dimensions
+                writer.Write((int)sprite.Size.X);
+                writer.Write((int)sprite.Size.Y);
+                
+                // Get sprite data
+                var glyphs = sprite.GetGlyphs();
+                var fgColors = sprite.GetForegroundColors();
+                var bgColors = sprite.GetBackgroundColors();
+                
+                // Write glyphs array
+                writer.Write(glyphs.Length);
+                for (int i = 0; i < glyphs.Length; i++)
+                {
+                    writer.Write(glyphs[i]);
+                }
+                
+                // Write foreground colors array
+                writer.Write(fgColors.Length);
+                for (int i = 0; i < fgColors.Length; i++)
+                {
+                    writer.Write(fgColors[i].R);
+                    writer.Write(fgColors[i].G);
+                    writer.Write(fgColors[i].B);
+                }
+                
+                // Write background colors array
+                writer.Write(bgColors.Length);
+                for (int i = 0; i < bgColors.Length; i++)
+                {
+                    writer.Write(bgColors[i].R);
+                    writer.Write(bgColors[i].G);
+                    writer.Write(bgColors[i].B);
+                }
             }
-            
-            // Write foreground colors array
-            writer.Write(fgColors.Length);
-            for (int i = 0; i < fgColors.Length; i++)
+            catch (Exception)
             {
-                writer.Write(fgColors[i].R);
-                writer.Write(fgColors[i].G);
-                writer.Write(fgColors[i].B);
+                // Silently handle save errors for now
+                Debugger.Break();
             }
-            
-            // Write background colors array
-            writer.Write(bgColors.Length);
-            for (int i = 0; i < bgColors.Length; i++)
-            {
-                writer.Write(bgColors[i].R);
-                writer.Write(bgColors[i].G);
-                writer.Write(bgColors[i].B);
-            }
-        }
-        catch (Exception ex)
-        {
-            // Silently handle save errors for now
-            Console.WriteLine($"Error saving sprite: {ex.Message}");
-        }
+        });
     }
 
     private Sprite LoadSprite()
@@ -346,10 +351,10 @@ public class SpriteEditor() : ConsoleGame(width: 192, height: 128, pixelSize: 10
             
             return Sprite.FromSerializationData(size, glyphs, fgColors, bgColors);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Silently handle load errors for now
-            Console.WriteLine($"Error loading sprite: {ex.Message}");
+            Debugger.Break();
             return null;
         }
     }
