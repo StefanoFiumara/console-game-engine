@@ -276,4 +276,18 @@ public class Sprite
             _fg[y * (int) Width + x] = c;
         }
     }
+
+    // Serialization support methods
+    public char[] GetGlyphs() => (char[])_glyphs.Clone();
+    public Color24[] GetForegroundColors() => (Color24[])_fg.Clone();
+    public Color24[] GetBackgroundColors() => (Color24[])_bg.Clone();
+
+    public static Sprite FromSerializationData(Vector size, char[] glyphs, Color24[] fg, Color24[] bg)
+    {
+        var sprite = new Sprite((int)size.X, (int)size.Y);
+        Array.Copy(glyphs, sprite._glyphs, glyphs.Length);
+        Array.Copy(fg, sprite._fg, fg.Length);
+        Array.Copy(bg, sprite._bg, bg.Length);
+        return sprite;
+    }
 }

@@ -10,6 +10,8 @@ public enum KeyCode
     Right = 0x27,
     Down = 0x28,
         
+    L = 0x4C,
+    S = 0x53,
     Z = 0x5A,
     X = 0x58,
     Enter = 0x0D,
